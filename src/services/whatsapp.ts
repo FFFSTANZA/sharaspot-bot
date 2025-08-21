@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
@@ -16,36 +17,16 @@ class WhatsAppService {
   }
 
   /**
-   * Send a simple text message
-   */
-  async sendTextMessage(to: string, message: string): Promise<boolean> {
-    try {
-      const payload = {
-        messaging_product: 'whatsapp',
-        to,
-        text: { body: message },
-      };
-
-      const response = await axios.post(this.baseUrl, payload, {
-        headers: this.headers,
-      });
-
-      logger.info('✅ Text message sent', { to, messageId: response.data.messages[0].id });
-      return true;
-    } catch (error: any) {
-      logger.error('❌ Failed to send text message', {
-        to,
-        error: error.response?.data || error.message,
-      });
-      return false;
-    }
-  }
-
-  /**
-   * Send a button message
+   * Send button message with 20-char limit validation
    */
   async sendButtonMessage(to: string, body: string, buttons: Array<{id: string, title: string}>, header?: string): Promise<boolean> {
     try {
+      // Validate button titles (20 char max)
+      const validatedButtons = buttons.map(btn => ({
+        ...btn,
+        title: btn.title.substring(0, 20) // Truncate to 20 chars
+      }));
+
       const payload: ButtonMessage = {
         messaging_product: 'whatsapp',
         to,
@@ -54,7 +35,7 @@ class WhatsAppService {
           type: 'button',
           body: { text: body },
           action: {
-            buttons: buttons.map(btn => ({
+            buttons: validatedButtons.map(btn => ({
               type: 'reply',
               reply: {
                 id: btn.id,
@@ -65,10 +46,10 @@ class WhatsAppService {
         },
       };
 
-      if (header) {
+      if (header && header.length <= 60) { // WhatsApp header limit
         payload.interactive.header = {
           type: 'text',
-          text: header,
+          text: header.substring(0, 60),
         };
       }
 
@@ -88,7 +69,7 @@ class WhatsAppService {
   }
 
   /**
-   * Send a list message
+   * Send list message with validation
    */
   async sendListMessage(
     to: string, 
@@ -101,24 +82,34 @@ class WhatsAppService {
     header?: string
   ): Promise<boolean> {
     try {
+      // Validate all text limits
+      const validatedSections = sections.map(section => ({
+        title: section.title.substring(0, 24), // Section title limit
+        rows: section.rows.map(row => ({
+          id: row.id,
+          title: row.title.substring(0, 24), // Row title limit
+          description: row.description?.substring(0, 72), // Description limit
+        })),
+      }));
+
       const payload: ListMessage = {
         messaging_product: 'whatsapp',
         to,
         type: 'interactive',
         interactive: {
           type: 'list',
-          body: { text: body },
+          body: { text: body.substring(0, 1024) }, // Body limit
           action: {
-            button: buttonText,
-            sections,
+            button: buttonText.substring(0, 20), // Button text limit
+            sections: validatedSections,
           },
         },
       };
 
-      if (header) {
+      if (header && header.length <= 60) {
         payload.interactive.header = {
           type: 'text',
-          text: header,
+          text: header.substring(0, 60),
         };
       }
 
@@ -138,7 +129,33 @@ class WhatsAppService {
   }
 
   /**
-   * Send typing indicator (mark as read)
+   * Send text message
+   */
+  async sendTextMessage(to: string, message: string): Promise<boolean> {
+    try {
+      const payload = {
+        messaging_product: 'whatsapp',
+        to,
+        text: { body: message.substring(0, 4096) }, // WhatsApp text limit
+      };
+
+      const response = await axios.post(this.baseUrl, payload, {
+        headers: this.headers,
+      });
+
+      logger.info('✅ Text message sent', { to, messageId: response.data.messages[0].id });
+      return true;
+    } catch (error: any) {
+      logger.error('❌ Failed to send text message', {
+        to,
+        error: error.response?.data || error.message,
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Mark message as read
    */
   async markAsRead(messageId: string): Promise<boolean> {
     try {
@@ -157,86 +174,6 @@ class WhatsAppService {
     } catch (error: any) {
       logger.error('❌ Failed to mark message as read', {
         messageId,
-        error: error.response?.data || error.message,
-      });
-      return false;
-    }
-  }
-
-  /**
-   * Send location message
-   */
-  async sendLocationMessage(
-    to: string,
-    latitude: number,
-    longitude: number,
-    name: string,
-    address: string
-  ): Promise<boolean> {
-    try {
-      const payload: LocationMessage = {
-        messaging_product: 'whatsapp',
-        to,
-        type: 'location',
-        location: {
-          latitude,
-          longitude,
-          name,
-          address,
-        },
-      };
-
-      const response = await axios.post(this.baseUrl, payload, {
-        headers: this.headers,
-      });
-
-      logger.info('✅ Location message sent', { to, messageId: response.data.messages[0].id });
-      return true;
-    } catch (error: any) {
-      logger.error('❌ Failed to send location message', {
-        to,
-        error: error.response?.data || error.message,
-      });
-      return false;
-    }
-  }
-
-  /**
-   * Send template message (for notifications)
-   */
-  async sendTemplateMessage(to: string, templateName: string, parameters: string[] = []): Promise<boolean> {
-    try {
-      const payload = {
-        messaging_product: 'whatsapp',
-        to,
-        type: 'template',
-        template: {
-          name: templateName,
-          language: {
-            code: 'en',
-          },
-          components: parameters.length > 0 ? [
-            {
-              type: 'body',
-              parameters: parameters.map(param => ({
-                type: 'text',
-                text: param,
-              })),
-            },
-          ] : [],
-        },
-      };
-
-      const response = await axios.post(this.baseUrl, payload, {
-        headers: this.headers,
-      });
-
-      logger.info('✅ Template message sent', { to, templateName, messageId: response.data.messages[0].id });
-      return true;
-    } catch (error: any) {
-      logger.error('❌ Failed to send template message', {
-        to,
-        templateName,
         error: error.response?.data || error.message,
       });
       return false;

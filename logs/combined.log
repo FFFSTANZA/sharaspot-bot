@@ -1,0 +1,3473 @@
+2025-08-21 11:47:10 [INFO]: 🔄 Starting database migrations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:47:15 [INFO]: ✅ Database migrations completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:49:00 [INFO]: 🚀 SharaSpot Bot server started on port 3000 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:49:00 [INFO]: 📝 Environment: development {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:49:00 [INFO]: 🔗 Webhook URL: http://localhost:3000/webhook {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:49:00 [INFO]: ❤️ Health check: http://localhost:3000/health {
+  "service": "sharaspot-bot"
+}
+2025-08-21 11:49:24 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/seed-data",
+  "userAgent": "curl/8.14.1",
+  "ip": "::1"
+}
+2025-08-21 12:06:12 [INFO]: SIGINT received, shutting down gracefully... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:25 [INFO]: 🔄 Starting database migrations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:27 [INFO]: ✅ Database migrations completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:28 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:28 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:28 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:28 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Passed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ Failed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: Success Rate: 0.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+📋 New User Complete Onboarding: 0/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+📋 Existing User Quick Search: 0/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+📋 Address Search Flow: 0/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    ❌ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:       Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+🔍 POTENTIAL ISSUES FOUND: {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ New User Complete Onboarding - Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ New User Complete Onboarding - Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ New User Complete Onboarding - Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ New User Complete Onboarding - Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ Existing User Quick Search - Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ Existing User Quick Search - Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ Address Search Flow - Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ❌ Address Search Flow - Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]:    Error: Cannot read properties of undefined (reading 'handleWebhook') {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ User created successfully {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999999",
+  "userId": 5
+}
+2025-08-21 12:35:29 [INFO]: ✅ User creation successful {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:41 [INFO]: 🔄 Starting database migrations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:42 [INFO]: ✅ Database migrations completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:43 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:43 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:43 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:43 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:44 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text",
+  "messageId": "test_msg_1755760004594"
+}
+2025-08-21 12:36:45 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760004594",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ACuOjBiCb5gOWDWrWswNe3x"
+    }
+  }
+}
+2025-08-21 12:36:45 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:45 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:45 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text",
+  "messageId": "test_msg_1755760005621"
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760005621",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ApYqg_92sH_6zYIEsmUvfSR"
+    }
+  }
+}
+2025-08-21 12:36:46 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:46 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:46 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive",
+  "messageId": "test_msg_1755760006625"
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AJfO-hg5Vi8WKHBMW0XE7h1"
+    }
+  }
+}
+2025-08-21 12:36:46 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": true
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760006625",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AoODNP67id01kHGY2tkiCre"
+    }
+  }
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AHEbgLmJlBeBg3q3aFdaasg"
+    }
+  }
+}
+2025-08-21 12:36:47 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs",
+  "buttonTitle": "Choose from Popular",
+  "isInPreferenceFlow": true
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AtcFwuEGA5smAAtZsyvo_v3"
+    }
+  }
+}
+2025-08-21 12:36:47 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:47 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:47 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive",
+  "messageId": "test_msg_1755760007628"
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AWiMCq3dgm-6kX2sqRmQCzy"
+    }
+  }
+}
+2025-08-21 12:36:48 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760007628",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AtIWygJ-_W2P0rjSTBVum8q"
+    }
+  }
+}
+2025-08-21 12:36:48 [INFO]: List reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV",
+  "listTitle": "Tata Nexon EV",
+  "isInPreferenceFlow": true
+}
+2025-08-21 12:36:48 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:48 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:48 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:48 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text",
+  "messageId": "test_msg_1755760008633"
+}
+2025-08-21 12:36:48 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ADCcRZ64rM1l1I5ZgEXU8V_"
+    }
+  }
+}
+2025-08-21 12:36:49 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760008633",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AZEDZv8YQZ82s26ZbVI8w5L"
+    }
+  }
+}
+2025-08-21 12:36:49 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:49 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:49 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive",
+  "messageId": "test_msg_1755760009637"
+}
+2025-08-21 12:36:49 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ABpO1St40H8d4l05B_SAMKo"
+    }
+  }
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760009637",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AWOnhrmNAeIZFZUxxTMCXg9"
+    }
+  }
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ASLJ5ayzO2cmr7IVOIkWHHx"
+    }
+  }
+}
+2025-08-21 12:36:50 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book",
+  "buttonTitle": "Find Stations",
+  "isInPreferenceFlow": false
+}
+2025-08-21 12:36:50 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:50 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:50 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:50 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text",
+  "messageId": "test_msg_1755760010641"
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AE2vBBxcgu5zKfBuApuh1jD"
+    }
+  }
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760010641",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A1hISMrceYEupKHk9-PPFkz"
+    }
+  }
+}
+2025-08-21 12:36:51 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:51 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:51 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text",
+  "messageId": "test_msg_1755760011643"
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760011643",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A8znsz-lS--8C8MsDQep9ML"
+    }
+  }
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A4NKb2RcKtafGoIPkgOwru1"
+    }
+  }
+}
+2025-08-21 12:36:52 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AB2FmCC20y_-skiYAtZmypC"
+    }
+  }
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-21T07:06:52.649Z",
+      "2025-08-21T07:06:52.649Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-21 12:36:52 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:52 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:21 [INFO]: 🔄 Starting database migrations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:23 [INFO]: ✅ Database migrations completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:26 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:26 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:26 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:26 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text",
+  "messageId": "test_msg_1755760467284"
+}
+2025-08-21 12:44:27 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760467284",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AFDuIWJVN7GHQbxNU4x8zsp"
+    }
+  }
+}
+2025-08-21 12:44:28 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:28 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:28 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text",
+  "messageId": "test_msg_1755760468323"
+}
+2025-08-21 12:44:29 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:29 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:29 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive",
+  "messageId": "test_msg_1755760469328"
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760468323",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AudR9B2eq3eJAQX4zvYp_KO"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Ah3uB4MyL0hD5RlyZ2T0R3c"
+    }
+  }
+}
+2025-08-21 12:44:29 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": true
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760469328",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Aj--nn0nnsDyyMxqfnB1z_e"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AB9iH_apXuEzJnaF9X6ciQx"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AycI6soByx_4n2OaTzgj3Kc"
+    }
+  }
+}
+2025-08-21 12:44:29 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs",
+  "buttonTitle": "Choose from Popular",
+  "isInPreferenceFlow": true
+}
+2025-08-21 12:44:30 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ArAsgbxgHQ_2fTpXKRxhti1"
+    }
+  }
+}
+2025-08-21 12:44:30 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:30 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:30 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive",
+  "messageId": "test_msg_1755760470335"
+}
+2025-08-21 12:44:30 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760470335",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AmwEt0IVfF8Ti6wfX_xO63E"
+    }
+  }
+}
+2025-08-21 12:44:30 [INFO]: List reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV",
+  "listTitle": "Tata Nexon EV",
+  "isInPreferenceFlow": true
+}
+2025-08-21 12:44:31 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Ags-7B4raP87__82SzhV8qV"
+    }
+  }
+}
+2025-08-21 12:44:31 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:31 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:31 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:31 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text",
+  "messageId": "test_msg_1755760471343"
+}
+2025-08-21 12:44:31 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760471343",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AfNz425vsJIfDskL-uo-M6y"
+    }
+  }
+}
+2025-08-21 12:44:32 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A6-ERPu8L6P8kTeBS3C2C1w"
+    }
+  }
+}
+2025-08-21 12:44:32 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:32 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:32 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive",
+  "messageId": "test_msg_1755760472347"
+}
+2025-08-21 12:44:33 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:33 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:33 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:33 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text",
+  "messageId": "test_msg_1755760473356"
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Aj4JkvTbp7d-OCev9YnQsMw"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760472347",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ArDqOhTU2f0wK3mR2aRGF3T"
+    }
+  }
+}
+2025-08-21 12:44:33 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book",
+  "buttonTitle": "Find Stations",
+  "isInPreferenceFlow": false
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760473356",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AnZNA5PVE3z-FtlEqMIPtU8"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A_-p2ZpI_4VMmB5FrAxmF8m"
+    }
+  }
+}
+2025-08-21 12:44:34 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "As_CGfTnGQSF4IPfPtKDbrR"
+    }
+  }
+}
+2025-08-21 12:44:34 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:34 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:34 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text",
+  "messageId": "test_msg_1755760474359"
+}
+2025-08-21 12:44:35 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760474359",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AQBKPa5fMI8r-QQjfFGi5fo"
+    }
+  }
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-21T07:14:35.367Z",
+      "2025-08-21T07:14:35.367Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-21 12:44:35 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AyFzq8Li5TqGGL3KFdUHHIU"
+    }
+  }
+}
+2025-08-21 14:10:39 [INFO]: 🚀 SharaSpot Bot server started on port 3000 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:10:39 [INFO]: 📝 Environment: development {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:10:39 [INFO]: 🔗 Webhook URL: http://localhost:3000/webhook {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:10:39 [INFO]: ❤️ Health check: http://localhost:3000/health {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:10:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "url": "/",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "ip": "::1"
+}
+2025-08-21 14:10:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "url": "/favicon.ico",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "ip": "::1"
+}
+2025-08-21 14:11:11 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "url": "/webhook",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "ip": "::1"
+}
+2025-08-21 14:11:11 [WARN]: ❌ Webhook verification failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:11:19 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "url": "/webhook",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "ip": "::1"
+}
+2025-08-21 14:11:19 [WARN]: ❌ Webhook verification failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:13:31 [INFO]: SIGINT received, shutting down gracefully... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:13:40 [INFO]: 🚀 SharaSpot Bot server started on port 3000 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:13:40 [INFO]: 📝 Environment: development {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:13:40 [INFO]: 🔗 Webhook URL: http://localhost:3000/webhook {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:13:40 [INFO]: ❤️ Health check: http://localhost:3000/health {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:14:59 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "url": "/webhook?hub.mode=subscribe&hub.challenge=442709509&hub.verify_token=sharaspot",
+  "userAgent": "facebookplatform/1.0 (+http://developers.facebook.com)",
+  "ip": "::1"
+}
+2025-08-21 14:14:59 [INFO]: ✅ Webhook verified successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-21 14:15:55 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:43 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:46 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRDBGQ0NFMDFEODQyRTFCQTM3OEMzRjNBMzhBODQxOEQA"
+}
+2025-08-21 14:16:50 [INFO]: ✅ User created successfully {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "userId": 16
+}
+2025-08-21 14:16:50 [INFO]: ✅ User profile updated {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "profileData": {
+    "phoneNumber": "919790294221"
+  },
+  "userId": 16
+}
+2025-08-21 14:16:50 [INFO]: Profile updated from WhatsApp {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "profileData": {
+    "phoneNumber": "919790294221"
+  }
+}
+2025-08-21 14:16:51 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMDg1Q0FERDBBMjU0Q0UwRTBCAA=="
+}
+2025-08-21 14:16:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:16:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:17:04 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:17:04 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQ0RDNTFGRDA5QjBEQkMwQjk1OTdBMUY0NzJBNUE3OEMA"
+}
+2025-08-21 14:17:06 [INFO]: ✅ User profile updated {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "profileData": {
+    "name": "Sarvesh"
+  },
+  "userId": 16
+}
+2025-08-21 14:17:07 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNTAwNENCMzgwNkFCMTcyMTNEAA=="
+}
+2025-08-21 14:17:08 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:17:09 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:17:09 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "isOnboarding": true
+}
+2025-08-21 14:17:09 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AflPhyBA5XcPSLm7KNXAUr-"
+    }
+  }
+}
+2025-08-21 14:23:07 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:07 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggODRDMzg2RkI1ODJGOUZGODk1MUY3QkI4NDAzMzI3QzkA"
+}
+2025-08-21 14:23:10 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNzZCMDJEOUEzRkM2NUZEQkM0AA=="
+}
+2025-08-21 14:23:11 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:11 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:25 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:25 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQzJGRjY1QkE2QzY1MzYxM0M1RTI3MTE4NDc0QzEwNEUA"
+}
+2025-08-21 14:23:27 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQkU5N0JFNzQ3NkZCQzEyMEMyAA=="
+}
+2025-08-21 14:23:28 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "A7_lHntWHxsKryMQzdkEYEB"
+    }
+  }
+}
+2025-08-21 14:23:28 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:29 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:30 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNUQ5MkIzMTYzNEQ5RDU1ODNGAA=="
+}
+2025-08-21 14:23:31 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:31 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:38 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:38 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRDAyMjFENTQ5OUI2OEI4M0Q3QkE1OTg3MzNBNjBBREEA"
+}
+2025-08-21 14:23:43 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "Any",
+  "buttonTitle": "🔀 Any Connector Type",
+  "isInPreferenceFlow": true
+}
+2025-08-21 14:23:44 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQ0I2M0I4M0FEQzBDQTFFODdDAA=="
+}
+2025-08-21 14:23:45 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button label is too long. Max length is 20"
+      },
+      "fbtrace_id": "A7xEQrOQ8mUn-4BSR0ZQKdE"
+    }
+  }
+}
+2025-08-21 14:23:45 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:23:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:24:21 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:24:21 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggOEQyQ0VBQzdBRDBCODE5M0Q0RUI2MEFBNjVENUNDODUA"
+}
+2025-08-21 14:24:24 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNUFEMjk1OUQwNDY4QzNCQkQ3AA=="
+}
+2025-08-21 14:24:25 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:24:25 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:25:36 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:25:36 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMTg5QzM1MTlEOEI0MEVEODIyRjlCMUVDRjc4OEZFNEIA"
+}
+2025-08-21 14:25:38 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNjc1MTBGQ0VDOTA1NkU4RUFDAA=="
+}
+2025-08-21 14:25:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:25:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:11 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:11 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggOTlCMEIxMUJENEIwRDEwMjRCMzU3RUVBQUJFNDkwMDAA"
+}
+2025-08-21 14:26:13 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQzRENUU1ODgzQTg3MDhGRDcwAA=="
+}
+2025-08-21 14:26:14 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQjk4NkZGQjBGNUJDQjk3QzY1AA=="
+}
+2025-08-21 14:26:14 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:14 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:15 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:15 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:15 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:16 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOUNGQTk2NjAxOEQ5ODUyMTZBAA=="
+}
+2025-08-21 14:26:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:27 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:27 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggN0RBRTE1NUJEMDNCRjVCOTQwNjkwRDZCNjI3QUMyNjgA"
+}
+2025-08-21 14:26:34 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "Free Now",
+  "buttonTitle": "🟢 Free Now Only",
+  "isInPreferenceFlow": true
+}
+2025-08-21 14:26:35 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMUFGNDQ0NDQwMTg0MEQ4ODhBAA=="
+}
+2025-08-21 14:26:37 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:37 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:37 [INFO]: ✅ User preferences updated {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "preferences": {
+    "evModel": "Model 3",
+    "connectorType": "Any",
+    "chargingIntent": "Quick Top-up",
+    "queuePreference": "Free Now"
+  },
+  "userId": 16
+}
+2025-08-21 14:26:37 [INFO]: ✅ Preferences saved successfully {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-08-21 14:26:38 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMDZBRDBEQzhFM0E0OTdCMjg2AA=="
+}
+2025-08-21 14:26:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:26:41 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "A87AeC73bA2EkRoLCV04XuS"
+    }
+  }
+}
+2025-08-21 14:29:27 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:27 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQjI4ODM4MUY2NjZCOTYzRjU3Qjg0MDc4NUQ0NjU3QUYA"
+}
+2025-08-21 14:29:30 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMUIyMTFEQjk5NDg5QjY1NUUxAA=="
+}
+2025-08-21 14:29:31 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:32 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:43 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:52 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggODZEMzNBMURENTEwOTk1M0VEQTM0OEU2NkRENjdBOTgA"
+}
+2025-08-21 14:29:55 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNjBFQjMzRDM3MDRDNjc0NkM1AA=="
+}
+2025-08-21 14:29:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:29:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:05 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:17 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "location",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNEVGODNCMjA5RDNFMDYwQjcwQUY3NkVFREQyQ0Y2NjEA"
+}
+2025-08-21 14:30:18 [INFO]: Location received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "latitude": 9.4826794,
+  "longitude": 77.5151009
+}
+2025-08-21 14:30:19 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNUMyNEE4RUY0Mjk2RDZDNjEwAA=="
+}
+2025-08-21 14:30:20 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:20 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:22 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNzY2RDkyQ0ZFNkJFOUUwQ0I2AA=="
+}
+2025-08-21 14:30:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:24 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:36 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:36 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggN0FBMEREQUVDQTM1ODQ2QTlCMUM1NzU4Njk4ODI4N0EA"
+}
+2025-08-21 14:30:39 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNjg4NzgwN0IxNUVCMzE5NUZFAA=="
+}
+2025-08-21 14:30:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:42 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:59 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:30:59 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQkFDN0JFNEE5MDE5RTQwNkI1RDdCMEJCM0I0N0Y3ODUA"
+}
+2025-08-21 14:31:02 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "Ao2ejJTcnbgtKHyR9IjSuEN"
+    }
+  }
+}
+2025-08-21 14:31:32 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:31:32 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRkU3ODNCOUVGQkY5NDNBMEUwREQxMUM2RDlEQUE2QUEA"
+}
+2025-08-21 14:31:34 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSODhGMEE4MUQ3MjdGMUE2NUVDAA=="
+}
+2025-08-21 14:31:35 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:31:36 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:31:43 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:31:43 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNzEyRDRGQjQ1QTQ0MzNCMzRFQTNENzlFMTNBMzFCM0EA"
+}
+2025-08-21 14:31:45 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AMF3Kc8mxB8ry-0BLX5s_n3"
+    }
+  }
+}
+2025-08-21 14:32:02 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:32:02 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMTREMDUwNzcyN0MxRTM0Mzk0RTFENDlCQ0NGNjgxMjAA"
+}
+2025-08-21 14:32:04 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "view_profile",
+  "buttonTitle": "👤 View Profile",
+  "isInPreferenceFlow": false
+}
+2025-08-21 14:32:05 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMUM2OTA2NDJFMUVEMDM2NzNDAA=="
+}
+2025-08-21 14:32:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:32:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:32:13 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 14:32:13 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNTNCM0I2OTMwRjJCMkY0MDhFMzY4QUVFMzI4ODkyQzcA"
+}
+2025-08-21 14:32:15 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "quick_book",
+  "buttonTitle": "⚡ Quick Book",
+  "isInPreferenceFlow": false
+}
+2025-08-21 14:32:15 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AOCPwh_hZAQursNRBPB2UDh"
+    }
+  }
+}
+2025-08-21 14:33:43 [INFO]: SIGINT received, shutting down gracefully... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:14:06 [INFO]: 🚀 SharaSpot Bot server started on port 3000 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:14:06 [INFO]: 📝 Environment: development {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:14:06 [INFO]: 🔗 Webhook URL: http://localhost:3000/webhook {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:14:06 [INFO]: ❤️ Health check: http://localhost:3000/health {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:14:21 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:21 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMDRBNDIzMkRCMzJGODI2MTI0RjNBOTBDMEVCNUVCNzUA"
+}
+2025-08-21 15:14:25 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQzBFM0FCOTBBMjFFRjE4OEUxAA=="
+}
+2025-08-21 15:14:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:35 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:35 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMTA0MjA2RDRDQzQwMzExOEQ4OUFDRTM1N0MzQTYwNzgA"
+}
+2025-08-21 15:14:37 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "view_profile",
+  "buttonTitle": "👤 My Profile",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:14:38 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNTA1RjUzMzQzNUY4NTQ0MzAzAA=="
+}
+2025-08-21 15:14:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:46 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRUFCNDIwMzhBQkZCMDhBQ0ExNjFFMzAwMDVGRTM2RjMA"
+}
+2025-08-21 15:14:48 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "update_preferences",
+  "buttonTitle": "🔄 Update Preference",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:14:48 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "isOnboarding": false
+}
+2025-08-21 15:14:49 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMUE5MjRCNTgzNzNBREQ2RTUxAA=="
+}
+2025-08-21 15:14:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:51 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:58 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:14:58 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNkVFRjkxMkQ0NUZFNTI5MzdDM0FBNUFEQUM4NUEzNjcA"
+}
+2025-08-21 15:15:04 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "popular_evs",
+  "buttonTitle": "📱 Popular Models",
+  "isInPreferenceFlow": true
+}
+2025-08-21 15:15:05 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Total row count exceed max allowed count: 10"
+      },
+      "fbtrace_id": "ATNsxHzL6Hn8FbmxVWHHs3P"
+    }
+  }
+}
+2025-08-21 15:15:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:17 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggM0NBQUI2RkMzRUJDQjZGMkRCRTJFOUFBQTg2RTM5RUUA"
+}
+2025-08-21 15:15:19 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "type_ev_model",
+  "buttonTitle": "⌨️ Type Model",
+  "isInPreferenceFlow": true
+}
+2025-08-21 15:15:20 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRjZCRENFMTg0M0ZEMjQ3NTgyAA=="
+}
+2025-08-21 15:15:21 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:47 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:47 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRkNEMEQ2NjZEODREQzFEREUxQjQ0NzYxRUJFMDVEQTgA"
+}
+2025-08-21 15:15:49 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQkEyODgxRUE2Rjg0MkVBRTRCAA=="
+}
+2025-08-21 15:15:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:50 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQzc5NEQ3ODQxMkJDNUVEODMwAA=="
+}
+2025-08-21 15:15:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:52 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRTlEODEyOEZBNDM4QkZBQjJEAA=="
+}
+2025-08-21 15:15:53 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:54 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:58 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:15:58 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNDVENzJCQzFEREY3MzE2ODUxMzBBMUZDQzFDRTE2MUMA"
+}
+2025-08-21 15:15:59 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "Type2",
+  "buttonTitle": "🔌 Type2",
+  "isInPreferenceFlow": true
+}
+2025-08-21 15:16:00 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNEMwQTVFNDk2NEYxMEJEQkQ4AA=="
+}
+2025-08-21 15:16:01 [INFO]: ✅ List message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOEJFQURFOUQwRTVENEY4QkIyAA=="
+}
+2025-08-21 15:16:01 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:01 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:02 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:02 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:14 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:14 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQzM2RDIwMDgyMTA5RDc1N0QwOUFDQjk1OTg5RDQwQjQA"
+}
+2025-08-21 15:16:15 [INFO]: List reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "listId": "Full Charge",
+  "listTitle": "🔋 Full Charge",
+  "isInPreferenceFlow": true
+}
+2025-08-21 15:16:17 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSODFDNTE5Nzk0QTRFRTcwM0IyAA=="
+}
+2025-08-21 15:16:18 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:18 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:18 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQjREREY2MThDNTFEMDBGQ0IzAA=="
+}
+2025-08-21 15:16:19 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:20 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:20 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:21 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNzA1MEFENkJBOUYzQjBDMTUwAA=="
+}
+2025-08-21 15:16:24 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:27 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:27 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNDE1NEE5NjVCQzFBQTE2RkI4RDZCQTUzMzc3NjBFQzAA"
+}
+2025-08-21 15:16:30 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "Free Now",
+  "buttonTitle": "🟢 Free Now",
+  "isInPreferenceFlow": true
+}
+2025-08-21 15:16:31 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQTBDOURBNDc3RUQ1NTU2QjU2AA=="
+}
+2025-08-21 15:16:31 [INFO]: ✅ User preferences updated {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "preferences": {
+    "evModel": "Tesla model 3",
+    "connectorType": "Type2",
+    "chargingIntent": "Full Charge",
+    "queuePreference": "Free Now"
+  },
+  "userId": 16
+}
+2025-08-21 15:16:31 [INFO]: ✅ Preferences saved successfully {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-08-21 15:16:32 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:32 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:32 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRTBEMEJCNDJDN0VERTlDRjIwAA=="
+}
+2025-08-21 15:16:33 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:33 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:35 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSM0VEMEYzMTE3RDA0MzhENDcwAA=="
+}
+2025-08-21 15:16:36 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:36 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:50 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMjU3RUQ1RjZCOUE3RUREODFEMEIzNURDMkJGRDdGOEIA"
+}
+2025-08-21 15:16:51 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "location_help",
+  "buttonTitle": "❓ How to Share",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:16:52 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQzY2Njk4RThCMkNDNTc1RkY1AA=="
+}
+2025-08-21 15:16:53 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:16:53 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:00 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:00 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQzE0NDE5MjZBQUM3QzBCMzFFODU5NkUxRkRFOTE1ODcA"
+}
+2025-08-21 15:17:02 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "type_address",
+  "buttonTitle": "⌨️ Type Address",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:17:03 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQkQ1NTgzNkY1NDRBRkZFQTdFAA=="
+}
+2025-08-21 15:17:04 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:04 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:11 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:11 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQjFEQzlEMDU2RDNGNjUxMUVBQTIwMjVDMTg1MzJBMUYA"
+}
+2025-08-21 15:17:12 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "address": "Anna Nagar"
+}
+2025-08-21 15:17:13 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRjdDNTU4NTJFRUNENTJDMTVDAA=="
+}
+2025-08-21 15:17:14 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "anna nagar",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-21 15:17:14 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "anna nagar",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      "11001011100001100100000111010011100",
+      "Anna Nagar, Tamil Nadu, India",
+      "Anna Nagar",
+      "Tamil Nadu",
+      "1",
+      "2025-08-21T09:47:14.129Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-21 15:17:14 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "searchTerm": "Anna Nagar",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919790294221",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      1,
+      "2025-08-21T09:47:14.250Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-21 15:17:14 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:15 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:15 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRjNCNzIwMEU3NEZGRjU3MDJGAA=="
+}
+2025-08-21 15:17:15 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "location": {
+    "lat": 13.0878,
+    "lng": 80.2086
+  },
+  "radius": 25
+}
+2025-08-21 15:17:16 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSN0Q4NkFBM0Q5NTE2OUM5Q0M4AA=="
+}
+2025-08-21 15:17:16 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:17 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:17 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMzJBNjg0QjZDRjMxMTlDMjExAA=="
+}
+2025-08-21 15:17:18 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:19 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:20 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOTJENjgyNjE0NTM4ODMwRjgwAA=="
+}
+2025-08-21 15:17:20 [INFO]: SIGTERM received, shutting down gracefully... {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:17:22 [INFO]: 🚀 SharaSpot Bot server started on port 3000 {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:17:22 [INFO]: 📝 Environment: development {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:17:22 [INFO]: 🔗 Webhook URL: http://localhost:3000/webhook {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:17:22 [INFO]: ❤️ Health check: http://localhost:3000/health {
+  "service": "sharaspot-bot"
+}
+2025-08-21 15:17:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:17:24 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:06 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMDYxQ0MyNUQyNEU1NkY3NDdGOTYwQzI2M0IxMDUxRkYA"
+}
+2025-08-21 15:18:08 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "station_info_4",
+  "buttonTitle": "📋 More Info",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:18:09 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQURGNjgzMzc3MDAzMjBGQkVFAA=="
+}
+2025-08-21 15:18:10 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:10 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:12 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRUQ2QzZERTQ2QzA4Mzk3NUI3AA=="
+}
+2025-08-21 15:18:13 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:13 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:26 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRkMzMjQ3QUFFM0U5MjA3NTAzOTE2NzdBNkMwODFEN0EA"
+}
+2025-08-21 15:18:27 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "show_all_results",
+  "buttonTitle": "📋 Show All Results",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:18:28 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRDA4MEZGNEJCRTg4RUJGM0JEAA=="
+}
+2025-08-21 15:18:29 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:29 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:35 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:35 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRDZEQUFBOTU0M0U2OUIyNTZFQ0U2NzBBQjA3MjUwNUUA"
+}
+2025-08-21 15:18:36 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "book_station_4",
+  "buttonTitle": "⚡ Book Now",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:18:38 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSN0U5RDZDNTc2MzRGRkU5NEEwAA=="
+}
+2025-08-21 15:18:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:41 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMzUxRDZFNUU2ODVCNjAxMTQ0AA=="
+}
+2025-08-21 15:18:42 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:18:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:21:22 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:21:22 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMzNBNzk3OUMxNjc0REEwRjA0OEVERTlERUUzOUM0OTUA"
+}
+2025-08-21 15:21:24 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "find_other_stations",
+  "buttonTitle": "🔍 Find Others",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:21:24 [WARN]: Unknown button ID {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "find_other_stations"
+}
+2025-08-21 15:21:25 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQ0IzNjM5NkQ1MjJCOTU2NDA1AA=="
+}
+2025-08-21 15:21:26 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:21:27 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:29 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:29 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggM0U1NEZFODMzRkM1MzY1RjQ4ODVCOUZCRjFBNDk4MTMA"
+}
+2025-08-21 15:22:33 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNEYwRDI0NkIxNDMzMDgzQTE3AA=="
+}
+2025-08-21 15:22:33 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:34 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:53 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:53 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMDI1MjFBRkFFMkNBQTE0RDRCNkMyQjc5RUI5Q0FGMUQA"
+}
+2025-08-21 15:22:55 [INFO]: Button reply received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "view_profile",
+  "buttonTitle": "👤 My Profile",
+  "isInPreferenceFlow": false
+}
+2025-08-21 15:22:56 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOUQ5RTAzMzc2NEFBM0EwMjEyAA=="
+}
+2025-08-21 15:22:57 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:22:58 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "url": "/webhook",
+  "userAgent": "facebookexternalua",
+  "ip": "::1"
+}
+2025-08-21 15:56:27 [INFO]: SIGINT received, shutting down gracefully... {
+  "service": "sharaspot-bot"
+}

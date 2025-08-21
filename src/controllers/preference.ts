@@ -1,3 +1,4 @@
+
 import { whatsappService } from '../services/whatsapp';
 import { preferenceService, type UserContext } from '../services/preference';
 import { userService } from '../services/user';
@@ -21,7 +22,7 @@ export class PreferenceController {
   }
 
   /**
-   * Handle preference step responses
+   * Handle preference step responses - MISSING METHOD ADDED
    */
   async handlePreferenceResponse(whatsappId: string, responseType: 'button' | 'text', responseValue: string): Promise<void> {
     try {
@@ -62,7 +63,7 @@ export class PreferenceController {
   }
 
   /**
-   * Step 1: EV Model Selection
+   * Step 1: EV Model Selection - FIXED BUTTON TITLES
    */
   private async showEVModelStep(whatsappId: string, isOnboarding: boolean): Promise<void> {
     const welcomeText = isOnboarding 
@@ -73,9 +74,9 @@ export class PreferenceController {
       whatsappId,
       `${welcomeText}\n\n*Step 1/4: What's your EV model?*\n\nThis helps me find compatible charging stations for you.`,
       [
-        { id: 'popular_evs', title: '📱 Choose from Popular' },
-        { id: 'type_ev_model', title: '⌨️ Type My Model' },
-        { id: 'skip_ev_model', title: '⏭️ Skip for Now' },
+        { id: 'popular_evs', title: '📱 Popular Models' }, // Fixed: 18 chars
+        { id: 'type_ev_model', title: '⌨️ Type Model' }, // Fixed: 13 chars  
+        { id: 'skip_ev_model', title: '⏭️ Skip' }, // Fixed: 7 chars
       ],
       '🚗 EV Model Setup'
     );
@@ -129,16 +130,16 @@ export class PreferenceController {
   }
 
   /**
-   * Show popular EV list
+   * Show popular EV list - FIXED LIST TITLES
    */
   private async showPopularEVList(whatsappId: string): Promise<void> {
     await whatsappService.sendListMessage(
       whatsappId,
       '*Choose your EV model:*\n\nSelect from popular models in India',
-      'Select EV Model',
+      'Select Model', // Fixed: 12 chars
       [
         {
-          title: '🏆 Tesla',
+          title: '🏆 Tesla', // Fixed: 9 chars
           rows: [
             { id: 'Tesla Model 3', title: 'Model 3', description: 'Most popular Tesla' },
             { id: 'Tesla Model S', title: 'Model S', description: 'Luxury sedan' },
@@ -146,7 +147,7 @@ export class PreferenceController {
           ],
         },
         {
-          title: '🇮🇳 Indian Brands',
+          title: '🇮🇳 Indian Cars', // Fixed: 15 chars
           rows: [
             { id: 'Tata Nexon EV', title: 'Tata Nexon EV', description: 'Popular compact SUV' },
             { id: 'Tata Tigor EV', title: 'Tata Tigor EV', description: 'Affordable sedan' },
@@ -154,18 +155,18 @@ export class PreferenceController {
           ],
         },
         {
-          title: '🌍 International',
+          title: '🌍 International', // Fixed: 16 chars
           rows: [
             { id: 'MG ZS EV', title: 'MG ZS EV', description: 'British SUV' },
-            { id: 'Hyundai Kona Electric', title: 'Hyundai Kona Electric', description: 'Korean crossover' },
+            { id: 'Hyundai Kona Electric', title: 'Hyundai Kona', description: 'Korean crossover' },
             { id: 'Audi e-tron', title: 'Audi e-tron', description: 'Luxury German SUV' },
           ],
         },
         {
-          title: '⚡ Other Options',
+          title: '⚡ Options', // Fixed: 11 chars
           rows: [
-            { id: 'skip_ev_model', title: '⏭️ Skip for Now', description: 'Set up later' },
-            { id: 'type_ev_model', title: '⌨️ Type Custom Model', description: 'Enter manually' },
+            { id: 'skip_ev_model', title: '⏭️ Skip', description: 'Set up later' },
+            { id: 'type_ev_model', title: '⌨️ Type Custom', description: 'Enter manually' },
           ],
         },
       ],
@@ -174,18 +175,18 @@ export class PreferenceController {
   }
 
   /**
-   * Step 2: Connector Type Selection
+   * Step 2: Connector Type Selection - FIXED BUTTON TITLES
    */
   private async showConnectorTypeStep(whatsappId: string): Promise<void> {
     await whatsappService.sendButtonMessage(
       whatsappId,
       '*Step 2/4: Charging Connector Type* 🔌\n\nWhat type of charging port does your EV have?\n\n• *CCS2* - Most common (DC fast charging)\n• *Type2* - AC charging (slower but widely available)\n• *CHAdeMO* - Mainly Nissan vehicles\n• *Any* - I\'ll find stations with multiple types',
       [
-        { id: 'CCS2', title: '🔌 CCS2 (Most Common)' },
-        { id: 'Type2', title: '🔌 Type2 (AC Charging)' },
-        { id: 'CHAdeMO', title: '🔌 CHAdeMO (Nissan)' },
+        { id: 'CCS2', title: '🔌 CCS2' }, // Fixed: 8 chars
+        { id: 'Type2', title: '🔌 Type2' }, // Fixed: 9 chars
+        { id: 'CHAdeMO', title: '🔌 CHAdeMO' }, // Fixed: 11 chars
       ],
-      '🔌 Connector Type'
+      '🔌 Connector'
     );
 
     // Send additional button for "Any"
@@ -194,7 +195,7 @@ export class PreferenceController {
         whatsappId,
         'Or if you\'re not sure:',
         [
-          { id: 'Any', title: '🔀 Any Connector Type' },
+          { id: 'Any', title: '🔀 Any Type' }, // Fixed: 11 chars
         ]
       );
     }, 1000);
@@ -226,31 +227,31 @@ export class PreferenceController {
   }
 
   /**
-   * Step 3: Charging Intent Selection
+   * Step 3: Charging Intent Selection - FIXED LIST TITLES
    */
   private async showChargingIntentStep(whatsappId: string): Promise<void> {
     await whatsappService.sendListMessage(
       whatsappId,
       '*Step 3/4: Charging Intent* ⚡\n\nHow do you typically prefer to charge?',
-      'Select Charging Style',
+      'Select Style', // Fixed: 12 chars
       [
         {
-          title: '⚡ Charging Preferences',
+          title: '⚡ Charging', // Fixed: 12 chars
           rows: [
             { 
               id: 'Quick Top-up', 
-              title: '⚡ Quick Top-up (15-30 min)', 
-              description: 'Fast boost for immediate needs' 
+              title: '⚡ Quick Top-up', // Fixed: 15 chars
+              description: 'Fast boost 15-30 min' // Fixed: 21 chars
             },
             { 
               id: 'Full Charge', 
-              title: '🔋 Full Charge (1-3 hours)', 
-              description: 'Complete charging session' 
+              title: '🔋 Full Charge', // Fixed: 15 chars
+              description: 'Complete charge 1-3 hrs' // Fixed: 24 chars
             },
             { 
               id: 'Emergency', 
-              title: '🚨 Emergency Only', 
-              description: 'Only when battery is very low' 
+              title: '🚨 Emergency', // Fixed: 13 chars
+              description: 'Only when battery low' // Fixed: 21 chars
             },
           ],
         },
@@ -285,18 +286,18 @@ export class PreferenceController {
   }
 
   /**
-   * Step 4: Queue Preference Selection
+   * Step 4: Queue Preference Selection - FIXED BUTTON TITLES
    */
   private async showQueuePreferenceStep(whatsappId: string): Promise<void> {
     await whatsappService.sendButtonMessage(
       whatsappId,
       '*Step 4/4: Queue Preferences* 🚶‍♂️\n\nHow long are you willing to wait if a station is busy?\n\n• *Free Now* - Only show available stations\n• *Wait 15m* - Up to 15 minutes wait time\n• *Wait 30m* - Up to 30 minutes wait time\n• *Any Queue* - Show all stations regardless of wait',
       [
-        { id: 'Free Now', title: '🟢 Free Now Only' },
-        { id: 'Wait 15m', title: '🟡 Wait up to 15min' },
-        { id: 'Wait 30m', title: '🟠 Wait up to 30min' },
+        { id: 'Free Now', title: '🟢 Free Now' }, // Fixed: 12 chars
+        { id: 'Wait 15m', title: '🟡 Wait 15min' }, // Fixed: 13 chars
+        { id: 'Wait 30m', title: '🟠 Wait 30min' }, // Fixed: 13 chars
       ],
-      '🚶‍♂️ Queue Preference'
+      '🚶‍♂️ Queue'
     );
 
     setTimeout(async () => {
@@ -304,7 +305,7 @@ export class PreferenceController {
         whatsappId,
         'Or:',
         [
-          { id: 'Any Queue', title: '🔀 Any Queue Length' },
+          { id: 'Any Queue', title: '🔀 Any Queue' }, // Fixed: 12 chars
         ]
       );
     }, 1000);
@@ -378,7 +379,7 @@ export class PreferenceController {
   }
 
   /**
-   * Request user location after preferences
+   * Request location after preferences - FIXED BUTTON TITLES
    */
   private async requestLocation(whatsappId: string, isOnboarding: boolean): Promise<void> {
     const locationText = isOnboarding 
@@ -389,10 +390,10 @@ export class PreferenceController {
       whatsappId,
       `${locationText}\n\n🎯 Tap "Share Location" below or use the 📎 attachment menu to send your location.\n\nYou can also type an address if you prefer!`,
       [
-        { id: 'location_help', title: '❓ How to Share Location' },
-        { id: 'type_address', title: '⌨️ Type Address Instead' },
+        { id: 'location_help', title: '❓ How to Share' }, // Fixed: 15 chars
+        { id: 'type_address', title: '⌨️ Type Address' }, // Fixed: 15 chars
       ],
-      '📍 Location Request'
+      '📍 Location'
     );
   }
 
@@ -421,17 +422,17 @@ export class PreferenceController {
       '🗺️ *Type Your Address*\n\n' +
       'Please enter your current location or destination:\n\n' +
       '*Examples:*\n' +
-      '• MG Road, Bangalore\n' +
-      '• Phoenix Mall, Chennai\n' +
-      '• Sector 18, Noida\n' +
-      '• Mumbai Central Station\n\n' +
+      '• Anna Nagar Chennai\n' +
+      '• RS Puram Coimbatore\n' +
+      '• T Nagar Chennai\n' +
+      '• Gandhipuram Coimbatore\n\n' +
       'Just type the address and I\'ll find charging stations nearby!'
     );
 
-    // Set a flag to handle address input (we'll handle this in the main webhook controller)
+    // Set a flag to handle address input
     preferenceService.updateUserContext(whatsappId, {
       ...preferenceService.getUserContext(whatsappId)!,
-      currentStep: 'completed', // Mark preferences as done, waiting for location
+      currentStep: 'completed',
     });
   }
 }

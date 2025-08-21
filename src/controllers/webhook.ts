@@ -1,11 +1,13 @@
+
 import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { whatsappService } from '../services/whatsapp';
 import { userService } from '../services/user';
 import { preferenceService } from '../services/preference';
-import { preferenceController } from '../controllers/preference';
+import { preferenceController } from './preference';
 import { profileService } from '../services/profile';
+import { locationController } from './location';
 import { WhatsAppWebhook, WhatsAppMessage } from '../types/whatsapp';
 
 export class WebhookController {
@@ -98,7 +100,6 @@ export class WebhookController {
       // Get or create user
       let user = await userService.getUserByWhatsAppId(whatsappId);
       if (!user) {
-        // Create new user
         user = await userService.createUser({
           whatsappId,
           name: null,
@@ -124,7 +125,6 @@ export class WebhookController {
     } catch (error) {
       logger.error('Message processing error', { error, message });
       
-      // Send error message to user if we have their WhatsApp ID
       if (message.from) {
         await whatsappService.sendTextMessage(
           message.from,
@@ -238,6 +238,8 @@ export class WebhookController {
         break;
 
       case 'book':
+      case 'find':
+      case 'search':
         await this.handleBookCommand(user);
         break;
 
@@ -251,7 +253,6 @@ export class WebhookController {
         break;
 
       case 'skip':
-        // Handle skip during preference flow
         const context = preferenceService.getUserContext(whatsappId);
         if (context) {
           await preferenceController.handlePreferenceResponse(whatsappId, 'button', 'skip_ev_model');
@@ -262,7 +263,7 @@ export class WebhookController {
 
       default:
         // Check if it looks like an address
-        if (command.length > 5 && (command.includes('road') || command.includes('street') || command.includes('avenue') || command.includes('mall') || command.includes('sector'))) {
+        if (this.looksLikeAddress(command)) {
           await this.handleAddressInput(whatsappId, command);
         } else {
           await whatsappService.sendTextMessage(
@@ -275,12 +276,27 @@ export class WebhookController {
   }
 
   /**
+   * Check if text looks like an address
+   */
+  private looksLikeAddress(text: string): boolean {
+    const addressKeywords = [
+      'road', 'street', 'avenue', 'mall', 'sector', 'block', 'area', 'nagar', 
+      'colony', 'market', 'circle', 'square', 'junction', 'cross', 'gate',
+      'metro', 'station', 'airport', 'hospital', 'school', 'college', 'university',
+      'park', 'garden', 'temple', 'church', 'mosque', 'place', 'centre', 'center',
+      'coimbatore', 'chennai', 'madurai', 'salem', 'tirupur', 'erode', 'vellore'
+    ];
+    
+    const lowerText = text.toLowerCase();
+    return text.length > 5 && addressKeywords.some(keyword => lowerText.includes(keyword));
+  }
+
+  /**
    * Handle greeting message
    */
   private async handleGreeting(user: any): Promise<void> {
     const { whatsappId, name, preferencesCaptured } = user;
 
-    // If no name, request it first
     if (!name) {
       await profileService.requestUserName(whatsappId);
       this.usersWaitingForName.add(whatsappId);
@@ -290,25 +306,22 @@ export class WebhookController {
     const displayName = name || 'there';
 
     if (preferencesCaptured) {
-      // User has preferences - offer to use saved settings
       await whatsappService.sendButtonMessage(
         whatsappId,
-        `Welcome back ${displayName}! 👋\n\n*Quick Actions:*\nUse your saved preferences or update them?`,
+        `Welcome back ${displayName}! 👋\n\n*Quick Actions:*\nReady to find charging stations?`,
         [
-          { id: 'quick_book', title: '⚡ Quick Book' },
-          { id: 'update_preferences', title: '🔄 Update Preferences' },
-          { id: 'view_profile', title: '👤 View Profile' },
+          { id: 'quick_book', title: '⚡ Find Stations' },
+          { id: 'update_preferences', title: '🔄 Update Settings' },
+          { id: 'view_profile', title: '👤 My Profile' },
         ],
-        '⚡ SharaSpot - EV Charging'
+        '⚡ SharaSpot'
       );
     } else {
-      // New user - start preference gathering
       await whatsappService.sendTextMessage(
         whatsappId,
         `Welcome to SharaSpot ${displayName}! ⚡\n\nI'll help you find and book EV charging stations. Let's set up your preferences first.`
       );
       
-      // Start preference gathering flow
       await preferenceController.startPreferenceGathering(whatsappId, true);
     }
   }
@@ -321,7 +334,6 @@ export class WebhookController {
     
     const success = await profileService.updateUserName(whatsappId, name);
     if (success) {
-      // After name is set, start preference gathering
       setTimeout(async () => {
         await preferenceController.startPreferenceGathering(whatsappId, true);
       }, 1500);
@@ -333,21 +345,7 @@ export class WebhookController {
    */
   private async handleAddressInput(whatsappId: string, address: string): Promise<void> {
     this.usersWaitingForAddress.delete(whatsappId);
-    
-    logger.info('Address received', { whatsappId, address });
-
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `📍 *Address Received!*\n\n${address}\n\nSearching for nearby charging stations... ⚡`
-    );
-
-    // Geocoding and station search will be implemented in Phase 3
-    setTimeout(async () => {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '🔍 Station search and booking features will be available in the next update!\n\nType "help" for available commands.'
-      );
-    }, 2000);
+    await locationController.handleAddressInput(whatsappId, address);
   }
 
   /**
@@ -357,22 +355,21 @@ export class WebhookController {
     const helpText = `🆘 *SharaSpot Help*\n\n` +
       `*Main Commands:*\n` +
       `• *hi* - Start/restart the bot\n` +
-      `• *book* - Quick booking (skip to location)\n` +
+      `• *book* / *find* - Find charging stations\n` +
       `• *profile* - View your profile & preferences\n` +
-      `• *preferences* - Update your EV preferences\n` +
-      `• *status* - Check your current queue status\n` +
+      `• *preferences* - Update your EV settings\n` +
+      `• *status* - Check your current bookings\n` +
       `• *cancel* - Cancel active reservation\n` +
       `• *help* - Show this help message\n\n` +
-      `*How to use:*\n` +
-      `1. Say "hi" to start\n` +
-      `2. Set your name & EV preferences\n` +
-      `3. Share your location 📍 or type address\n` +
-      `4. Browse nearby stations\n` +
-      `5. Book instantly! ⚡\n\n` +
-      `*During Setup:*\n` +
-      `• Use buttons for quick selection\n` +
-      `• Type custom values when needed\n` +
-      `• Say "skip" to skip optional steps\n\n` +
+      `*How to Find Stations:*\n` +
+      `1. Say "find" or "book"\n` +
+      `2. Share your location 📍 or type address\n` +
+      `3. Browse nearby stations by availability\n` +
+      `4. Select and book instantly! ⚡\n\n` +
+      `*Location Tips:*\n` +
+      `• GPS location gives best results\n` +
+      `• Type city names or landmarks\n` +
+      `• Use "Next Station" to browse more\n\n` +
       `Need assistance? Just type your message!`;
 
     await whatsappService.sendTextMessage(whatsappId, helpText);
@@ -382,7 +379,6 @@ export class WebhookController {
    * Handle status command
    */
   private async handleStatusCommand(whatsappId: string): Promise<void> {
-    // This will be implemented in Phase 4 (Booking System)
     const user = await userService.getUserByWhatsAppId(whatsappId);
     
     if (!user) {
@@ -396,21 +392,21 @@ export class WebhookController {
       `🚗 EV Model: ${user.evModel || 'Not specified'}\n` +
       `🔌 Connector: ${user.connectorType || 'Not set'}\n\n` +
       `📍 No active reservations or queue positions.\n\n` +
-      `Type "book" to find nearby charging stations!`;
+      `Ready to find charging stations near you?`;
 
     await whatsappService.sendButtonMessage(
       whatsappId,
       statusText,
       [
-        { id: 'quick_book', title: '⚡ Book Now' },
+        { id: 'quick_book', title: '⚡ Find Stations' },
         { id: 'view_profile', title: '👤 View Profile' },
       ],
-      '📊 Your Status'
+      '📊 Status'
     );
   }
 
   /**
-   * Handle book command (shortcut to location request)
+   * Handle book command
    */
   private async handleBookCommand(user: any): Promise<void> {
     const { whatsappId, preferencesCaptured, name } = user;
@@ -418,7 +414,7 @@ export class WebhookController {
     if (!name) {
       await whatsappService.sendTextMessage(
         whatsappId,
-        '👋 Welcome! Please tell me your name first, then I\'ll help you book a charging station.'
+        '👋 Welcome! Please tell me your name first, then I\'ll help you find charging stations.'
       );
       this.usersWaitingForName.add(whatsappId);
       return;
@@ -429,15 +425,15 @@ export class WebhookController {
         whatsappId,
         '⚙️ *Quick Setup Required*\n\nTo find the best stations for you, I need to know your EV preferences first.',
         [
-          { id: 'start_quick_setup', title: '⚡ Quick Setup (2 min)' },
-          { id: 'skip_to_location', title: '⏭️ Skip & Find Any Station' },
+          { id: 'start_quick_setup', title: '⚡ Quick Setup' },
+          { id: 'skip_to_location', title: '⏭️ Skip & Find' },
         ],
-        '⚙️ Setup Required'
+        '⚙️ Setup'
       );
       return;
     }
 
-    // Skip to location request
+    // Request location for station search
     await this.requestLocation(whatsappId);
   }
 
@@ -445,10 +441,9 @@ export class WebhookController {
    * Handle cancel command
    */
   private async handleCancelCommand(whatsappId: string): Promise<void> {
-    // This will be implemented in Phase 4 (Booking System)
     await whatsappService.sendTextMessage(
       whatsappId,
-      '❌ No active reservations to cancel.\n\nType "book" to find charging stations!'
+      '❌ No active reservations to cancel.\n\nType "find" to search for charging stations!'
     );
   }
 
@@ -463,6 +458,18 @@ export class WebhookController {
     // Handle preference flow buttons
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
+      return;
+    }
+
+    // Handle location-related buttons
+    const locationButtons = [
+      'next_station', 'load_more_stations', 'show_all_results', 'show_all_nearby',
+      'back_to_top_result', 'expand_search', 'remove_filters', 'new_search',
+      'share_gps_location', 'try_different_address', 'location_help'
+    ];
+
+    if (locationButtons.includes(buttonId) || buttonId.startsWith('book_station_') || buttonId.startsWith('station_info_')) {
+      await this.handleLocationButton(whatsappId, buttonId, buttonTitle);
       return;
     }
 
@@ -489,16 +496,18 @@ export class WebhookController {
         await this.requestLocation(whatsappId);
         break;
 
-      case 'location_help':
-        await preferenceController.showLocationHelp(whatsappId);
-        break;
-
       case 'type_address':
-        await preferenceController.requestAddressInput(whatsappId);
-        this.usersWaitingForAddress.add(whatsappId);
+        await this.requestAddressInput(whatsappId);
         break;
 
-      // Profile update buttons
+      case 'share_gps_location':
+        await this.showLocationHelp(whatsappId);
+        break;
+
+      case 'location_help':
+        await this.showLocationHelp(whatsappId);
+        break;
+
       case 'update_profile':
         await profileService.requestUserName(whatsappId);
         this.usersWaitingForName.add(whatsappId);
@@ -511,6 +520,78 @@ export class WebhookController {
           '❓ Unknown selection. Please try again or type "help".'
         );
         break;
+    }
+  }
+
+  /**
+   * Handle location-specific button actions
+   */
+  private async handleLocationButton(whatsappId: string, buttonId: string, buttonTitle: string): Promise<void> {
+    try {
+      switch (buttonId) {
+        case 'next_station':
+          await locationController.handleNextStation(whatsappId);
+          break;
+
+        case 'load_more_stations':
+          await locationController.loadMoreStations(whatsappId);
+          break;
+
+        case 'show_all_results':
+        case 'show_all_nearby':
+          await locationController.showAllNearbyStations(whatsappId);
+          break;
+
+        case 'expand_search':
+          await locationController.expandSearchRadius(whatsappId);
+          break;
+
+        case 'remove_filters':
+          await locationController.removeFilters(whatsappId);
+          break;
+
+        case 'new_search':
+          locationController.clearLocationContext(whatsappId);
+          await this.requestLocation(whatsappId);
+          break;
+
+        case 'back_to_top_result':
+          await locationController.showBackToTopResult(whatsappId);
+          break;
+
+        case 'share_gps_location':
+          await this.showLocationHelp(whatsappId);
+          break;
+
+        case 'try_different_address':
+          await this.requestAddressInput(whatsappId);
+          break;
+
+        case 'location_help':
+          await this.showLocationHelp(whatsappId);
+          break;
+
+        default:
+          if (buttonId.startsWith('book_station_')) {
+            const stationId = buttonId.replace('book_station_', '');
+            await this.handleStationBooking(whatsappId, parseInt(stationId));
+          } else if (buttonId.startsWith('station_info_')) {
+            const stationId = buttonId.replace('station_info_', '');
+            await this.showStationDetails(whatsappId, parseInt(stationId));
+          } else {
+            await whatsappService.sendTextMessage(
+              whatsappId,
+              `Button "${buttonTitle}" received. This feature will be available in Phase 4!`
+            );
+          }
+          break;
+      }
+    } catch (error) {
+      logger.error('Failed to handle location button', { whatsappId, buttonId, error });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❌ Something went wrong. Please try again.'
+      );
     }
   }
 
@@ -528,10 +609,17 @@ export class WebhookController {
       return;
     }
 
-    // Handle other list selections (Phase 3+)
+    // Handle location-related list selections
+    if (listId.startsWith('select_station_')) {
+      const stationId = listId.replace('select_station_', '');
+      await this.handleStationSelection(whatsappId, parseInt(stationId), listTitle);
+      return;
+    }
+
+    // Handle other list selections
     await whatsappService.sendTextMessage(
       whatsappId,
-      '📝 List selection received. This feature will be available soon!'
+      `Selected: ${listTitle}. This feature will be enhanced in upcoming updates!`
     );
   }
 
@@ -542,27 +630,7 @@ export class WebhookController {
     const { whatsappId } = user;
     const { latitude, longitude, name, address } = location;
 
-    logger.info('Location received', { 
-      whatsappId, 
-      latitude, 
-      longitude, 
-      name, 
-      address 
-    });
-
-    // Acknowledge location receipt
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `📍 *Location Received!*\n\n${name || 'Your location'}\n${address || `${latitude}, ${longitude}`}\n\nSearching for nearby charging stations... ⚡`
-    );
-
-    // Station search will be implemented in Phase 3
-    setTimeout(async () => {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '🔍 Station search and booking features will be available in the next update!\n\nType "help" for available commands.'
-      );
-    }, 2000);
+    await locationController.handleGPSLocation(whatsappId, latitude, longitude, name, address);
   }
 
   /**
@@ -571,14 +639,114 @@ export class WebhookController {
   private async requestLocation(whatsappId: string): Promise<void> {
     await whatsappService.sendButtonMessage(
       whatsappId,
-      '📍 *Share Your Location*\n\nTo find the best charging stations near you:\n\n🎯 Tap "Share Location" below\n📎 Or use the attachment menu\n⌨️ Or type your address',
+      '📍 *Find Charging Stations Near You*\n\nShare your location to get the most accurate results:\n\n🎯 GPS location gives best results\n📍 Or type any address/landmark\n🏢 City names work too!',
       [
-        { id: 'location_help', title: '❓ How to Share Location' },
-        { id: 'type_address', title: '⌨️ Type Address Instead' },
+        { id: 'share_gps_location', title: '📱 Share GPS' },
+        { id: 'type_address', title: '⌨️ Type Address' },
+        { id: 'location_help', title: '❓ Help' },
       ],
-      '📍 Location Request'
+      '📍 Location'
     );
+  }
+
+  /**
+   * Request address input
+   */
+  private async requestAddressInput(whatsappId: string): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '📝 *Type Your Address*\n\n' +
+      'Enter the location where you need charging:\n\n' +
+      '*Examples:*\n' +
+      '• Anna Nagar Chennai\n' +
+      '• RS Puram Coimbatore\n' +
+      '• T Nagar Chennai\n' +
+      '• Gandhipuram Coimbatore\n\n' +
+      'Just type the address and I\'ll find charging stations nearby!'
+    );
+
+    this.usersWaitingForAddress.add(whatsappId);
+  }
+
+  /**
+   * Show location sharing help
+   */
+  private async showLocationHelp(whatsappId: string): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '📍 *How to Share Your Location:*\n\n' +
+      '1️⃣ Tap the 📎 *attachment* icon (next to message input)\n' +
+      '2️⃣ Select *Location* from the menu\n' +
+      '3️⃣ Choose *Send your current location*\n' +
+      '4️⃣ Tap *Send*\n\n' +
+      '🔒 *Privacy:* Your location is only used to find nearby charging stations and is not stored permanently.\n\n' +
+      'Alternatively, you can type your address manually!'
+    );
+  }
+
+  /**
+   * Handle station selection from list
+   */
+  private async handleStationSelection(whatsappId: string, stationId: number, stationTitle: string): Promise<void> {
+    await whatsappService.sendButtonMessage(
+      whatsappId,
+      `🏢 *Selected: ${stationTitle}*\n\nWhat would you like to do?`,
+      [
+        { id: `book_station_${stationId}`, title: '⚡ Book Now' },
+        { id: `station_info_${stationId}`, title: '📋 More Info' },
+        { id: 'back_to_list', title: '⬅️ Back to List' },
+      ],
+      '🏢 Station'
+    );
+  }
+
+  /**
+   * Handle station booking (placeholder for Phase 4)
+   */
+  private async handleStationBooking(whatsappId: string, stationId: number): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      `⚡ *Booking Station ${stationId}*\n\nPreparing reservation system...\n\nThis feature will be available in Phase 4!`
+    );
+
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🚧 Coming Soon: Full booking system with queue management, real-time updates, and payment integration!',
+        [
+          { id: 'find_other_stations', title: '🔍 Find Others' },
+          { id: 'new_search', title: '🔍 New Search' },
+        ]
+      );
+    }, 2000);
+  }
+
+  /**
+   * Show detailed station information (placeholder for Phase 4)
+   */
+  private async showStationDetails(whatsappId: string, stationId: number): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      `📋 *Station Details*\n\nStation ID: ${stationId}\n\nLoading comprehensive information...\n\n` +
+      '• Real-time availability\n' +
+      '• Pricing details\n' +
+      '• Amenities nearby\n' +
+      '• Operating hours\n\n' +
+      'Detailed station information will be available in Phase 4!'
+    );
+
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        'What would you like to do?',
+        [
+          { id: `book_station_${stationId}`, title: '⚡ Book Now' },
+          { id: 'back_to_search', title: '⬅️ Back' },
+        ]
+      );
+    }, 2000);
   }
 }
 
+// Export singleton instance
 export const webhookController = new WebhookController();

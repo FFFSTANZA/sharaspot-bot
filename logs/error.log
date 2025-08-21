@@ -1,0 +1,755 @@
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:35:29 [ERROR]: TypeError: Cannot read properties of undefined (reading 'handleWebhook')
+    at AutomatedBotTester.runTestScenario (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:77:35)
+    at AutomatedBotTester.runAllTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/automated-bot-tester.ts:53:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runTests (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/testing/test-runner.ts:17:5) {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:36:45 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760004594",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ACuOjBiCb5gOWDWrWswNe3x"
+    }
+  }
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760005621",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ApYqg_92sH_6zYIEsmUvfSR"
+    }
+  }
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AJfO-hg5Vi8WKHBMW0XE7h1"
+    }
+  }
+}
+2025-08-21 12:36:46 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760006625",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AoODNP67id01kHGY2tkiCre"
+    }
+  }
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AHEbgLmJlBeBg3q3aFdaasg"
+    }
+  }
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AtcFwuEGA5smAAtZsyvo_v3"
+    }
+  }
+}
+2025-08-21 12:36:47 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AWiMCq3dgm-6kX2sqRmQCzy"
+    }
+  }
+}
+2025-08-21 12:36:48 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760007628",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AtIWygJ-_W2P0rjSTBVum8q"
+    }
+  }
+}
+2025-08-21 12:36:48 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ADCcRZ64rM1l1I5ZgEXU8V_"
+    }
+  }
+}
+2025-08-21 12:36:49 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760008633",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AZEDZv8YQZ82s26ZbVI8w5L"
+    }
+  }
+}
+2025-08-21 12:36:49 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ABpO1St40H8d4l05B_SAMKo"
+    }
+  }
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760009637",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AWOnhrmNAeIZFZUxxTMCXg9"
+    }
+  }
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ASLJ5ayzO2cmr7IVOIkWHHx"
+    }
+  }
+}
+2025-08-21 12:36:50 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AE2vBBxcgu5zKfBuApuh1jD"
+    }
+  }
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760010641",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A1hISMrceYEupKHk9-PPFkz"
+    }
+  }
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760011643",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A8znsz-lS--8C8MsDQep9ML"
+    }
+  }
+}
+2025-08-21 12:36:51 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A4NKb2RcKtafGoIPkgOwru1"
+    }
+  }
+}
+2025-08-21 12:36:52 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AB2FmCC20y_-skiYAtZmypC"
+    }
+  }
+}
+2025-08-21 12:36:52 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-21T07:06:52.649Z",
+      "2025-08-21T07:06:52.649Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-21 12:36:52 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:27 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760467284",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AFDuIWJVN7GHQbxNU4x8zsp"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760468323",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AudR9B2eq3eJAQX4zvYp_KO"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Ah3uB4MyL0hD5RlyZ2T0R3c"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760469328",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Aj--nn0nnsDyyMxqfnB1z_e"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AB9iH_apXuEzJnaF9X6ciQx"
+    }
+  }
+}
+2025-08-21 12:44:29 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AycI6soByx_4n2OaTzgj3Kc"
+    }
+  }
+}
+2025-08-21 12:44:30 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ArAsgbxgHQ_2fTpXKRxhti1"
+    }
+  }
+}
+2025-08-21 12:44:30 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760470335",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AmwEt0IVfF8Ti6wfX_xO63E"
+    }
+  }
+}
+2025-08-21 12:44:31 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Ags-7B4raP87__82SzhV8qV"
+    }
+  }
+}
+2025-08-21 12:44:31 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760471343",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AfNz425vsJIfDskL-uo-M6y"
+    }
+  }
+}
+2025-08-21 12:44:32 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A6-ERPu8L6P8kTeBS3C2C1w"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "Aj4JkvTbp7d-OCev9YnQsMw"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760472347",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "ArDqOhTU2f0wK3mR2aRGF3T"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760473356",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AnZNA5PVE3z-FtlEqMIPtU8"
+    }
+  }
+}
+2025-08-21 12:44:33 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "A_-p2ZpI_4VMmB5FrAxmF8m"
+    }
+  }
+}
+2025-08-21 12:44:34 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "As_CGfTnGQSF4IPfPtKDbrR"
+    }
+  }
+}
+2025-08-21 12:44:35 [ERROR]: ❌ Failed to mark message as read {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755760474359",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AQBKPa5fMI8r-QQjfFGi5fo"
+    }
+  }
+}
+2025-08-21 12:44:35 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-21T07:14:35.367Z",
+      "2025-08-21T07:14:35.367Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-21 12:44:35 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-21 12:44:35 [ERROR]: ❌ Failed to send text message {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Invalid OAuth access token - Cannot parse access token",
+      "type": "OAuthException",
+      "code": 190,
+      "fbtrace_id": "AyFzq8Li5TqGGL3KFdUHHIU"
+    }
+  }
+}
+2025-08-21 14:17:09 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AflPhyBA5XcPSLm7KNXAUr-"
+    }
+  }
+}
+2025-08-21 14:23:28 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "A7_lHntWHxsKryMQzdkEYEB"
+    }
+  }
+}
+2025-08-21 14:23:45 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button label is too long. Max length is 20"
+      },
+      "fbtrace_id": "A7xEQrOQ8mUn-4BSR0ZQKdE"
+    }
+  }
+}
+2025-08-21 14:26:41 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "A87AeC73bA2EkRoLCV04XuS"
+    }
+  }
+}
+2025-08-21 14:31:02 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "Ao2ejJTcnbgtKHyR9IjSuEN"
+    }
+  }
+}
+2025-08-21 14:31:45 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AMF3Kc8mxB8ry-0BLX5s_n3"
+    }
+  }
+}
+2025-08-21 14:32:15 [ERROR]: ❌ Failed to send button message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Button title length invalid. Min length: 1, Max length: 20"
+      },
+      "fbtrace_id": "AOCPwh_hZAQursNRBPB2UDh"
+    }
+  }
+}
+2025-08-21 15:15:05 [ERROR]: ❌ Failed to send list message {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": {
+    "error": {
+      "message": "(#131009) Parameter value is not valid",
+      "type": "OAuthException",
+      "code": 131009,
+      "error_data": {
+        "messaging_product": "whatsapp",
+        "details": "Total row count exceed max allowed count: 10"
+      },
+      "fbtrace_id": "ATNsxHzL6Hn8FbmxVWHHs3P"
+    }
+  }
+}
+2025-08-21 15:17:14 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "anna nagar",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-21 15:17:14 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "anna nagar",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      "11001011100001100100000111010011100",
+      "Anna Nagar, Tamil Nadu, India",
+      "Anna Nagar",
+      "Tamil Nadu",
+      "1",
+      "2025-08-21T09:47:14.129Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-21 15:17:14 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "searchTerm": "Anna Nagar",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919790294221",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      1,
+      "2025-08-21T09:47:14.250Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
