@@ -9,6 +9,8 @@ import { db } from '../db/connection';
 import { chargingStations } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
+
+
 export class BookingController {
   /**
    * Handle station booking with smart queue management
@@ -54,7 +56,7 @@ export class BookingController {
       );
     }
   }
-
+   
   /**
    * Process queue joining with smart optimization
    */
@@ -211,7 +213,7 @@ export class BookingController {
 
     // Send action options with contextual buttons
     setTimeout(async () => {
-      const buttons = this.getContextualButtons(stationId, analytics);
+      const buttons = this.getContextualButtons(station, analytics);
       
       await whatsappService.sendListMessage(
         whatsappId,
