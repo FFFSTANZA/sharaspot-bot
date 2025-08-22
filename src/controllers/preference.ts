@@ -21,9 +21,10 @@ interface OptimizedUserContext {
   whatsappId: string;
   preferenceData: PreferenceData;
   currentStep: PreferenceStep;
+  timestamp: number; // Add timestamp for context cleanup
 }
 
-export class OptimizedPreferenceController {
+export class PreferenceController {
   // Configuration objects for cleaner code
   private readonly STEPS = {
     VEHICLE_TYPE: 'vehicle_type' as const,
@@ -63,46 +64,97 @@ export class OptimizedPreferenceController {
     { id: 'Bajaj Chetak', title: 'Bajaj Chetak', desc: 'Classic electric scooter' }
   ];
 
+  // Internal context storage with cleanup mechanism
+  private contexts = new Map<string, OptimizedUserContext>();
+  private lastCleanup = Date.now();
+  
+  /**
+   * Infer vehicle type from model name
+   * Helper method to determine vehicle type when retrieving from user service
+   */
+  private inferVehicleTypeFromModel(evModel?: string): PreferenceData['vehicleType'] {
+    if (!evModel) return 'Any';
+    
+    const bikeModels = this.BIKE_MODELS.map(b => b.id.toLowerCase());
+    const carModels = [
+      ...this.CAR_MODELS.INDIAN.map(c => c.id.toLowerCase()),
+      ...this.CAR_MODELS.LUXURY.map(c => c.id.toLowerCase())
+    ];
+    
+    const modelLower = evModel.toLowerCase();
+    
+    if (bikeModels.some(bike => modelLower.includes(bike.toLowerCase()))) {
+      return 'Bike/Scooter';
+    }
+    
+    if (carModels.some(car => modelLower.includes(car.toLowerCase()))) {
+      return 'Car';
+    }
+    
+    // Default to Car for unknown models (more common)
+    return 'Car';
+  }
+
   /**
    * Main entry point - Start preference gathering
    */
   async startPreferenceGathering(whatsappId: string, isOnboarding = false): Promise<void> {
     try {
+      // Clean up old contexts periodically
+      this.maybeCleanupContexts();
+      
+      // Start preference flow in service
       await preferenceService.startPreferenceFlow(whatsappId, isOnboarding);
+      
+      // Initialize local context
       await this.initializeContext(whatsappId, isOnboarding);
+      
+      // Show first step
       await this.showStep(whatsappId, this.STEPS.VEHICLE_TYPE, { isOnboarding });
     } catch (error) {
-      logger.error('Failed to start preference gathering', { whatsappId, error });
+      logger.error('Failed to start preference gathering', { whatsappId, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Sorry, something went wrong. Please try again with "hi".');
     }
   }
 
   /**
-   * Universal response handler
+   * Universal response handler with improved error handling
    */
   async handlePreferenceResponse(whatsappId: string, responseType: 'button' | 'text' | 'list', responseValue: string): Promise<void> {
     try {
-      const context = this.getContext(whatsappId);
+      // Validate context
+      const context = this.getValidatedContext(whatsappId);
       if (!context) {
         await this.sendSessionExpired(whatsappId);
         return;
       }
 
-      const handlers = {
-        [this.STEPS.VEHICLE_TYPE]: () => this.handleVehicleType(whatsappId, responseValue, context),
-        [this.STEPS.EV_MODEL]: () => this.handleEVModel(whatsappId, responseType, responseValue, context),
-        [this.STEPS.CONNECTOR_TYPE]: () => this.handleConnectorType(whatsappId, responseValue, context),
-        [this.STEPS.CHARGING_INTENT]: () => this.handleChargingIntent(whatsappId, responseValue, context),
-        [this.STEPS.QUEUE_PREFERENCE]: () => this.handleQueuePreference(whatsappId, responseValue, context),
-        [this.STEPS.ADDRESS_INPUT]: () => this.handleAddressInput(whatsappId, responseValue, context)
-      };
-
-      const handler = handlers[context.currentStep as keyof typeof handlers];
-      if (handler) await handler();
-      else logger.warn('Unknown preference step', { whatsappId, step: context.currentStep });
-
+      // Handle response based on current step
+      switch (context.currentStep) {
+        case this.STEPS.VEHICLE_TYPE:
+          await this.handleVehicleType(whatsappId, responseValue, context);
+          break;
+        case this.STEPS.EV_MODEL:
+          await this.handleEVModel(whatsappId, responseType, responseValue, context);
+          break;
+        case this.STEPS.CONNECTOR_TYPE:
+          await this.handleConnectorType(whatsappId, responseValue, context);
+          break;
+        case this.STEPS.CHARGING_INTENT:
+          await this.handleChargingIntent(whatsappId, responseValue, context);
+          break;
+        case this.STEPS.QUEUE_PREFERENCE:
+          await this.handleQueuePreference(whatsappId, responseValue, context);
+          break;
+        case this.STEPS.ADDRESS_INPUT:
+          await this.handleAddressInput(whatsappId, responseValue, context);
+          break;
+        default:
+          logger.warn('Unknown preference step', { whatsappId, step: context.currentStep });
+          await whatsappService.sendTextMessage(whatsappId, '❓ Not sure what you mean. Type "help" for assistance.');
+      }
     } catch (error) {
-      logger.error('Failed to handle preference response', { whatsappId, error });
+      logger.error('Failed to handle preference response', { whatsappId, responseValue, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Something went wrong. Type "hi" to restart.');
     }
   }
@@ -111,15 +163,25 @@ export class OptimizedPreferenceController {
    * Dynamic step display system
    */
   private async showStep(whatsappId: string, step: PreferenceStep, options: any = {}): Promise<void> {
-    const stepHandlers = {
-      [this.STEPS.VEHICLE_TYPE]: () => this.showVehicleTypeStep(whatsappId, options.isOnboarding),
-      [this.STEPS.CONNECTOR_TYPE]: () => this.showConnectorTypeStep(whatsappId),
-      [this.STEPS.CHARGING_INTENT]: () => this.showChargingIntentStep(whatsappId),
-      [this.STEPS.QUEUE_PREFERENCE]: () => this.showQueuePreferenceStep(whatsappId)
-    };
-
-    const handler = stepHandlers[step as keyof typeof stepHandlers];
-    if (handler) await handler();
+    switch (step) {
+      case this.STEPS.VEHICLE_TYPE:
+        await this.showVehicleTypeStep(whatsappId, options.isOnboarding);
+        break;
+      case this.STEPS.EV_MODEL:
+        // EV model step is shown by vehicle type handler
+        break;
+      case this.STEPS.CONNECTOR_TYPE:
+        await this.showConnectorTypeStep(whatsappId);
+        break;
+      case this.STEPS.CHARGING_INTENT:
+        await this.showChargingIntentStep(whatsappId);
+        break;
+      case this.STEPS.QUEUE_PREFERENCE:
+        await this.showQueuePreferenceStep(whatsappId);
+        break;
+      default:
+        logger.warn('Attempted to show unknown step', { whatsappId, step });
+    }
   }
 
   /**
@@ -153,11 +215,19 @@ export class OptimizedPreferenceController {
     };
 
     const vehicleType = typeMap[responseValue as keyof typeof typeMap];
-    if (!vehicleType) return;
+    if (!vehicleType) {
+      await whatsappService.sendTextMessage(whatsappId, '❓ Please select a vehicle type from the options above.');
+      return;
+    }
 
+    // Update context
     context.preferenceData.vehicleType = vehicleType;
+    this.updateContext(whatsappId, context);
+    
+    // Confirm selection
     await this.sendConfirmation(whatsappId, `Vehicle type: *${vehicleType}*`);
 
+    // Move to next step
     if (vehicleType === 'Any') {
       await this.moveToStep(whatsappId, context, this.STEPS.CONNECTOR_TYPE);
     } else {
@@ -214,37 +284,42 @@ export class OptimizedPreferenceController {
     
     const rows = [
       ...models.map(car => ({ id: car.id, title: car.title, description: car.desc })),
-      { id: 'type_custom', title: '⌨️ Type Model', description: 'Enter manually' }
+      { id: 'type_custom', title: '⌨️ Type Model', description: 'Enter manually' },
+      { id: 'back_to_categories', title: '⬅️ Back', description: 'Return to categories' }
     ];
 
     await whatsappService.sendListMessage(whatsappId, title, 'Select Car', [{ title: 'Models', rows }]);
   }
 
   /**
-   * EV model response handler
+   * EV model response handler with improved category navigation
    */
   private async handleEVModel(whatsappId: string, responseType: string, responseValue: string, context: OptimizedUserContext): Promise<void> {
     // Handle category navigation
-    const categoryHandlers = {
-      'indian_cars': async () => { await this.showCarCategory(whatsappId, 'indian'); },
-      'luxury_cars': async () => { await this.showCarCategory(whatsappId, 'luxury'); },
-      'type_custom': async () => { await this.requestCustomModel(whatsappId); },
-      'skip_model': async () => { await this.setModel(whatsappId, context, 'Not specified'); }
-    };
-
-    const handler = categoryHandlers[responseValue as keyof typeof categoryHandlers];
-    if (handler) {
-      await handler();
+    if (responseValue === 'indian_cars') {
+      await this.showCarCategory(whatsappId, 'indian');
+      return;
+    } else if (responseValue === 'luxury_cars') {
+      await this.showCarCategory(whatsappId, 'luxury'); 
+      return;
+    } else if (responseValue === 'type_custom') {
+      await this.requestCustomModel(whatsappId);
+      return;
+    } else if (responseValue === 'skip_model') {
+      await this.setModel(whatsappId, context, 'Not specified');
+      return;
+    } else if (responseValue === 'back_to_categories') {
+      await this.showCarModelsStep(whatsappId);
       return;
     }
 
-    // Handle model selection
+    // Handle model selection (from list or text input)
     if (responseType === 'list' || responseType === 'text') {
       const model = responseValue.trim();
       if (model.length > 2) {
         await this.setModel(whatsappId, context, model);
       } else {
-        await whatsappService.sendTextMessage(whatsappId, '❓ Please provide a valid vehicle model.');
+        await whatsappService.sendTextMessage(whatsappId, '❓ Please provide a valid vehicle model (at least 3 characters).');
       }
     }
   }
@@ -252,8 +327,12 @@ export class OptimizedPreferenceController {
   /**
    * Set model and proceed
    */
+  /**
+   * Set model and proceed
+   */
   private async setModel(whatsappId: string, context: OptimizedUserContext, model: string): Promise<void> {
     context.preferenceData.evModel = model;
+    this.updateContext(whatsappId, context);
     await this.sendConfirmation(whatsappId, `Your vehicle: *${model}*`);
     await this.moveToStep(whatsappId, context, this.STEPS.CONNECTOR_TYPE);
   }
@@ -272,8 +351,10 @@ export class OptimizedPreferenceController {
    * Connector type step
    */
   private async showConnectorTypeStep(whatsappId: string): Promise<void> {
-    const context = this.getContext(whatsappId);
-    const isBike = context?.preferenceData.vehicleType === 'Bike/Scooter';
+    const context = this.getValidatedContext(whatsappId);
+    if (!context) return;
+    
+    const isBike = context.preferenceData.vehicleType === 'Bike/Scooter';
     
     const buttons = isBike 
       ? [
@@ -308,13 +389,15 @@ export class OptimizedPreferenceController {
   private async handleConnectorType(whatsappId: string, responseValue: string, context: OptimizedUserContext): Promise<void> {
     const validConnectors = ['CCS2', 'Type2', 'CHAdeMO', 'Standard', 'Fast Charge', 'Any'];
     
-    if (validConnectors.includes(responseValue)) {
-      context.preferenceData.connectorType = responseValue;
-      await this.sendConfirmation(whatsappId, `Connector: *${responseValue}*`);
-      await this.moveToStep(whatsappId, context, this.STEPS.CHARGING_INTENT);
-    } else {
+    if (!validConnectors.includes(responseValue)) {
       await whatsappService.sendTextMessage(whatsappId, '❓ Please select a connector type from the options above.');
+      return;
     }
+    
+    context.preferenceData.connectorType = responseValue;
+    this.updateContext(whatsappId, context);
+    await this.sendConfirmation(whatsappId, `Connector: *${responseValue}*`);
+    await this.moveToStep(whatsappId, context, this.STEPS.CHARGING_INTENT);
   }
 
   /**
@@ -339,13 +422,15 @@ export class OptimizedPreferenceController {
   private async handleChargingIntent(whatsappId: string, responseValue: string, context: OptimizedUserContext): Promise<void> {
     const validIntents = ['Quick Top-up', 'Full Charge', 'Emergency'];
     
-    if (validIntents.includes(responseValue)) {
-      context.preferenceData.chargingIntent = responseValue;
-      await this.sendConfirmation(whatsappId, `Charging style: *${responseValue}*`);
-      await this.moveToStep(whatsappId, context, this.STEPS.QUEUE_PREFERENCE);
-    } else {
+    if (!validIntents.includes(responseValue)) {
       await whatsappService.sendTextMessage(whatsappId, '❓ Please select a charging style from the options above.');
+      return;
     }
+    
+    context.preferenceData.chargingIntent = responseValue;
+    this.updateContext(whatsappId, context);
+    await this.sendConfirmation(whatsappId, `Charging style: *${responseValue}*`);
+    await this.moveToStep(whatsappId, context, this.STEPS.QUEUE_PREFERENCE);
   }
 
   /**
@@ -374,23 +459,35 @@ export class OptimizedPreferenceController {
   private async handleQueuePreference(whatsappId: string, responseValue: string, context: OptimizedUserContext): Promise<void> {
     const validPreferences = ['Free Now', 'Wait 15m', 'Wait 30m', 'Any Queue'];
     
-    if (validPreferences.includes(responseValue)) {
-      context.preferenceData.queuePreference = responseValue;
-      await this.sendConfirmation(whatsappId, `Queue preference: *${responseValue}*`);
-      await this.completePreferenceSetup(whatsappId, context);
-    } else {
+    if (!validPreferences.includes(responseValue)) {
       await whatsappService.sendTextMessage(whatsappId, '❓ Please select a queue preference from the options above.');
+      return;
     }
+    
+    context.preferenceData.queuePreference = responseValue;
+    this.updateContext(whatsappId, context);
+    await this.sendConfirmation(whatsappId, `Queue preference: *${responseValue}*`);
+    await this.completePreferenceSetup(whatsappId, context);
   }
 
   /**
-   * Complete preference setup
+   * Complete preference setup with validation
    */
   private async completePreferenceSetup(whatsappId: string, context: OptimizedUserContext): Promise<void> {
     try {
-      // Save preferences with proper type conversion
-      const standardContext = this.convertToStandardContext(context);
-      this.updateContext(whatsappId, standardContext);
+      // Validate preferences before saving
+      const validation = this.validatePreferenceData(context.preferenceData);
+      if (!validation.isValid) {
+        logger.warn('Invalid preference data', { whatsappId, errors: validation.errors });
+        await this.sendError(whatsappId, `Unable to save preferences: ${validation.errors.join(', ')}. Please try again.`);
+        return;
+      }
+      
+      // Update context step to completed
+      context.currentStep = this.STEPS.COMPLETED;
+      this.updateContext(whatsappId, context);
+      
+      // Save preferences to service
       const updatedUser = await preferenceService.savePreferences(whatsappId);
       
       if (!updatedUser) {
@@ -402,16 +499,16 @@ export class OptimizedPreferenceController {
       await whatsappService.sendTextMessage(whatsappId, this.createSummaryCard(context.preferenceData));
 
       // Auto-proceed to location
-      setTimeout(() => this.requestLocationWithOptions(whatsappId, context.isOnboarding), 2500);
+      setTimeout(() => this.requestLocationWithOptions(whatsappId, context.isOnboarding), 2000);
 
     } catch (error) {
-      logger.error('Failed to complete preference setup', { whatsappId, error });
+      logger.error('Failed to complete preference setup', { whatsappId, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Something went wrong saving preferences. Please try again.');
     }
   }
 
   /**
-   * Simplified location request (removed popular areas)
+   * Location request with options
    */
   private async requestLocationWithOptions(whatsappId: string, isOnboarding: boolean): Promise<void> {
     const locationText = isOnboarding ? '📍 *Let\'s Find Charging Stations!*' : '📍 *Ready to Find Stations!*';
@@ -433,31 +530,40 @@ export class OptimizedPreferenceController {
   }
 
   /**
-   * Handle location button presses (simplified)
+   * Handle location button presses
    */
   async handleLocationButtonPress(whatsappId: string, buttonId: string): Promise<void> {
     try {
-      const handlers = {
-        'gps_location': async () => { await this.showLocationHelp(whatsappId); },
-        'type_address': async () => { await this.requestAddressInput(whatsappId); },
-        'indian_cars': async () => { await this.showCarCategory(whatsappId, 'indian'); },
-        'luxury_cars': async () => { await this.showCarCategory(whatsappId, 'luxury'); }
-      };
+      const context = this.getValidatedContext(whatsappId);
+      if (!context) {
+        await this.sendSessionExpired(whatsappId);
+        return;
+      }
 
-      const handler = handlers[buttonId as keyof typeof handlers];
-      if (handler) {
-        await handler();
-      } else {
-        await whatsappService.sendTextMessage(whatsappId, '❓ Sorry, I didn\'t understand that option. Please try again.');
+      switch (buttonId) {
+        case 'gps_location':
+          await this.showLocationHelp(whatsappId);
+          break;
+        case 'type_address':
+          await this.requestAddressInput(whatsappId);
+          break;
+        case 'indian_cars':
+          await this.showCarCategory(whatsappId, 'indian');
+          break;
+        case 'luxury_cars':
+          await this.showCarCategory(whatsappId, 'luxury');
+          break;
+        default:
+          await whatsappService.sendTextMessage(whatsappId, '❓ Sorry, I didn\'t understand that option. Please try again.');
       }
     } catch (error) {
-      logger.error('Error handling button press', { whatsappId, buttonId, error });
+      logger.error('Error handling button press', { whatsappId, buttonId, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Something went wrong. Please try again.');
     }
   }
 
   /**
-   * Show simplified location help
+   * Show location help
    */
   private async showLocationHelp(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
@@ -481,6 +587,9 @@ export class OptimizedPreferenceController {
    * Request address input
    */
   private async requestAddressInput(whatsappId: string): Promise<void> {
+    const context = this.getValidatedContext(whatsappId);
+    if (!context) return;
+    
     await whatsappService.sendTextMessage(
       whatsappId,
       '🗺️ *Type Your Location* 📍\n\n' +
@@ -488,11 +597,8 @@ export class OptimizedPreferenceController {
       '👇 Just type your address:'
     );
 
-    const context = this.getContext(whatsappId);
-    if (context) {
-      context.currentStep = this.STEPS.ADDRESS_INPUT;
-      this.updateContext(whatsappId, context);
-    }
+    context.currentStep = this.STEPS.ADDRESS_INPUT;
+    this.updateContext(whatsappId, context);
   }
 
   /**
@@ -500,7 +606,7 @@ export class OptimizedPreferenceController {
    */
   private async handleAddressInput(whatsappId: string, address: string, context: OptimizedUserContext): Promise<void> {
     if (address.trim().length < 3) {
-      await whatsappService.sendTextMessage(whatsappId, '❓ Please provide a more detailed address.');
+      await whatsappService.sendTextMessage(whatsappId, '❓ Please provide a more detailed address (at least 3 characters).');
       return;
     }
 
@@ -515,60 +621,101 @@ export class OptimizedPreferenceController {
   }
 
   /**
-   * Utility Methods
+   * CONTEXT MANAGEMENT METHODS
    */
   
+  /**
+   * Initialize context with timestamp
+   */
   private async initializeContext(whatsappId: string, isOnboarding: boolean): Promise<void> {
     // Create internal context
     const context: OptimizedUserContext = {
       isOnboarding,
       whatsappId,
       currentStep: this.STEPS.VEHICLE_TYPE,
-      preferenceData: {}
+      preferenceData: {},
+      timestamp: Date.now()
     };
     
     // Store in memory (internal tracking)
     this.contexts.set(whatsappId, context);
   }
 
+  /**
+   * Move to next step
+   */
   private async moveToStep(whatsappId: string, context: OptimizedUserContext, step: PreferenceStep): Promise<void> {
     context.currentStep = step;
     this.updateContext(whatsappId, context);
     await this.showStep(whatsappId, step);
   }
 
-  // Internal context storage
-  private contexts = new Map<string, OptimizedUserContext>();
-
-  private getContext(whatsappId: string): OptimizedUserContext | null {
-    return this.contexts.get(whatsappId) || null;
+  /**
+   * Get context with validation
+   */
+  private getValidatedContext(whatsappId: string): OptimizedUserContext | null {
+    const context = this.contexts.get(whatsappId);
+    
+    if (!context) {
+      logger.warn('No context found for user', { whatsappId });
+      return null;
+    }
+    
+    // Validate context has required fields
+    if (!context.whatsappId || !context.currentStep) {
+      logger.warn('Invalid context structure', { whatsappId, context });
+      return null;
+    }
+    
+    return context;
   }
 
-    private updateContext(whatsappId: string, context: OptimizedUserContext): void {
+  /**
+   * Update context with safe type conversion
+   */
+  private updateContext(whatsappId: string, context: OptimizedUserContext): void {
+    // Update timestamp
+    context.timestamp = Date.now();
+    
     // Store internally
     this.contexts.set(whatsappId, context);
     
     // Convert and update in preferenceService
-    const compatibleContext = this.convertToStandardContext(context);
-    preferenceService.updateUserContext(whatsappId, compatibleContext);
+    const serviceContext = this.convertToServiceContext(context);
+    preferenceService.updateUserContext(whatsappId, serviceContext);
   }
   
-  private convertToStandardContext(context: OptimizedUserContext): UserContext {
+  /**
+   * Convert to format expected by preference service
+   */
+  private convertToServiceContext(context: OptimizedUserContext): UserContext {
+    // Map our steps to service steps
+    const stepMap: Record<PreferenceStep, UserContext['currentStep']> = {
+      'vehicle_type': 'ev_model',
+      'ev_model': 'ev_model',
+      'connector_type': 'connector_type',
+      'charging_intent': 'charging_intent', 
+      'queue_preference': 'queue_preference',
+      'address_input': 'completed',
+      'completed': 'completed'
+    };
+    
     return {
-      whatsappId: context.whatsappId, // Add the missing whatsappId field
+      whatsappId: context.whatsappId,
       isOnboarding: context.isOnboarding,
-      currentStep: context.currentStep === 'vehicle_type' ? 'ev_model' : 
-                  context.currentStep === 'address_input' ? 'completed' :
-                  context.currentStep as UserContext['currentStep'],
+      currentStep: stepMap[context.currentStep] || 'completed',
       preferenceData: {
-        evModel: context.preferenceData.evModel,
-        connectorType: context.preferenceData.connectorType,
-        chargingIntent: context.preferenceData.chargingIntent,
-        queuePreference: context.preferenceData.queuePreference
+        evModel: context.preferenceData.evModel || '',
+        connectorType: context.preferenceData.connectorType || '',
+        chargingIntent: context.preferenceData.chargingIntent || '',
+        queuePreference: context.preferenceData.queuePreference || ''
       }
     };
   }
 
+  /**
+   * Create beautiful summary card for preferences
+   */
   private createSummaryCard(data: PreferenceData): string {
     return `🎉 *Setup Complete!* 🎉\n\n` +
       `╭─ 📋 *Your Profile* ─╮\n` +
@@ -581,32 +728,107 @@ export class OptimizedPreferenceController {
       `✅ Perfect! Now let's find charging stations near you.`;
   }
 
+  /**
+   * Send confirmation message
+   */
   private async sendConfirmation(whatsappId: string, message: string): Promise<void> {
     await whatsappService.sendTextMessage(whatsappId, `✅ ${message}`);
   }
 
+  /**
+   * Send error message
+   */
   private async sendError(whatsappId: string, message: string): Promise<void> {
     await whatsappService.sendTextMessage(whatsappId, `❌ ${message}`);
   }
 
+  /**
+   * Session expired notification
+   */
   private async sendSessionExpired(whatsappId: string): Promise<void> {
     logger.warn('No preference context found', { whatsappId });
     await whatsappService.sendTextMessage(whatsappId, '⚠️ Session expired. Please start again with "hi".');
   }
 
   /**
-   * Public API Methods
+   * Format error for logging
+   */
+  private formatError(error: unknown): string {
+    if (error instanceof Error) {
+      return `${error.message} (${error.stack || 'no stack'})`;
+    }
+    return String(error);
+  }
+
+  /**
+   * Clean up contexts to prevent memory leaks
+   */
+  private maybeCleanupContexts(): void {
+    const now = Date.now();
+    // Only clean up every 10 minutes
+    if (now - this.lastCleanup < 10 * 60 * 1000) {
+      return;
+    }
+    
+    this.lastCleanup = now;
+    const oneHourAgo = now - (60 * 60 * 1000);
+    let cleanupCount = 0;
+    
+    for (const [whatsappId, context] of this.contexts.entries()) {
+      // Remove contexts older than 1 hour
+      if (context.timestamp < oneHourAgo) {
+        this.contexts.delete(whatsappId);
+        cleanupCount++;
+      }
+    }
+    
+    if (cleanupCount > 0) {
+      logger.info(`Cleaned up ${cleanupCount} expired contexts`);
+    }
+  }
+
+  /**
+   * PUBLIC API METHODS
    */
 
   /**
-   * Show preference summary
+   * Show preference summary with validation
    */
   async showPreferenceSummary(whatsappId: string): Promise<void> {
     try {
-      const context = this.getContext(whatsappId);
+      // First try to get from internal context
+      let context = this.getValidatedContext(whatsappId);
+      
+      // If not found, try to get from user service
+      if (!context) {
+        const user = await userService.getUserByWhatsAppId(whatsappId);
+        if (user) {
+          // Convert user preferences to our format
+          context = {
+            whatsappId,
+            isOnboarding: false,
+            currentStep: this.STEPS.COMPLETED,
+            preferenceData: {
+              evModel: user.evModel || undefined,
+              connectorType: user.connectorType || undefined,
+              chargingIntent: user.chargingIntent || undefined,
+              queuePreference: user.queuePreference || undefined,
+              vehicleType: this.inferVehicleTypeFromModel(user.evModel || undefined)
+            },
+            timestamp: Date.now()
+          };
+        }
+      }
+      
       if (!context?.preferenceData) {
         await whatsappService.sendTextMessage(whatsappId, '❓ No preferences found. Type "hi" to set up.');
         return;
+      }
+
+      // Validate the data
+      const validation = this.validatePreferenceData(context.preferenceData);
+      if (!validation.isValid) {
+        logger.warn('Invalid preference data in summary', { whatsappId, errors: validation.errors });
       }
 
       const summaryCard = this.createSummaryCard(context.preferenceData);
@@ -615,7 +837,7 @@ export class OptimizedPreferenceController {
         `📋 *Your Current Preferences:*\n\n${summaryCard}\n\n💡 Type "settings" to update.`
       );
     } catch (error) {
-      logger.error('Error showing preference summary', { whatsappId, error });
+      logger.error('Error showing preference summary', { whatsappId, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Unable to show preferences. Please try again.');
     }
   }
@@ -629,7 +851,8 @@ export class OptimizedPreferenceController {
       this.contexts.delete(whatsappId);
       
       // Clear service context
-      preferenceService.updateUserContext(whatsappId, {
+      await preferenceService.updateUserContext(whatsappId, {
+        whatsappId,
         isOnboarding: false,
         currentStep: 'completed',
         preferenceData: {}
@@ -640,24 +863,58 @@ export class OptimizedPreferenceController {
         '🔄 *Preferences Reset*\n\nYour preferences have been cleared. Type "hi" to set them up again.'
       );
     } catch (error) {
-      logger.error('Error resetting preferences', { whatsappId, error });
+      logger.error('Error resetting preferences', { whatsappId, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Unable to reset preferences. Please try again.');
     }
   }
 
   /**
-   * Quick preference update
+   * Quick preference update with validation
    */
   async quickUpdatePreference(whatsappId: string, field: keyof PreferenceData, value: string): Promise<void> {
     try {
-      const context = this.getContext(whatsappId);
+      // Get context with validation
+      let context = this.getValidatedContext(whatsappId);
+      
+      // If no context exists, try to get from user service
       if (!context) {
-        await whatsappService.sendTextMessage(whatsappId, '❓ No preferences found. Please set up first.');
-        return;
+        const user = await userService.getUserByWhatsAppId(whatsappId);
+        if (user) {
+          // Create a new context
+          context = {
+            whatsappId,
+            isOnboarding: false,
+            currentStep: this.STEPS.COMPLETED,
+            preferenceData: {
+              evModel: user.evModel || undefined,
+              connectorType: user.connectorType || undefined,
+              chargingIntent: user.chargingIntent || undefined,
+              queuePreference: user.queuePreference || undefined,
+              vehicleType: this.inferVehicleTypeFromModel(user.evModel || undefined)
+            },
+            timestamp: Date.now()
+          };
+          this.contexts.set(whatsappId, context);
+        } else {
+          await whatsappService.sendTextMessage(whatsappId, '❓ No preferences found. Please set up first with "hi".');
+          return;
+        }
       }
 
-      // Type-safe field update
+      // Update the field
       (context.preferenceData as any)[field] = value;
+      
+      // Validate the update
+      const validation = this.validateFieldValue(field, value);
+      if (!validation.isValid) {
+        await whatsappService.sendTextMessage(
+          whatsappId, 
+          `❌ Invalid value for ${field}: ${validation.error}. Please try again.`
+        );
+        return;
+      }
+      
+      // Save the update
       this.updateContext(whatsappId, context);
       await preferenceService.savePreferences(whatsappId);
 
@@ -666,9 +923,43 @@ export class OptimizedPreferenceController {
         `✅ Updated ${field}: *${value}*\n\nType "profile" to see all preferences.`
       );
     } catch (error) {
-      logger.error('Error updating preference', { whatsappId, field, value, error });
+      logger.error('Error updating preference', { whatsappId, field, value, error: this.formatError(error) });
       await this.sendError(whatsappId, 'Unable to update preference. Please try again.');
     }
+  }
+
+  /**
+   * Validate a single field
+   */
+  private validateFieldValue(field: keyof PreferenceData, value: string): { isValid: boolean; error?: string } {
+    switch (field) {
+      case 'vehicleType':
+        if (!['Car', 'Bike/Scooter', 'Any'].includes(value)) {
+          return { isValid: false, error: 'Must be Car, Bike/Scooter, or Any' };
+        }
+        break;
+      case 'connectorType':
+        if (!['CCS2', 'Type2', 'CHAdeMO', 'Standard', 'Fast Charge', 'Any'].includes(value)) {
+          return { isValid: false, error: 'Invalid connector type' };
+        }
+        break;
+      case 'chargingIntent':
+        if (!['Quick Top-up', 'Full Charge', 'Emergency'].includes(value)) {
+          return { isValid: false, error: 'Invalid charging intent' };
+        }
+        break;
+      case 'queuePreference':
+        if (!['Free Now', 'Wait 15m', 'Wait 30m', 'Any Queue'].includes(value)) {
+          return { isValid: false, error: 'Invalid queue preference' };
+        }
+        break;
+      case 'evModel':
+        if (value.length < 2 || value.length > 100) {
+          return { isValid: false, error: 'Model name must be between 2-100 characters' };
+        }
+        break;
+    }
+    return { isValid: true };
   }
 
   /**
@@ -677,16 +968,26 @@ export class OptimizedPreferenceController {
   validatePreferenceData(data: PreferenceData): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    const validations = [
-      { field: 'vehicleType', valid: !data.vehicleType || ['Car', 'Bike/Scooter', 'Any'].includes(data.vehicleType) },
-      { field: 'connectorType', valid: !data.connectorType || ['CCS2', 'Type2', 'CHAdeMO', 'Standard', 'Fast Charge', 'Any'].includes(data.connectorType) },
-      { field: 'chargingIntent', valid: !data.chargingIntent || ['Quick Top-up', 'Full Charge', 'Emergency'].includes(data.chargingIntent) },
-      { field: 'queuePreference', valid: !data.queuePreference || ['Free Now', 'Wait 15m', 'Wait 30m', 'Any Queue'].includes(data.queuePreference) }
-    ];
-
-    validations.forEach(({ field, valid }) => {
-      if (!valid) errors.push(`Invalid ${field}`);
-    });
+    // Only validate fields that are present
+    if (data.vehicleType && !['Car', 'Bike/Scooter', 'Any'].includes(data.vehicleType)) {
+      errors.push('Invalid vehicle type');
+    }
+    
+    if (data.connectorType && !['CCS2', 'Type2', 'CHAdeMO', 'Standard', 'Fast Charge', 'Any'].includes(data.connectorType)) {
+      errors.push('Invalid connector type');
+    }
+    
+    if (data.chargingIntent && !['Quick Top-up', 'Full Charge', 'Emergency'].includes(data.chargingIntent)) {
+      errors.push('Invalid charging intent');
+    }
+    
+    if (data.queuePreference && !['Free Now', 'Wait 15m', 'Wait 30m', 'Any Queue'].includes(data.queuePreference)) {
+      errors.push('Invalid queue preference');
+    }
+    
+    if (data.evModel && (data.evModel.length < 2 || data.evModel.length > 100)) {
+      errors.push('EV model must be between 2-100 characters');
+    }
 
     return { isValid: errors.length === 0, errors };
   }
@@ -696,13 +997,31 @@ export class OptimizedPreferenceController {
    */
   hasCompletedPreferences(whatsappId: string): boolean {
     try {
-      const context = this.getContext(whatsappId);
-      return context?.currentStep === this.STEPS.COMPLETED && 
-             !!(context?.preferenceData?.evModel && 
-                context?.preferenceData?.connectorType && 
-                context?.preferenceData?.chargingIntent);
+      const context = this.getValidatedContext(whatsappId);
+      
+      // If no context, try to get from service
+      if (!context) {
+        // Use sync check to avoid async issues
+        return false;
+      }
+      
+      // Check for required fields based on vehicle type
+      const hasRequiredFields = !!(
+        context.preferenceData.connectorType && 
+        context.preferenceData.chargingIntent
+      );
+      
+      // Vehicle type and model checks
+      const hasVehicleInfo = !!(
+        context.preferenceData.vehicleType &&
+        (context.preferenceData.vehicleType === 'Any' || context.preferenceData.evModel)
+      );
+      
+      return context.currentStep === this.STEPS.COMPLETED && 
+             hasRequiredFields && 
+             hasVehicleInfo;
     } catch (error) {
-      logger.error('Error checking preference completion', { whatsappId, error });
+      logger.error('Error checking preference completion', { whatsappId, error: this.formatError(error) });
       return false;
     }
   }
@@ -712,60 +1031,10 @@ export class OptimizedPreferenceController {
    */
   getCurrentStep(whatsappId: string): PreferenceStep | null {
     try {
-      return this.getContext(whatsappId)?.currentStep || null;
+      return this.getValidatedContext(whatsappId)?.currentStep || null;
     } catch (error) {
-      logger.error('Error getting current step', { whatsappId, error });
+      logger.error('Error getting current step', { whatsappId, error: this.formatError(error) });
       return null;
-    }
-  }
-
-  /**
-   * Export/Import methods for backup
-   */
-  async exportPreferences(whatsappId: string): Promise<PreferenceData | null> {
-    try {
-      return this.getContext(whatsappId)?.preferenceData || null;
-    } catch (error) {
-      logger.error('Error exporting preferences', { whatsappId, error });
-      return null;
-    }
-  }
-
-  async importPreferences(whatsappId: string, data: PreferenceData): Promise<boolean> {
-    try {
-      const validation = this.validatePreferenceData(data);
-      if (!validation.isValid) {
-        logger.warn('Invalid preference data for import', { whatsappId, errors: validation.errors });
-        return false;
-      }
-
-      const context = this.getContext(whatsappId);
-      if (context) {
-        context.preferenceData = data;
-        this.updateContext(whatsappId, context);
-        await preferenceService.savePreferences(whatsappId);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      logger.error('Error importing preferences', { whatsappId, error });
-      return false;
-    }
-  }
-
-  /**
-   * Clean up contexts (call this periodically to prevent memory leaks)
-   */
-  cleanupContexts(): void {
-    // Remove contexts older than 1 hour
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    for (const [whatsappId, context] of this.contexts.entries()) {
-      // You could add a timestamp to contexts and clean based on that
-      // For now, just keep a reasonable size limit
-      if (this.contexts.size > 1000) {
-        this.contexts.delete(whatsappId);
-        break;
-      }
     }
   }
 
@@ -777,9 +1046,5 @@ export class OptimizedPreferenceController {
   }
 }
 
-// Export instances
-export const optimizedPreferenceController = new OptimizedPreferenceController();
-
-// Backward compatibility
-export const enhancedPreferenceController = optimizedPreferenceController;
-export const preferenceController = optimizedPreferenceController;
+// Export singleton instance
+export const preferenceController = new PreferenceController();

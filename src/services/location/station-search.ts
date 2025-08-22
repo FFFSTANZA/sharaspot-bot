@@ -1,15 +1,13 @@
-// ===============================================
-// 📄 src/services/location/station-search.ts - ERROR-FREE Implementation
-// ===============================================
-
+// src/services/location/station-search.ts - FIXED VERSION WITH CORRECT TYPE HANDLING
 import { db } from '../../config/database';
 import { chargingStations, users } from '../../db/schema';
 import { logger } from '../../utils/logger';
 import { eq, and, or, gte, lte, ne, desc, asc, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
+import { getDistance } from 'geolib';
 
 // ===============================================
-// TYPES & INTERFACES
+// TYPES & INTERFACES - ENHANCED WITH STRICT TYPING
 // ===============================================
 
 export interface StationSearchOptions {
@@ -56,32 +54,43 @@ export interface StationSearchResult {
   };
 }
 
-// Fix the RawStationData interface to match actual database schema
+// Enhanced type safety for database records
 interface RawStationData {
   id: number;
   name: string;
   address: string;
-  latitude: string;
-  longitude: string;
+  latitude: string | number;  // Handle both string and number types
+  longitude: string | number; // Handle both string and number types
   totalPorts: number | null;
   availablePorts: number | null;
-  connectorTypes: unknown;
+  connectorTypes: unknown;     // Will properly parse this
   maxPowerKw: number | null;
-  pricePerKwh: string;
+  pricePerKwh: string | number | null;
   isOpen: boolean | null;
   isActive: boolean | null;
   isPaused: boolean | null;
-  currentQueueLength: number | null;  // Allow null
-  maxQueueLength: number | null;      // Allow null
-  averageSessionMinutes: number | null; // Allow null
+  currentQueueLength: number | null;
+  maxQueueLength: number | null;
+  averageSessionMinutes: number | null;
   ownerWhatsappId: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
   distance?: number;
 }
 
+// User preferences type
+interface UserPreferences {
+  vehicleType?: string;
+  connectorType?: string;
+  chargingIntent?: string;
+  queuePreference?: string;
+  maxDistance?: number;
+  maxPrice?: number;
+  [key: string]: any; // Allow additional fields
+}
+
 // ===============================================
-// STATION SEARCH SERVICE
+// STATION SEARCH SERVICE - IMPROVED VERSION
 // ===============================================
 
 export class StationSearchService {
@@ -100,22 +109,47 @@ export class StationSearchService {
       return await this.simpleSearch(options);
 
     } catch (error) {
-      logger.error('Station search failed', { error, options });
+      logger.error('Station search failed', { 
+        error: error instanceof Error ? error.message : String(error), 
+        options 
+      });
       return this.emptyResult(options);
     }
   }
 
   /**
-   * Simple search implementation (JavaScript-based filtering)
+   * Create empty result for error cases
+   */
+  private emptyResult(options: StationSearchOptions): StationSearchResult {
+    return {
+      stations: [],
+      totalCount: 0,
+      hasMore: false,
+      searchLocation: {
+        latitude: options.latitude,
+        longitude: options.longitude
+      }
+    };
+  }
+
+  /**
+   * Simple search implementation with improved type safety
    */
   private async simpleSearch(options: StationSearchOptions): Promise<StationSearchResult> {
-    const { latitude, longitude, radius = 25 } = options;
+    const { 
+      latitude, 
+      longitude, 
+      radius = 25, 
+      maxResults = 10, 
+      offset = 0,
+      availableOnly = false 
+    } = options;
 
     try {
       // Get user preferences
       const userPrefs = await this.getUserPreferences(options.userWhatsapp);
 
-      // Get all active stations with proper type handling
+      // Get all active stations
       const rawStations = await db
         .select()
         .from(chargingStations)
@@ -126,137 +160,180 @@ export class StationSearchService {
           )
         );
 
-      // Convert to our format with null safety
-      const stations: RawStationData[] = rawStations.map(station => ({
-        ...station,
-        isOpen: station.isOpen ?? false,
-        isActive: station.isActive ?? false,
-        isPaused: station.isPaused ?? false,
-      }));
+      // Step 1: Convert raw data to our format with proper type handling
+      const stationsWithDistance = rawStations.map(station => {
+        // Ensure latitude and longitude are numbers
+        const stationLat = typeof station.latitude === 'string' 
+          ? parseFloat(station.latitude) 
+          : Number(station.latitude);
+          
+        const stationLng = typeof station.longitude === 'string' 
+          ? parseFloat(station.longitude) 
+          : Number(station.longitude);
+        
+        // Calculate distance with null checking
+        let distance = 0;
+        if (!isNaN(stationLat) && !isNaN(stationLng) && 
+            !isNaN(latitude) && !isNaN(longitude)) {
+          try {
+            distance = getDistance(
+              { latitude, longitude },
+              { latitude: stationLat, longitude: stationLng }
+            ) / 1000; // Convert to kilometers
+          } catch (e) {
+            logger.warn('Distance calculation failed', { 
+              error: e instanceof Error ? e.message : String(e),
+              coords: { userLat: latitude, userLng: longitude, stationLat, stationLng }
+            });
+          }
+        }
 
-      // Calculate distances and apply radius filter
-      let filteredStations = this.addDistanceCalculation(stations, latitude, longitude)
-        .filter(station => station.distance <= radius);
+        return {
+          ...station,
+          latitude: stationLat,
+          longitude: stationLng,
+          distance
+        } as RawStationData & { distance: number };
+      });
 
-      // Apply additional filters
-      filteredStations = this.applyJavaScriptFilters(filteredStations, options);
+      // Step 2: Filter by distance
+      const withinRadius = this.filterByDistance(stationsWithDistance, radius);
+      
+      // Step 3: Apply additional filters
+      const filtered = this.applyFilters(withinRadius, options, userPrefs);
+      
+      // Step 4: Sort by criteria
+      const sorted = this.sortStations(
+        filtered, 
+        options.sortBy || 'distance'
+      );
+      
+      // Step 5: Apply pagination
+      const paginatedStations = sorted.slice(offset, offset + maxResults);
+      
+      // Step 6: Process to final format
+      const stations = this.processStationResults(paginatedStations, userPrefs);
 
-      // Sort results
-      const sortedStations = this.sortStations(filteredStations, options.sortBy || 'availability');
-
-      // Apply pagination
-      const offset = options.offset || 0;
-      const limit = options.maxResults || 10;
-      const paginatedStations = sortedStations.slice(offset, offset + limit);
-
-      // Process results
-      const processedStations = this.processStationResults(paginatedStations, userPrefs);
-
+      // Return result with proper metadata
       return {
-        stations: processedStations,
-        totalCount: filteredStations.length,
-        hasMore: offset + paginatedStations.length < filteredStations.length,
+        stations,
+        totalCount: filtered.length,
+        hasMore: offset + maxResults < filtered.length,
         searchLocation: {
-          latitude: options.latitude,
-          longitude: options.longitude,
-        },
+          latitude,
+          longitude
+        }
       };
 
     } catch (error) {
-      logger.error('Simple station search failed', { error, options });
-      return this.emptyResult(options);
+      logger.error('Station search processing failed', { 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error; // Re-throw to be handled by the main search method
     }
   }
 
   /**
-   * Get user preferences safely
+   * Filter stations by distance
    */
-  private async getUserPreferences(userWhatsapp: string): Promise<any> {
-    try {
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.whatsappId, userWhatsapp))
-        .limit(1);
-      
-      return user || {};
-    } catch (error) {
-      logger.warn('Failed to get user preferences', { userWhatsapp, error });
-      return {};
-    }
+  private filterByDistance(
+    stations: (RawStationData & { distance: number })[], 
+    radius: number
+  ): (RawStationData & { distance: number })[] {
+    return stations.filter(station => 
+      !isNaN(station.distance) && station.distance <= radius
+    );
   }
 
   /**
-   * Add distance calculation to stations
+   * Apply all filters
    */
-  private addDistanceCalculation(stations: RawStationData[], userLat: number, userLng: number): (RawStationData & { distance: number })[] {
-    return stations.map(station => ({
-      ...station,
-      distance: this.calculateDistance(
-        parseFloat(station.latitude || '0'),
-        parseFloat(station.longitude || '0'),
-        userLat,
-        userLng
-      )
-    }));
-  }
-
-  /**
-   * Apply filters in JavaScript
-   */
-  private applyJavaScriptFilters(stations: (RawStationData & { distance: number })[], options: StationSearchOptions) {
-    let filtered = stations;
-
-    // Availability filter
-    if (options.availableOnly) {
-      filtered = filtered.filter(station => 
-        (station.availablePorts || 0) > 0 && (station.isOpen === true)
-      );
-    }
-
-    // Connector type filter
-    if (options.connectorTypes?.length && !options.connectorTypes.includes('Any')) {
+  private applyFilters(
+    stations: (RawStationData & { distance: number })[], 
+    options: StationSearchOptions,
+    userPrefs: UserPreferences
+  ): (RawStationData & { distance: number })[] {
+    let filtered = [...stations];
+    
+    // Filter by availability if requested
+    if (options.availableOnly === true) {
       filtered = filtered.filter(station => {
-        const connectors = this.parseConnectorTypes(station.connectorTypes);
-        return options.connectorTypes!.some(type => connectors.includes(type));
+        const availablePorts = station.availablePorts ?? 0;
+        const isOpen = station.isOpen === true;
+        return isOpen && availablePorts > 0;
       });
     }
-
-    // Price filter
-    if (options.maxPrice) {
-      filtered = filtered.filter(station => 
-        parseFloat(station.pricePerKwh || '0') <= options.maxPrice!
-      );
+    
+    // Filter by price if specified
+    if (options.maxPrice && !isNaN(options.maxPrice)) {
+      filtered = filtered.filter(station => {
+        let price = 0;
+        
+        // Handle different price formats
+        if (typeof station.pricePerKwh === 'number') {
+          price = station.pricePerKwh;
+        } else if (typeof station.pricePerKwh === 'string') {
+          price = parseFloat(station.pricePerKwh) || 0;
+        }
+        
+        return price <= (options.maxPrice ?? Infinity);
+      });
     }
-
+    
+    // Filter by connector types if specified
+    if (options.connectorTypes && options.connectorTypes.length > 0) {
+      filtered = filtered.filter(station => {
+        const stationConnectors = this.parseConnectorTypes(station.connectorTypes);
+        return options.connectorTypes!.some(type => 
+          stationConnectors.includes(type)
+        );
+      });
+    }
+    
+    // Apply user preference filters if relevant
+    if (userPrefs.connectorType && userPrefs.connectorType !== 'Any') {
+      filtered = filtered.filter(station => {
+        const stationConnectors = this.parseConnectorTypes(station.connectorTypes);
+        return stationConnectors.includes(userPrefs.connectorType!);
+      });
+    }
+    
     return filtered;
   }
 
   /**
-   * Sort stations by criteria
+   * Sort stations by criteria with improved null handling
    */
-  private sortStations(stations: (RawStationData & { distance: number })[], sortBy: string) {
-    return stations.sort((a, b) => {
+  private sortStations(
+    stations: (RawStationData & { distance: number })[], 
+    sortBy: string
+  ): (RawStationData & { distance: number })[] {
+    return [...stations].sort((a, b) => {
       switch (sortBy) {
         case 'availability':
-          const aAvailable = (a.availablePorts || 0);
-          const bAvailable = (b.availablePorts || 0);
+          const aAvailable = a.availablePorts ?? 0;
+          const bAvailable = b.availablePorts ?? 0;
           if (aAvailable !== bAvailable) {
             return bAvailable - aAvailable;
           }
           return a.distance - b.distance;
 
-        case 'distance':
-          return a.distance - b.distance;
-
         case 'price':
-          const aPrice = parseFloat(a.pricePerKwh || '0');
-          const bPrice = parseFloat(b.pricePerKwh || '0');
+          // Convert price strings to numbers safely
+          const aPrice = typeof a.pricePerKwh === 'string' 
+            ? parseFloat(a.pricePerKwh) || 0 
+            : Number(a.pricePerKwh) || 0;
+            
+          const bPrice = typeof b.pricePerKwh === 'string' 
+            ? parseFloat(b.pricePerKwh) || 0 
+            : Number(b.pricePerKwh) || 0;
+            
           if (aPrice !== bPrice) {
             return aPrice - bPrice;
           }
           return a.distance - b.distance;
 
+        case 'distance':
         default:
           return a.distance - b.distance;
       }
@@ -264,15 +341,19 @@ export class StationSearchService {
   }
 
   /**
-   * Process raw station data into StationResult
+   * Process raw station data into StationResult with full type safety
    */
-  private processStationResults(stations: (RawStationData & { distance: number })[], userPrefs: any): StationResult[] {
+  private processStationResults(
+    stations: (RawStationData & { distance: number })[], 
+    userPrefs: UserPreferences
+  ): StationResult[] {
     return stations.map(station => {
-      const availablePorts = station.availablePorts || 0;
-      const totalPorts = station.totalPorts || 1;
-      const queueLength = station.currentQueueLength || 0;
-      const maxQueue = station.maxQueueLength || 5;
-      const avgSession = station.averageSessionMinutes || 45;
+      // Safe access with defaults for all properties
+      const availablePorts = station.availablePorts ?? 0;
+      const totalPorts = station.totalPorts ?? 1;
+      const queueLength = station.currentQueueLength ?? 0;
+      const maxQueue = station.maxQueueLength ?? 5;
+      const avgSession = station.averageSessionMinutes ?? 45;
 
       // Calculate wait time
       const estimatedWait = availablePorts > 0 ? 0 : Math.ceil((queueLength * avgSession) / totalPorts);
@@ -281,21 +362,29 @@ export class StationSearchService {
       const isOpen = station.isOpen === true;
       const isAvailable = isOpen && availablePorts > 0 && queueLength < maxQueue;
       
+      // Safe parsing for pricing
+      let pricePerKwh = 0;
+      if (typeof station.pricePerKwh === 'number') {
+        pricePerKwh = station.pricePerKwh;
+      } else if (typeof station.pricePerKwh === 'string') {
+        pricePerKwh = parseFloat(station.pricePerKwh) || 0;
+      }
+      
       // Calculate match score
       const matchScore = this.calculateMatchScore(station, userPrefs, station.distance, isAvailable);
 
       return {
         id: station.id,
-        name: station.name || '',
-        address: station.address || '',
-        latitude: parseFloat(station.latitude || '0'),
-        longitude: parseFloat(station.longitude || '0'),
+        name: station.name || 'Unnamed Station',
+        address: station.address || 'No address provided',
+        latitude: typeof station.latitude === 'string' ? parseFloat(station.latitude) : Number(station.latitude),
+        longitude: typeof station.longitude === 'string' ? parseFloat(station.longitude) : Number(station.longitude),
         distance: Math.round(station.distance * 10) / 10,
         totalPorts,
         availablePorts,
         connectorTypes: this.parseConnectorTypes(station.connectorTypes),
-        maxPowerKw: station.maxPowerKw || 50,
-        pricePerKwh: parseFloat(station.pricePerKwh || '0'),
+        maxPowerKw: station.maxPowerKw ?? 50,
+        pricePerKwh,
         isOpen,
         currentQueueLength: queueLength,
         maxQueueLength: maxQueue,
@@ -314,201 +403,178 @@ export class StationSearchService {
       if (Array.isArray(connectorTypes)) {
         return connectorTypes.filter(item => typeof item === 'string');
       }
+      
       if (typeof connectorTypes === 'string') {
-        const parsed = JSON.parse(connectorTypes);
-        return Array.isArray(parsed) ? parsed.filter(item => typeof item === 'string') : [];
+        try {
+          const parsed = JSON.parse(connectorTypes);
+          return Array.isArray(parsed) 
+            ? parsed.filter(item => typeof item === 'string')
+            : [];
+        } catch {
+          // If JSON parsing fails, check if it's a comma-separated string
+          return connectorTypes.split(',').map(item => item.trim());
+        }
       }
-      return [];
-    } catch {
-      return [];
+      
+      return ['Standard']; // Default fallback
+    } catch (error) {
+      logger.warn('Error parsing connector types', { 
+        connectorTypes, 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+      return ['Standard']; // Default fallback
     }
   }
 
   /**
-   * Calculate distance using Haversine formula
+   * Calculate station match score based on user preferences
    */
-  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = this.deg2rad(lat2 - lat1);
-    const dLng = this.deg2rad(lng2 - lng1);
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-
-  /**
-   * Convert degrees to radians
-   */
-  private deg2rad(deg: number): number {
-    return deg * (Math.PI/180);
-  }
-
-  /**
-   * Calculate match score based on user preferences
-   */
-  private calculateMatchScore(station: RawStationData, userPrefs: any, distance: number, isAvailable: boolean): number {
-    let score = 50;
-
+  private calculateMatchScore(
+    station: RawStationData, 
+    userPrefs: UserPreferences, 
+    distance: number, 
+    isAvailable: boolean
+  ): number {
+    let score = 50; // Base score
+    
     // Availability bonus
-    if (isAvailable) score += 30;
-    else if (station.isOpen === true) score += 15;
-
-    // Distance scoring
-    if (distance <= 2) score += 15;
-    else if (distance <= 5) score += 10;
-    else if (distance <= 10) score += 5;
-    else score -= Math.min(20, distance - 10);
-
+    if (isAvailable) {
+      score += 20;
+    }
+    
+    // Distance factor (closer is better)
+    const maxDistance = userPrefs.maxDistance ?? 25;
+    if (distance <= maxDistance) {
+      score += Math.round(20 * (1 - distance / maxDistance));
+    }
+    
     // Connector type match
     if (userPrefs.connectorType && userPrefs.connectorType !== 'Any') {
       const stationConnectors = this.parseConnectorTypes(station.connectorTypes);
       if (stationConnectors.includes(userPrefs.connectorType)) {
-        score += 10;
+        score += 15;
       }
     }
-
-    // Queue preference match
-    const queueLength = station.currentQueueLength || 0;
-    if (userPrefs.queuePreference) {
-      switch (userPrefs.queuePreference) {
-        case 'Free Now':
-          score += queueLength === 0 ? 15 : -10;
-          break;
-        case 'Wait 15m':
-          score += queueLength <= 2 ? 10 : -5;
-          break;
-        case 'Wait 30m':
-          if (queueLength <= 4) score += 5;
-          break;
-      }
-    }
-
+    
     // Price factor
-    const price = parseFloat(station.pricePerKwh || '25');
-    if (price <= 20) score += 10;
-    else if (price <= 25) score += 5;
-    else if (price >= 35) score -= 5;
-
-    // Power rating bonus
-    const power = station.maxPowerKw || 50;
-    if (power >= 100) score += 5;
-    else if (power >= 50) score += 3;
-
-    return Math.max(0, Math.min(100, Math.round(score)));
+    const maxPrice = userPrefs.maxPrice ?? 30;
+    let price = 0;
+    
+    if (typeof station.pricePerKwh === 'number') {
+      price = station.pricePerKwh;
+    } else if (typeof station.pricePerKwh === 'string') {
+      price = parseFloat(station.pricePerKwh) || 0;
+    }
+    
+    if (price <= maxPrice) {
+      score += Math.round(15 * (1 - price / maxPrice));
+    }
+    
+    // Clamp score to 0-100 range
+    return Math.max(0, Math.min(100, score));
   }
 
   /**
-   * Return empty result
+   * Get user preferences with type safety
+   * FIXED: Use actual user schema properties instead of preferences
    */
-  private emptyResult(options: StationSearchOptions): StationSearchResult {
-    return {
-      stations: [],
-      totalCount: 0,
-      hasMore: false,
-      searchLocation: {
-        latitude: options.latitude,
-        longitude: options.longitude,
-      },
-    };
-  }
+  private async getUserPreferences(userWhatsapp: string): Promise<UserPreferences> {
+    try {
+      // Get user from database
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.whatsappId, userWhatsapp))
+        .limit(1);
+      
+      if (user.length === 0) {
+        return {}; // Return empty preferences if user not found
+      }
 
-  // ===============================================
-  // PUBLIC API METHODS
-  // ===============================================
-
-  /**
-   * Get next set of stations (pagination)
-   */
-  async getNextStations(options: StationSearchOptions): Promise<StationSearchResult> {
-    return this.searchStations({
-      ...options,
-      offset: (options.offset || 0) + (options.maxResults || 10),
-    });
-  }
-
-  /**
-   * Get all nearby stations (expanded results)
-   */
-  async getAllNearbyStations(options: StationSearchOptions): Promise<StationSearchResult> {
-    return this.searchStations({
-      ...options,
-      maxResults: 50,
-      offset: 0,
-    });
+      // Use the actual schema properties instead of preferences
+      const userPrefs: UserPreferences = {
+        connectorType: user[0].connectorType || undefined,
+        chargingIntent: user[0].chargingIntent || undefined,
+        queuePreference: user[0].queuePreference || undefined,
+        // Infer vehicle type from EV model
+        vehicleType: this.inferVehicleTypeFromModel(user[0].evModel || '')
+      };
+      
+      return userPrefs;
+      
+    } catch (error) {
+      logger.warn('Failed to get user preferences', { 
+        userWhatsapp, 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return {}; // Return empty preferences on error
+    }
   }
 
   /**
-   * Search with expanded radius
+   * Infer vehicle type from model name
    */
-  async searchWithExpandedRadius(options: StationSearchOptions): Promise<StationSearchResult> {
-    return this.searchStations({
-      ...options,
-      radius: 50,
-      availableOnly: false,
-      sortBy: 'distance',
-    });
+  private inferVehicleTypeFromModel(evModel: string): string {
+    const model = evModel.toLowerCase();
+    
+    // Electric car models
+    const carModels = [
+      'tesla', 'model 3', 'model s', 'model x', 'model y',
+      'tata nexon', 'tigor', 'punch', 
+      'mg zs', 'audi e-tron', 'bmw', 'hyundai kona', 'kia ev6'
+    ];
+    
+    // Electric bike/scooter models
+    const bikeModels = [
+      'ather', '450x', 'ola s1', 'tvs iqube', 'bajaj chetak', 
+      'revolt', 'hero electric'
+    ];
+    
+    if (carModels.some(car => model.includes(car))) {
+      return 'Car';
+    }
+    
+    if (bikeModels.some(bike => model.includes(bike))) {
+      return 'Bike/Scooter';
+    }
+    
+    // Default
+    return 'Any';
   }
 
   /**
-   * Search without filters
+   * Get nearby stations directly without search options
+   * Used for quick nearby searches
    */
-  async searchWithoutFilters(options: StationSearchOptions): Promise<StationSearchResult> {
-    return this.searchStations({
-      ...options,
-      availableOnly: false,
-      connectorTypes: undefined,
-      maxPrice: undefined,
-      sortBy: 'distance',
-    });
+  async getNearbyStations(
+    userWhatsapp: string, 
+    latitude: number, 
+    longitude: number, 
+    limit: number = 5
+  ): Promise<StationResult[]> {
+    try {
+      const options: StationSearchOptions = {
+        userWhatsapp,
+        latitude,
+        longitude,
+        radius: 10, // Default to 10 km
+        maxResults: limit,
+        sortBy: 'distance'
+      };
+      
+      const result = await this.searchStations(options);
+      return result.stations;
+      
+    } catch (error) {
+      logger.error('Failed to get nearby stations', { 
+        userWhatsapp, 
+        coordinates: { latitude, longitude },
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return [];
+    }
   }
 }
 
-// ===============================================
-// SINGLETON EXPORT
-// ===============================================
-
+// Export singleton instance
 export const stationSearchService = new StationSearchService();
-
-// ===============================================
-// UTILITY FUNCTIONS
-// ===============================================
-
-/**
- * Test function for development
- */
-export const testStationSearch = async () => {
-  if (process.env.NODE_ENV !== 'development') return;
-
-  console.log('Testing station search...');
-  
-  const testOptions: StationSearchOptions = {
-    userWhatsapp: '1234567890',
-    latitude: 28.6315,
-    longitude: 77.2167,
-    radius: 25,
-    maxResults: 5,
-  };
-
-  try {
-    const result = await stationSearchService.searchStations(testOptions);
-    console.log('Test successful:', {
-      stationsFound: result.stations.length,
-      totalCount: result.totalCount,
-      hasMore: result.hasMore,
-    });
-    return result;
-  } catch (error) {
-    console.error('Test failed:', error);
-    return null;
-  }
-};
-
-/**
- * Simple search function for external use
- */
-export async function simpleStationSearch(options: StationSearchOptions): Promise<StationSearchResult> {
-  return stationSearchService.searchStations(options);
-}

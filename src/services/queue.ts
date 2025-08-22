@@ -1,4 +1,4 @@
-// src/services/queue.ts
+// src/services/queue.ts - FIXED VERSION
 import { db } from '../db/connection';
 import { queues, chargingStations } from '../db/schema';
 import { eq, and, desc, asc, sql, lt, gte } from 'drizzle-orm';
@@ -145,6 +145,7 @@ class QueueService {
 
   /**
    * Reserve charging slot for user
+   * FIXED: Removed isReserved field as it's not in the schema
    */
   async reserveSlot(userWhatsapp: string, stationId: number, reservationMinutes: number = 15): Promise<boolean> {
     try {
@@ -166,11 +167,10 @@ class QueueService {
 
       const expiryTime = new Date(Date.now() + (reservationMinutes * 60 * 1000));
 
+      // FIXED: Using only fields that exist in the schema
       const result = await db.update(queues)
         .set({
           status: 'reserved',
-          isReserved: true,
-          reservedAt: new Date(),
           reservationExpiry: expiryTime,
           updatedAt: new Date()
         })
@@ -288,7 +288,6 @@ class QueueService {
         position: queues.position,
         estimatedWaitMinutes: queues.estimatedWaitMinutes,
         status: queues.status,
-        isReserved: queues.isReserved,
         reservationExpiry: queues.reservationExpiry,
         createdAt: queues.createdAt,
         stationName: chargingStations.name,
@@ -496,6 +495,10 @@ class QueueService {
     return result.map(r => `${r.hour}:00-${Number(r.hour) + 1}:00`);
   }
 
+  /**
+   * Format queue position data with safe handling of isReserved
+   * FIXED: Derive isReserved from status rather than expecting it from the DB
+   */
   private formatQueuePosition(queueData: any, stationData?: any): QueuePosition {
     return {
       id: queueData.id,
@@ -504,7 +507,8 @@ class QueueService {
       position: queueData.position,
       estimatedWaitMinutes: queueData.estimatedWaitMinutes,
       status: queueData.status,
-      isReserved: queueData.isReserved || false,
+      // FIXED: Derive isReserved from status instead of using a field that doesn't exist
+      isReserved: queueData.status === 'reserved',
       reservationExpiry: queueData.reservationExpiry,
       createdAt: queueData.createdAt,
       stationName: queueData.stationName || stationData?.name,

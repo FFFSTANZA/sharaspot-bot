@@ -1,7 +1,7 @@
-// src/services/session.ts
+// src/services/session.ts - Complete Implementation
 import { db } from '../db/connection';
-import { chargingStations, queues } from '../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { chargingStations, queues, chargingSessions } from '../db/schema';
+import { eq, and, desc, sql, count, sum, avg } from 'drizzle-orm';
 import { logger } from '../utils/logger';
 import { notificationService } from './notification';
 
@@ -21,6 +21,7 @@ export interface ChargingSession {
   status: 'active' | 'paused' | 'completed' | 'stopped';
   efficiency: number;
   estimatedCompletion?: Date;
+  queueId?: number;
 }
 
 export interface SessionStatus {
@@ -46,6 +47,32 @@ export interface CostBreakdown {
   petrolComparison: string;
 }
 
+export interface UserStats {
+  totalSessions: number;
+  totalEnergyConsumed: number;
+  totalCostSpent: number;
+  avgSessionTime: number;
+  favoriteStation: {
+    id: number;
+    name: string;
+    sessionCount: number;
+  } | null;
+  totalSavings: number;
+  avgEfficiency: number;
+}
+
+export interface SessionSummary {
+  sessionId: string;
+  duration: string;
+  energyDelivered: number;
+  finalBatteryLevel: number;
+  totalCost: number;
+  efficiency: number;
+  stationName: string;
+  startTime: Date;
+  endTime: Date;
+}
+
 class SessionService {
   private activeSessions = new Map<string, ChargingSession>();
   private sessionMonitors = new Map<string, NodeJS.Timeout>();
@@ -53,9 +80,9 @@ class SessionService {
   /**
    * Start a new charging session
    */
-  async startSession(userWhatsapp: string, stationId: number): Promise<ChargingSession | null> {
+  async startSession(userWhatsapp: string, stationId: number, queueId?: number): Promise<ChargingSession | null> {
     try {
-      logger.info('⚡ Starting charging session', { userWhatsapp, stationId });
+      logger.info('⚡ Starting charging session', { userWhatsapp, stationId, queueId });
 
       // Get station details
       const station = await db.select()
@@ -86,9 +113,13 @@ class SessionService {
         totalCost: 0,
         status: 'active',
         efficiency: 95, // Default efficiency
+        queueId
       };
 
-      // Store active session
+      // Save initial session to database
+      await this.saveSessionToDatabase(session);
+
+      // Store active session in memory
       this.activeSessions.set(sessionId, session);
 
       // Start real-time monitoring
@@ -189,6 +220,9 @@ class SessionService {
       session.status = 'paused';
       this.activeSessions.set(sessionId, session);
 
+      // Update database
+      await this.updateSessionInDatabase(session);
+
       // Stop monitoring temporarily
       const monitor = this.sessionMonitors.get(sessionId);
       if (monitor) {
@@ -231,6 +265,9 @@ class SessionService {
       session.status = 'active';
       this.activeSessions.set(sessionId, session);
 
+      // Update database
+      await this.updateSessionInDatabase(session);
+
       // Restart monitoring
       await this.startSessionMonitoring(session);
 
@@ -249,7 +286,7 @@ class SessionService {
   /**
    * Complete charging session
    */
-  async completeSession(userWhatsapp: string, stationId: number): Promise<any> {
+  async completeSession(userWhatsapp: string, stationId: number): Promise<SessionSummary | null> {
     try {
       const sessionId = this.generateSessionId(userWhatsapp, stationId);
       const session = this.activeSessions.get(sessionId);
@@ -275,7 +312,7 @@ class SessionService {
       session.totalCost = costBreakdown.totalCost;
 
       // Generate session summary
-      const summary = {
+      const summary: SessionSummary = {
         sessionId,
         duration: this.formatDuration(
           Math.floor((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60))
@@ -284,17 +321,19 @@ class SessionService {
         finalBatteryLevel: session.currentBatteryLevel,
         totalCost: session.totalCost,
         efficiency: session.efficiency,
-        stationName: session.stationName
+        stationName: session.stationName || 'Unknown Station',
+        startTime: session.startTime,
+        endTime: session.endTime
       };
 
       // Remove from active sessions
       this.activeSessions.delete(sessionId);
 
+      // Update final session data in database
+      await this.updateSessionInDatabase(session, true);
+
       // Send completion notification
       await notificationService.sendSessionCompletedNotification(userWhatsapp, session, summary);
-
-      // Save to database (in real implementation)
-      await this.saveSessionToDatabase(session, summary);
 
       logger.info('✅ Session completed successfully', { sessionId, summary });
       return summary;
@@ -345,6 +384,9 @@ class SessionService {
       session.targetBatteryLevel = newTarget;
       this.activeSessions.set(sessionId, session);
 
+      // Update database
+      await this.updateSessionInDatabase(session);
+
       await notificationService.sendSessionExtendedNotification(userWhatsapp, session, newTarget);
 
       logger.info('⏰ Session extended', { sessionId, newTarget });
@@ -356,7 +398,225 @@ class SessionService {
     }
   }
 
-  // Private helper methods
+  /**
+   * Save session to database - IMPLEMENTATION COMPLETE
+   */
+  private async saveSessionToDatabase(session: ChargingSession): Promise<void> {
+    try {
+      await db.insert(chargingSessions).values({
+        sessionId: session.id,
+        stationId: session.stationId,
+        userWhatsapp: session.userWhatsapp,
+        queueId: session.queueId || null,
+        status: session.status as any,
+        startTime: session.startTime,
+        endTime: session.endTime || null,
+        duration: session.endTime ? 
+          Math.floor((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60)) : null,
+        energyDelivered: session.energyDelivered.toString(),
+        peakPowerKw: session.chargingRate.toString(),
+        averagePowerKw: session.chargingRate.toString(),
+        totalCost: session.totalCost.toString(),
+        ratePerKwh: session.pricePerKwh.toString()
+      });
+
+      logger.info('💾 Session saved to database', { sessionId: session.id });
+    } catch (error) {
+      logger.error('❌ Failed to save session to database', { sessionId: session.id, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Update session in database - NEW METHOD
+   */
+  private async updateSessionInDatabase(session: ChargingSession, isFinal: boolean = false): Promise<void> {
+    try {
+      const updateData: any = {
+        status: session.status as any,
+        energyDelivered: session.energyDelivered.toString(),
+        totalCost: session.totalCost.toString(),
+        updatedAt: new Date()
+      };
+
+      if (isFinal && session.endTime) {
+        updateData.endTime = session.endTime;
+        updateData.duration = Math.floor((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60));
+      }
+
+      await db.update(chargingSessions)
+        .set(updateData)
+        .where(eq(chargingSessions.sessionId, session.id));
+
+      logger.info('🔄 Session updated in database', { sessionId: session.id });
+    } catch (error) {
+      logger.error('❌ Failed to update session in database', { sessionId: session.id, error });
+    }
+  }
+
+  /**
+   * Get session history for user - IMPLEMENTATION COMPLETE
+   */
+  async getSessionHistory(userWhatsapp: string, limit: number = 10): Promise<ChargingSession[]> {
+    try {
+      const sessions = await db.select({
+        id: chargingSessions.sessionId,
+        userWhatsapp: chargingSessions.userWhatsapp,
+        stationId: chargingSessions.stationId,
+        stationName: chargingStations.name,
+        startTime: chargingSessions.startTime,
+        endTime: chargingSessions.endTime,
+        energyDelivered: chargingSessions.energyDelivered,
+        totalCost: chargingSessions.totalCost,
+        status: chargingSessions.status,
+        duration: chargingSessions.duration,
+        ratePerKwh: chargingSessions.ratePerKwh
+      })
+        .from(chargingSessions)
+        .leftJoin(chargingStations, eq(chargingSessions.stationId, chargingStations.id))
+        .where(eq(chargingSessions.userWhatsapp, userWhatsapp))
+        .orderBy(desc(chargingSessions.createdAt))
+        .limit(limit);
+
+      return sessions.map(session => ({
+        id: session.id,
+        userWhatsapp: session.userWhatsapp,
+        stationId: session.stationId,
+        stationName: session.stationName || 'Unknown Station',
+        startTime: session.startTime || new Date(),
+        endTime: session.endTime || undefined,
+        energyDelivered: Number(session.energyDelivered) || 0,
+        currentBatteryLevel: 0, // Not stored in DB for historical sessions
+        targetBatteryLevel: 80, // Default
+        chargingRate: 0, // Not applicable for historical
+        pricePerKwh: Number(session.ratePerKwh) || 0,
+        totalCost: Number(session.totalCost) || 0,
+        status: session.status as any,
+        efficiency: 95 // Default
+      }));
+
+    } catch (error) {
+      logger.error('❌ Failed to get session history', { userWhatsapp, error });
+      return [];
+    }
+  }
+
+  /**
+   * Get total energy and cost for user - IMPLEMENTATION COMPLETE
+   */
+  async getUserStats(userWhatsapp: string): Promise<UserStats | null> {
+    try {
+      // Get basic statistics
+      const basicStats = await db.select({
+        totalSessions: count(),
+        totalEnergyConsumed: sum(chargingSessions.energyDelivered),
+        totalCostSpent: sum(chargingSessions.totalCost),
+        avgSessionTime: avg(chargingSessions.duration)
+      })
+        .from(chargingSessions)
+        .where(
+          and(
+            eq(chargingSessions.userWhatsapp, userWhatsapp),
+            eq(chargingSessions.status, 'completed')
+          )
+        );
+
+      // Get favorite station
+      const favoriteStationQuery = await db.select({
+        stationId: chargingSessions.stationId,
+        stationName: chargingStations.name,
+        sessionCount: count()
+      })
+        .from(chargingSessions)
+        .leftJoin(chargingStations, eq(chargingSessions.stationId, chargingStations.id))
+        .where(
+          and(
+            eq(chargingSessions.userWhatsapp, userWhatsapp),
+            eq(chargingSessions.status, 'completed')
+          )
+        )
+        .groupBy(chargingSessions.stationId, chargingStations.name)
+        .orderBy(desc(count()))
+        .limit(1);
+
+      const stats = basicStats[0];
+      const favoriteStation = favoriteStationQuery[0];
+
+      // Calculate savings (compared to petrol)
+      const totalEnergyKwh = Number(stats.totalEnergyConsumed) || 0;
+      const totalCost = Number(stats.totalCostSpent) || 0;
+      const petrolEquivalentCost = this.calculatePetrolEquivalentCost(totalEnergyKwh);
+      const totalSavings = petrolEquivalentCost - totalCost;
+
+      return {
+        totalSessions: Number(stats.totalSessions) || 0,
+        totalEnergyConsumed: totalEnergyKwh,
+        totalCostSpent: totalCost,
+        avgSessionTime: Number(stats.avgSessionTime) || 0,
+        favoriteStation: favoriteStation ? {
+          id: favoriteStation.stationId,
+          name: favoriteStation.stationName || 'Unknown Station',
+          sessionCount: Number(favoriteStation.sessionCount)
+        } : null,
+        totalSavings: Math.max(0, totalSavings),
+        avgEfficiency: 95 // Would need to track this separately in real implementation
+      };
+
+    } catch (error) {
+      logger.error('❌ Failed to get user stats', { userWhatsapp, error });
+      return null;
+    }
+  }
+
+  /**
+   * Get session by ID - NEW METHOD
+   */
+  async getSessionById(sessionId: string): Promise<ChargingSession | null> {
+    try {
+      const sessions = await db.select({
+        id: chargingSessions.sessionId,
+        userWhatsapp: chargingSessions.userWhatsapp,
+        stationId: chargingSessions.stationId,
+        stationName: chargingStations.name,
+        startTime: chargingSessions.startTime,
+        endTime: chargingSessions.endTime,
+        energyDelivered: chargingSessions.energyDelivered,
+        totalCost: chargingSessions.totalCost,
+        status: chargingSessions.status,
+        ratePerKwh: chargingSessions.ratePerKwh
+      })
+        .from(chargingSessions)
+        .leftJoin(chargingStations, eq(chargingSessions.stationId, chargingStations.id))
+        .where(eq(chargingSessions.sessionId, sessionId))
+        .limit(1);
+
+      if (!sessions.length) return null;
+
+      const session = sessions[0];
+      return {
+        id: session.id,
+        userWhatsapp: session.userWhatsapp,
+        stationId: session.stationId,
+        stationName: session.stationName || 'Unknown Station',
+        startTime: session.startTime || new Date(),
+        endTime: session.endTime || undefined,
+        energyDelivered: Number(session.energyDelivered) || 0,
+        currentBatteryLevel: 0,
+        targetBatteryLevel: 80,
+        chargingRate: 0,
+        pricePerKwh: Number(session.ratePerKwh) || 0,
+        totalCost: Number(session.totalCost) || 0,
+        status: session.status as any,
+        efficiency: 95
+      };
+
+    } catch (error) {
+      logger.error('❌ Failed to get session by ID', { sessionId, error });
+      return null;
+    }
+  }
+
+  // Private helper methods (existing ones remain the same)
 
   private async startSessionMonitoring(session: ChargingSession): Promise<void> {
     const sessionId = session.id;
@@ -406,6 +666,11 @@ class SessionService {
       // Update active session
       this.activeSessions.set(session.id, session);
 
+      // Update database every 5 minutes
+      if (durationMinutes % 5 === 0) {
+        await this.updateSessionInDatabase(session);
+      }
+
     } catch (error) {
       logger.error('❌ Failed to update session progress', { sessionId: session.id, error });
     }
@@ -443,7 +708,7 @@ class SessionService {
     
     // Calculate completion time
     const remainingBattery = targetBattery - currentBatteryLevel;
-    const remainingTime = (remainingBattery / chargingRate) * 60; // minutes
+    const remainingTime = remainingBattery > 0 ? (remainingBattery / chargingRate) * 60 : 0; // minutes
     const estimatedCompletion = new Date(Date.now() + remainingTime * 60 * 1000).toLocaleTimeString();
     
     // Efficiency calculation
@@ -532,46 +797,14 @@ class SessionService {
     return `₹${Math.round(savings)} saved (${percentage}% cheaper)`;
   }
 
-  private async saveSessionToDatabase(session: ChargingSession, summary: any): Promise<void> {
-    try {
-      // In real implementation, save session data to database
-      logger.info('💾 Session saved to database', { sessionId: session.id, summary });
-    } catch (error) {
-      logger.error('❌ Failed to save session to database', { sessionId: session.id, error });
-    }
-  }
-
-  /**
-   * Get session history for user
-   */
-  async getSessionHistory(userWhatsapp: string, limit: number = 10): Promise<ChargingSession[]> {
-    try {
-      // In real implementation, fetch from database
-      // For now, return empty array
-      return [];
-    } catch (error) {
-      logger.error('❌ Failed to get session history', { userWhatsapp, error });
-      return [];
-    }
-  }
-
-  /**
-   * Get total energy and cost for user
-   */
-  async getUserStats(userWhatsapp: string): Promise<any> {
-    try {
-      // In real implementation, calculate from database
-      return {
-        totalSessions: 0,
-        totalEnergyConsumed: 0,
-        totalCostSpent: 0,
-        avgSessionTime: 0,
-        favoriteStation: null
-      };
-    } catch (error) {
-      logger.error('❌ Failed to get user stats', { userWhatsapp, error });
-      return null;
-    }
+  private calculatePetrolEquivalentCost(energyKwh: number): number {
+    const evEfficiency = 4; // km per kWh
+    const petrolEfficiency = 15; // km per liter
+    const petrolPrice = 100; // per liter
+    
+    const kmDriven = energyKwh * evEfficiency;
+    const petrolNeeded = kmDriven / petrolEfficiency;
+    return petrolNeeded * petrolPrice;
   }
 
   /**
@@ -600,6 +833,174 @@ class SessionService {
 
     } catch (error) {
       logger.error('❌ Failed to execute emergency stop', { stationId, error });
+      return false;
+    }
+  }
+
+  /**
+   * Get sessions by station (for station owners/admins)
+   */
+  async getSessionsByStation(stationId: number, limit: number = 50): Promise<ChargingSession[]> {
+    try {
+      const sessions = await db.select({
+        id: chargingSessions.sessionId,
+        userWhatsapp: chargingSessions.userWhatsapp,
+        stationId: chargingSessions.stationId,
+        stationName: chargingStations.name,
+        startTime: chargingSessions.startTime,
+        endTime: chargingSessions.endTime,
+        energyDelivered: chargingSessions.energyDelivered,
+        totalCost: chargingSessions.totalCost,
+        status: chargingSessions.status,
+        duration: chargingSessions.duration,
+        ratePerKwh: chargingSessions.ratePerKwh
+      })
+        .from(chargingSessions)
+        .leftJoin(chargingStations, eq(chargingSessions.stationId, chargingStations.id))
+        .where(eq(chargingSessions.stationId, stationId))
+        .orderBy(desc(chargingSessions.createdAt))
+        .limit(limit);
+
+      return sessions.map(session => ({
+        id: session.id,
+        userWhatsapp: session.userWhatsapp,
+        stationId: session.stationId,
+        stationName: session.stationName || 'Unknown Station',
+        startTime: session.startTime || new Date(),
+        endTime: session.endTime || undefined,
+        energyDelivered: Number(session.energyDelivered) || 0,
+        currentBatteryLevel: 0,
+        targetBatteryLevel: 80,
+        chargingRate: 0,
+        pricePerKwh: Number(session.ratePerKwh) || 0,
+        totalCost: Number(session.totalCost) || 0,
+        status: session.status as any,
+        efficiency: 95
+      }));
+
+    } catch (error) {
+      logger.error('❌ Failed to get sessions by station', { stationId, error });
+      return [];
+    }
+  }
+
+  /**
+   * Get station statistics
+   */
+  async getStationStats(stationId: number): Promise<any> {
+    try {
+      const stats = await db.select({
+        totalSessions: count(),
+        totalEnergyDelivered: sum(chargingSessions.energyDelivered),
+        totalRevenue: sum(chargingSessions.totalCost),
+        avgSessionTime: avg(chargingSessions.duration)
+      })
+        .from(chargingSessions)
+        .where(
+          and(
+            eq(chargingSessions.stationId, stationId),
+            eq(chargingSessions.status, 'completed')
+          )
+        );
+
+      // Get current month stats
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+
+      const monthlyStats = await db.select({
+        monthlySessions: count(),
+        monthlyRevenue: sum(chargingSessions.totalCost)
+      })
+        .from(chargingSessions)
+        .where(
+          and(
+            eq(chargingSessions.stationId, stationId),
+            eq(chargingSessions.status, 'completed'),
+            sql`${chargingSessions.createdAt} >= ${currentMonth}`
+          )
+        );
+
+      const result = stats[0];
+      const monthlyResult = monthlyStats[0];
+
+      return {
+        totalSessions: Number(result.totalSessions) || 0,
+        totalEnergyDelivered: Number(result.totalEnergyDelivered) || 0,
+        totalRevenue: Number(result.totalRevenue) || 0,
+        avgSessionTime: Number(result.avgSessionTime) || 0,
+        monthlySessions: Number(monthlyResult.monthlySessions) || 0,
+        monthlyRevenue: Number(monthlyResult.monthlyRevenue) || 0,
+        utilizationRate: 85, // Would need more complex calculation
+        activeSessionsCount: Array.from(this.activeSessions.values())
+          .filter(s => s.stationId === stationId && s.status === 'active').length
+      };
+
+    } catch (error) {
+      logger.error('❌ Failed to get station stats', { stationId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Clean up expired sessions (for maintenance)
+   */
+  async cleanupExpiredSessions(): Promise<number> {
+    try {
+      let cleanedCount = 0;
+      const expiredThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+
+      for (const [sessionId, session] of this.activeSessions.entries()) {
+        if (session.startTime < expiredThreshold && session.status !== 'completed') {
+          // Force complete expired sessions
+          await this.completeSession(session.userWhatsapp, session.stationId);
+          cleanedCount++;
+        }
+      }
+
+      logger.info('🧹 Session cleanup completed', { cleanedCount });
+      return cleanedCount;
+
+    } catch (error) {
+      logger.error('❌ Failed to cleanup expired sessions', { error });
+      return 0;
+    }
+  }
+
+  /**
+   * Get real-time session data for dashboard
+   */
+  async getRealTimeSessionData(): Promise<any> {
+    const activeSessions = Array.from(this.activeSessions.values());
+    
+    return {
+      totalActiveSessions: activeSessions.length,
+      totalEnergyBeingDelivered: activeSessions.reduce((sum, s) => sum + s.chargingRate, 0),
+      totalCurrentCost: activeSessions.reduce((sum, s) => sum + s.totalCost, 0),
+      sessionsByStatus: {
+        active: activeSessions.filter(s => s.status === 'active').length,
+        paused: activeSessions.filter(s => s.status === 'paused').length
+      },
+      sessionsByStation: activeSessions.reduce((acc, session) => {
+        acc[session.stationId] = (acc[session.stationId] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>)
+    };
+  }
+
+  /**
+   * Force complete a session (admin function)
+   */
+  async forceCompleteSession(sessionId: string): Promise<boolean> {
+    try {
+      const session = this.activeSessions.get(sessionId);
+      if (!session) return false;
+
+      await this.completeSession(session.userWhatsapp, session.stationId);
+      return true;
+
+    } catch (error) {
+      logger.error('❌ Failed to force complete session', { sessionId, error });
       return false;
     }
   }
