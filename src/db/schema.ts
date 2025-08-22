@@ -1,3 +1,4 @@
+// src/db/schema.ts - FIXED VERSION WITH MISSING TABLES
 import {
   pgTable,
   text,
@@ -55,20 +56,20 @@ export const chargingStations = pgTable('charging_stations', {
   availablePorts: integer('available_ports').notNull().default(1),
   connectorTypes: jsonb('connector_types').notNull(), // ["CCS2", "Type2"]
   maxPowerKw: integer('max_power_kw').notNull().default(50),
-  pricePerKwh: decimal('price_per_kwh', { precision: 5, scale: 2 }).notNull(),
+  pricePerKwh: decimal('price_per_kwh', { precision: 5, scale: 2 }).notNull().default('10.00'),
   
-  // Operational Status
+  // Station Status
   isActive: boolean('is_active').default(true),
   isOpen: boolean('is_open').default(true),
-  isPaused: boolean('is_paused').default(false), // Owner pause feature
+  isPaused: boolean('is_paused').default(false),
   
   // Queue Management
-  maxQueueLength: integer('max_queue_length').default(5),
   currentQueueLength: integer('current_queue_length').default(0),
-  averageSessionMinutes: integer('average_session_minutes').default(45),
+  maxQueueLength: integer('max_queue_length').default(10),
+  averageSessionMinutes: integer('average_session_minutes').default(30),
   
-  // Owner Info
-  ownerWhatsappId: varchar('owner_whatsapp_id', { length: 20 }),
+  // Owner
+  ownerWhatsappId: varchar('owner_whatsapp_id', { length: 20 }).notNull(),
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow(),
@@ -82,26 +83,22 @@ export const chargingStations = pgTable('charging_stations', {
 // ==================== QUEUES TABLE ====================
 export const queues = pgTable('queues', {
   id: serial('id').primaryKey(),
-  userWhatsapp: varchar('user_whatsapp', { length: 20 }).notNull(),
-  stationId: integer('station_id').references(() => chargingStations.id).notNull(),
+  stationId: integer('station_id').notNull().references(() => chargingStations.id),
+  userWhatsapp: varchar('user_whatsapp', { length: 20 }).notNull().references(() => users.whatsappId),
   
   // Queue Details
   position: integer('position').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('waiting'), // waiting, ready, charging, completed, cancelled
   estimatedWaitMinutes: integer('estimated_wait_minutes'),
   
   // Reservation Details
   reservationExpiry: timestamp('reservation_expiry'),
-  isReserved: boolean('is_reserved').default(false),
-  reservedAt: timestamp('reserved_at'),
-  
-  // Status Tracking
-  status: varchar('status', { length: 20 }).notNull().default('waiting'), // waiting, reserved, charging, completed, cancelled
+  reminderSent: boolean('reminder_sent').default(false),
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
-  userStationIdx: unique('queues_user_station_unique').on(table.userWhatsapp, table.stationId),
   stationPositionIdx: index('queues_station_position_idx').on(table.stationId, table.position),
   statusIdx: index('queues_status_idx').on(table.status),
   expiryIdx: index('queues_expiry_idx').on(table.reservationExpiry),
@@ -110,19 +107,27 @@ export const queues = pgTable('queues', {
 // ==================== CHARGING SESSIONS TABLE ====================
 export const chargingSessions = pgTable('charging_sessions', {
   id: serial('id').primaryKey(),
-  userWhatsapp: varchar('user_whatsapp', { length: 20 }).notNull(),
-  stationId: integer('station_id').references(() => chargingStations.id).notNull(),
+  sessionId: varchar('session_id', { length: 50 }).notNull().unique(),
+  
+  // References
+  stationId: integer('station_id').notNull().references(() => chargingStations.id),
+  userWhatsapp: varchar('user_whatsapp', { length: 20 }).notNull().references(() => users.whatsappId),
   queueId: integer('queue_id').references(() => queues.id),
   
   // Session Details
+  status: varchar('status', { length: 20 }).notNull().default('initiated'), // initiated, active, paused, completed, failed
   startTime: timestamp('start_time'),
   endTime: timestamp('end_time'),
-  durationMinutes: integer('duration_minutes'),
-  energyConsumedKwh: decimal('energy_consumed_kwh', { precision: 6, scale: 2 }),
-  totalCost: decimal('total_cost', { precision: 8, scale: 2 }),
+  duration: integer('duration'), // in minutes
   
-  // Status
-  status: varchar('status', { length: 20 }).notNull().default('active'), // active, completed, interrupted
+  // Charging Data
+  energyDelivered: decimal('energy_delivered', { precision: 8, scale: 3 }), // kWh
+  peakPowerKw: decimal('peak_power_kw', { precision: 6, scale: 2 }),
+  averagePowerKw: decimal('average_power_kw', { precision: 6, scale: 2 }),
+  
+  // Cost
+  totalCost: decimal('total_cost', { precision: 10, scale: 2 }),
+  ratePerKwh: decimal('rate_per_kwh', { precision: 5, scale: 2 }),
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow(),
@@ -139,10 +144,19 @@ export const stationOwners = pgTable('station_owners', {
   id: serial('id').primaryKey(),
   whatsappId: varchar('whatsapp_id', { length: 20 }).notNull().unique(),
   name: varchar('name', { length: 100 }).notNull(),
+  phoneNumber: varchar('phone_number', { length: 20 }),
+  email: varchar('email', { length: 150 }),
   
-  // Owner Status
+  // Business Details
+  businessName: varchar('business_name', { length: 200 }),
+  businessType: varchar('business_type', { length: 50 }), // individual, corporate, franchise
+  
+  // Verification
+  isVerified: boolean('is_verified').default(false),
+  verificationDocuments: jsonb('verification_documents'),
+  
+  // Status
   isActive: boolean('is_active').default(true),
-  permissions: jsonb('permissions').notNull().default('["manage_own_stations"]'),
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow(),
@@ -168,7 +182,7 @@ export const admins = pgTable('admins', {
   whatsappIdIdx: index('admins_whatsapp_id_idx').on(table.whatsappId),
 }));
 
-// ==================== GEOCODE CACHE TABLE ====================
+// ==================== GEOCODE CACHE TABLE (V1) ====================
 export const geocodeCache = pgTable('geocode_cache', {
   id: serial('id').primaryKey(),
   address: text('address').notNull().unique(),
@@ -184,6 +198,53 @@ export const geocodeCache = pgTable('geocode_cache', {
 }, (table) => ({
   addressIdx: index('geocode_address_idx').on(table.address),
   locationIdx: index('geocode_location_idx').on(table.latitude, table.longitude),
+}));
+
+// ==================== ENHANCED GEOCODE CACHE (V2) ====================
+export const geocodeCacheV2 = pgTable('geocode_cache_v2', {
+  id: serial('id').primaryKey(),
+  searchTerm: text('search_term').notNull().unique(),
+  originalAddress: text('original_address').notNull(),
+  latitude: decimal('latitude', { precision: 10, scale: 8 }).notNull(),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }).notNull(),
+  geohash: text('geohash').notNull(),
+  
+  // Enhanced address components
+  formattedAddress: text('formatted_address'),
+  locality: text('locality'), // City
+  subLocality: text('sub_locality'), // Area/Neighborhood  
+  state: text('state'),
+  country: text('country').default('India'),
+  postalCode: text('postal_code'),
+  
+  // Quality and usage metrics
+  confidence: decimal('confidence', { precision: 3, scale: 2 }).default('1.0'),
+  hitCount: integer('hit_count').default(1),
+  lastUsed: timestamp('last_used').defaultNow(),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  searchTermIdx: index('geocode_v2_search_term_idx').on(table.searchTerm),
+  geohashIdx: index('geocode_v2_geohash_idx').on(table.geohash),
+  localityIdx: index('geocode_v2_locality_idx').on(table.locality),
+}));
+
+// ==================== USER SEARCH HISTORY TABLE ====================
+export const userSearchHistory = pgTable('user_search_history', {
+  id: serial('id').primaryKey(),
+  userWhatsapp: varchar('user_whatsapp', { length: 20 }).notNull(),
+  searchTerm: text('search_term').notNull(),
+  latitude: decimal('latitude', { precision: 10, scale: 8 }).notNull(),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }).notNull(),
+  resultCount: integer('result_count').default(0),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  userIdx: index('search_history_user_idx').on(table.userWhatsapp),
+  termIdx: index('search_history_term_idx').on(table.searchTerm),
+  dateIdx: index('search_history_date_idx').on(table.createdAt),
 }));
 
 // ==================== AUDIT LOGS TABLE ====================
@@ -271,3 +332,9 @@ export type StationOwner = typeof stationOwners.$inferSelect;
 export type NewStationOwner = typeof stationOwners.$inferInsert;
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
+export type GeocodeCache = typeof geocodeCache.$inferSelect;
+export type NewGeocodeCache = typeof geocodeCache.$inferInsert;
+export type GeocacheCacheV2 = typeof geocodeCacheV2.$inferSelect;
+export type NewGeocacheCacheV2 = typeof geocodeCacheV2.$inferInsert;
+export type UserSearchHistory = typeof userSearchHistory.$inferSelect;
+export type NewUserSearchHistory = typeof userSearchHistory.$inferInsert;

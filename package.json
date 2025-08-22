@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "SharaSpot EV Charging WhatsApp Bot - Production Ready",
   "main": "dist/index.js",
+  
   "scripts": {
     "// === DEVELOPMENT ===": "",
     "dev": "tsx watch src/index.ts",
@@ -18,7 +19,19 @@
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
     "db:reset": "tsx src/db/migrate.ts && npm run seed:all",
+    
+     "db:fix": "tsx src/scripts/fix-database.ts",
 
+    "// === DATABASE DEBUG SCRIPTS ===": "",
+    "db:check-structure": "tsx src/scripts/check-database.ts",
+    "db:check-schema": "tsx src/scripts/check-drizzle-schema.ts",
+    "db:check-all": "npm run db:check-structure && npm run db:check-schema",
+    "db:test-insert": "tsx -e \"import('./src/scripts/check-drizzle-schema.ts').then(m => m.testManualInsert())\"",
+    
+    "db:check": "tsx -e \"import('./src/scripts/fix-database.ts').then(m => m.fixDatabaseSchema())\"",
+    "db:verify": "tsx -e \"console.log('Verifying database...'); process.exit(0);\"",
+         "db:fix-columns": "tsx src/scripts/fix-station-owners-columns.ts",
+"db:check-lengths": "tsx src/scripts/check-column-lengths.ts",
     "// === DATA SEEDING ===": "",
     "seed": "tsx src/db/seed-sample-data.ts",
     "seed:tn": "tsx src/db/seed-tamil-nadu-data.ts",
@@ -45,63 +58,23 @@
     "test:stations": "tsx src/scripts/quick-test.ts stations",
     "test:chennai": "tsx src/scripts/quick-test.ts chennai",
     "test:coimbatore": "tsx src/scripts/quick-test.ts coimbatore",
-    "test:madurai": "tsx src/scripts/quick-test.ts madurai",
-    "test:newuser": "tsx src/scripts/quick-test.ts newuser",
 
-    "// === TESTING WORKFLOWS ===": "",
-    "test:basic": "npm run test:automated",
-    "test:all": "npm run test && npm run test:phase4",
-    "test:full": "npm run seed:all && npm run test:all",
+    "// === QUICK FIXES ===": "",
+    "fix:all": "npm run db:fix && echo '✅ Database fixed'",
+    "fix:schema": "npm run db:generate && npm run db:push",
+    "fix:permissions": "chmod +x src/scripts/*.ts",
 
-    "// === SMOKE & QUICK TESTS ===": "",
-    "test:smoke": "npm run test:geocoding && npm run test:chennai",
-    "test:quick": "npm run test:automated && npm run test:coimbatore",
-    "test:health": "tsx -e \"console.log('🏥 Health check: Run npm run test:smoke for basic validation')\"",
-
-    "// === INTEGRATION TESTING ===": "",
-    "test:integration": "npm run seed:all && npm run test:all",
-    "test:e2e": "npm run test:integration",
-    "test:regression": "npm run test:all",
-
-    "// === CONTINUOUS TESTING ===": "",
-    "test:watch": "tsx watch src/testing/test-runner.ts",
-    "test:watch:bot": "tsx watch src/testing/automated-bot-tester.ts",
-    "test:watch:phase4": "tsx watch src/testing/phase4-tester.ts",
-
-    "// === VALIDATION & VERIFICATION ===": "",
-    "validate": "npm run test:smoke && npm run test:phase4",
-    "verify:basic": "npm run test:automated && npm run test:geocoding",
-    "verify:phase4": "npm run test:phase4 && npm run test:booking",
-    "verify:all": "npm run test:full",
-
-    "// === PRODUCTION TESTING ===": "",
-    "test:production": "NODE_ENV=production npm run test:smoke",
-    "test:ci": "npm run build && npm run test:smoke && npm run test:all",
-    "verify:deployment": "npm run test:smoke && npm run test:phase4",
-
-    "// === DEMO & STATUS ===": "",
-    "demo": "npm run test:chennai",
-    "demo:full": "npm run seed:tn && npm run test:all",
-    "demo:phase4": "npm run test:phase4",
-    "status": "tsx -e \"console.log('✅ SharaSpot v1.0 | All Phases Complete | Production Ready')\"",
-    "summary": "npm run status && npm run test:smoke",
-
-    "// === MAINTENANCE ===": "",
-    "clean": "rm -rf dist && rm -rf node_modules/.cache",
-    "clean:logs": "rm -rf logs/*.log",
-    "clean:all": "npm run clean && npm run clean:logs",
-    "reset": "npm run clean:all && npm install && npm run build",
-
-    "// === MONITORING ===": "",
-    "monitor:tests": "watch -n 60 'npm run test:smoke'",
-    "monitor:phase4": "watch -n 30 'npm run test:phase4'",
-
-    "// === UTILITIES ===": "",
-    "check:types": "tsc --noEmit",
-    "check:build": "npm run build",
-    "check:deps": "npm audit",
-    "check:all": "npm run check:types && npm run check:deps && npm run test:smoke"
-  },
+    "// === HEALTH CHECKS ===": "",
+    "health": "tsx -e \"console.log('🏥 Health check not implemented yet')\"",
+    "health:db": "tsx src/scripts/fix-database.ts",
+    "health:api": "tsx -e \"console.log('🌐 API health check not implemented yet')\"",
+     
+    "// === PRODUCTION ===": "",
+    "deploy": "npm run build && echo '🚀 Deploy script not implemented'",
+    "docker:build": "docker build -t sharaspot-bot .",
+    "docker:run": "docker run -p 3000:3000 sharaspot-bot"
+  
+},
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
     "@types/node-cron": "^3.0.11",

@@ -1,13 +1,14 @@
+// src/db/seed-tamil-nadu-data.ts - FIXED VERSION TO MATCH CURRENT SCHEMA
 import { db } from '../config/database';
-import { chargingStations, stationOwners, users } from './schema';
+import { users, stationOwners, chargingStations } from './schema';
 import { logger } from '../utils/logger';
 
-export async function seedTamilNaduData() {
+export async function seedTamilNaduData(): Promise<void> {
   try {
     logger.info('🌱 Seeding Tamil Nadu EV charging stations...');
 
-    // Sample station owners (Local Tamil Nadu businesses)
-    const tamilNaduOwners = [
+    // Step 1: Create station owners (ONLY whatsappId and name - matches current schema)
+    const owners = [
       { whatsappId: '919876543210', name: 'TN Green Energy Solutions' },
       { whatsappId: '919876543211', name: 'Chennai PowerHub' },
       { whatsappId: '919876543212', name: 'Coimbatore EcoCharge' },
@@ -15,369 +16,246 @@ export async function seedTamilNaduData() {
       { whatsappId: '919876543214', name: 'Salem EV Station' },
     ];
 
-    // Insert owners
-    await db.insert(stationOwners).values(tamilNaduOwners).onConflictDoNothing();
+    await db.insert(stationOwners).values(owners).onConflictDoNothing();
+    logger.info(`✅ Created ${owners.length} station owners`);
 
-    // Comprehensive Tamil Nadu charging stations
-    const tamilNaduStations = [
-      // CHENNAI - Major Business Districts
+    // Step 2: Create test users
+    const testUsers = [
+      { whatsappId: '919999999901', name: 'Chennai User', phoneNumber: '919999999901' },
+      { whatsappId: '919999999902', name: 'Coimbatore User', phoneNumber: '919999999902' },
+      { whatsappId: '919999999903', name: 'Madurai User', phoneNumber: '919999999903' },
+      { whatsappId: '919999999904', name: 'Salem User', phoneNumber: '919999999904' },
+    ];
+
+    await db.insert(users).values(testUsers).onConflictDoNothing();
+    logger.info(`✅ Created ${testUsers.length} test users`);
+
+    // Step 3: Create charging stations
+    const stations = [
+      // Chennai Stations
       {
-        name: 'Anna Nagar Power Hub',
-        address: 'Anna Nagar West, Chennai, Tamil Nadu 600040',
+        name: 'Anna Nagar EV Hub',
+        address: 'Anna Nagar, Chennai, Tamil Nadu 600040',
         latitude: '13.0878',
         longitude: '80.2086',
-        totalPorts: 6,
-        availablePorts: 4,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2', 'CHAdeMO']),
-        maxPowerKw: 150,
-        pricePerKwh: '24.50',
+        totalPorts: 4,
+        availablePorts: 2,
+        connectorTypes: ['CCS2', 'Type2'],
+        maxPowerKw: 50,
+        pricePerKwh: '12.00',
         ownerWhatsappId: '919876543211',
-        maxQueueLength: 8,
-        currentQueueLength: 1,
-        averageSessionMinutes: 35,
       },
       {
-        name: 'T Nagar Shopping District Charger',
+        name: 'T Nagar Fast Charge',
         address: 'T Nagar, Chennai, Tamil Nadu 600017',
         latitude: '13.0418',
         longitude: '80.2341',
-        totalPorts: 4,
-        availablePorts: 2,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
+        totalPorts: 6,
+        availablePorts: 4,
+        connectorTypes: ['CCS2', 'CHAdeMO'],
         maxPowerKw: 100,
-        pricePerKwh: '25.00',
+        pricePerKwh: '15.00',
         ownerWhatsappId: '919876543211',
-        maxQueueLength: 6,
-        currentQueueLength: 2,
-        averageSessionMinutes: 45,
       },
       {
-        name: 'Adyar Riverside Fast Charger',
-        address: 'Adyar, Chennai, Tamil Nadu 600020',
-        latitude: '13.0067',
-        longitude: '80.2206',
+        name: 'Velachery Power Station',
+        address: 'Velachery, Chennai, Tamil Nadu 600042',
+        latitude: '12.9754',
+        longitude: '80.2212',
         totalPorts: 3,
-        availablePorts: 3,
-        connectorTypes: JSON.stringify(['CCS2']),
-        maxPowerKw: 180,
-        pricePerKwh: '26.00',
-        ownerWhatsappId: '919876543210',
-        maxQueueLength: 4,
-        currentQueueLength: 0,
-        averageSessionMinutes: 30,
-      },
-      {
-        name: 'OMR IT Corridor Station',
-        address: 'Old Mahabalipuram Road, Chennai, Tamil Nadu 600096',
-        latitude: '12.9165',
-        longitude: '80.2284',
-        totalPorts: 8,
-        availablePorts: 5,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 75,
-        pricePerKwh: '22.50',
-        ownerWhatsappId: '919876543211',
-        maxQueueLength: 10,
-        currentQueueLength: 2,
-        averageSessionMinutes: 50,
-      },
-      {
-        name: 'Chennai Airport Express Charger',
-        address: 'Near Chennai Airport, Chennai, Tamil Nadu 600027',
-        latitude: '12.9941',
-        longitude: '80.1709',
-        totalPorts: 5,
         availablePorts: 1,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2', 'CHAdeMO']),
-        maxPowerKw: 200,
-        pricePerKwh: '28.00',
-        ownerWhatsappId: '919876543210',
-        maxQueueLength: 7,
-        currentQueueLength: 4,
-        averageSessionMinutes: 25,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '10.00',
+        ownerWhatsappId: '919876543211',
       },
 
-      // COIMBATORE - Industrial & Commercial Hubs
+      // Coimbatore Stations
       {
-        name: 'RS Puram Central Station',
+        name: 'RS Puram EV Center',
         address: 'RS Puram, Coimbatore, Tamil Nadu 641002',
-        latitude: '11.0168',
-        longitude: '76.9558',
-        totalPorts: 4,
+        latitude: '11.0049',
+        longitude: '76.9618',
+        totalPorts: 5,
         availablePorts: 3,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 120,
-        pricePerKwh: '23.00',
+        connectorTypes: ['CCS2', 'Type2'],
+        maxPowerKw: 75,
+        pricePerKwh: '11.00',
         ownerWhatsappId: '919876543212',
-        maxQueueLength: 5,
-        currentQueueLength: 1,
-        averageSessionMinutes: 40,
       },
       {
-        name: 'Gandhipuram Fast Charge',
+        name: 'Gandhipuram Quick Charge',
         address: 'Gandhipuram, Coimbatore, Tamil Nadu 641012',
         latitude: '11.0183',
         longitude: '76.9725',
-        totalPorts: 3,
+        totalPorts: 4,
         availablePorts: 2,
-        connectorTypes: JSON.stringify(['CCS2']),
-        maxPowerKw: 150,
-        pricePerKwh: '24.00',
+        connectorTypes: ['CCS2'],
+        maxPowerKw: 60,
+        pricePerKwh: '13.50',
         ownerWhatsappId: '919876543212',
-        maxQueueLength: 4,
-        currentQueueLength: 1,
-        averageSessionMinutes: 35,
       },
       {
-        name: 'Peelamedu Tech Park Charger',
+        name: 'Peelamedu EV Station',
         address: 'Peelamedu, Coimbatore, Tamil Nadu 641004',
-        latitude: '11.0510',
-        longitude: '77.0206',
-        totalPorts: 6,
-        availablePorts: 4,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 100,
-        pricePerKwh: '21.50',
-        ownerWhatsappId: '919876543212',
-        maxQueueLength: 8,
-        currentQueueLength: 1,
-        averageSessionMinutes: 45,
-      },
-
-      // MADURAI - Cultural & Commercial Center
-      {
-        name: 'Meenakshi Temple Area Charger',
-        address: 'Near Meenakshi Temple, Madurai, Tamil Nadu 625001',
-        latitude: '9.9195',
-        longitude: '78.1193',
-        totalPorts: 3,
-        availablePorts: 1,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 75,
-        pricePerKwh: '25.50',
-        ownerWhatsappId: '919876543213',
-        maxQueueLength: 4,
-        currentQueueLength: 2,
-        averageSessionMinutes: 50,
-      },
-      {
-        name: 'Anna Nagar Madurai Station',
-        address: 'Anna Nagar, Madurai, Tamil Nadu 625020',
-        latitude: '9.9312',
-        longitude: '78.1548',
-        totalPorts: 4,
-        availablePorts: 3,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 120,
-        pricePerKwh: '23.50',
-        ownerWhatsappId: '919876543213',
-        maxQueueLength: 5,
-        currentQueueLength: 0,
-        averageSessionMinutes: 42,
-      },
-
-      // SALEM - Industrial Hub
-      {
-        name: 'Salem Junction Station',
-        address: 'Salem Junction, Salem, Tamil Nadu 636001',
-        latitude: '11.6643',
-        longitude: '78.1460',
-        totalPorts: 5,
-        availablePorts: 2,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 100,
-        pricePerKwh: '22.00',
-        ownerWhatsappId: '919876543214',
-        maxQueueLength: 6,
-        currentQueueLength: 3,
-        averageSessionMinutes: 48,
-      },
-      {
-        name: 'Cherry Road Power Point',
-        address: 'Cherry Road, Salem, Tamil Nadu 636007',
-        latitude: '11.6596',
-        longitude: '78.1578',
-        totalPorts: 3,
-        availablePorts: 3,
-        connectorTypes: JSON.stringify(['CCS2']),
-        maxPowerKw: 150,
-        pricePerKwh: '24.50',
-        ownerWhatsappId: '919876543214',
-        maxQueueLength: 4,
-        currentQueueLength: 0,
-        averageSessionMinutes: 35,
-      },
-
-      // TIRUPUR - Textile Hub
-      {
-        name: 'Tirupur Textile City Charger',
-        address: 'Avinashi Road, Tirupur, Tamil Nadu 641602',
-        latitude: '11.0880',
-        longitude: '77.3411',
-        totalPorts: 4,
-        availablePorts: 1,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 75,
-        pricePerKwh: '21.00',
-        ownerWhatsappId: '919876543212',
-        maxQueueLength: 5,
-        currentQueueLength: 3,
-        averageSessionMinutes: 55,
-      },
-
-      // ERODE - Commercial Center
-      {
-        name: 'Erode Bus Stand Charger',
-        address: 'Bus Stand Road, Erode, Tamil Nadu 638001',
-        latitude: '11.3410',
-        longitude: '77.7172',
-        totalPorts: 3,
-        availablePorts: 2,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 100,
-        pricePerKwh: '23.00',
-        ownerWhatsappId: '919876543214',
-        maxQueueLength: 4,
-        currentQueueLength: 1,
-        averageSessionMinutes: 45,
-      },
-
-      // VELLORE - Educational Hub
-      {
-        name: 'VIT University Campus Charger',
-        address: 'VIT University, Vellore, Tamil Nadu 632014',
-        latitude: '12.9692',
-        longitude: '79.1559',
-        totalPorts: 6,
-        availablePorts: 4,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 120,
-        pricePerKwh: '20.00',
-        ownerWhatsappId: '919876543210',
-        maxQueueLength: 8,
-        currentQueueLength: 1,
-        averageSessionMinutes: 40,
-      },
-
-      // THANJAVUR - Cultural Heritage City
-      {
-        name: 'Thanjavur Palace Area Station',
-        address: 'Palace Road, Thanjavur, Tamil Nadu 613001',
-        latitude: '10.7905',
-        longitude: '79.1378',
+        latitude: '11.0301',
+        longitude: '77.0081',
         totalPorts: 2,
         availablePorts: 1,
-        connectorTypes: JSON.stringify(['CCS2']),
-        maxPowerKw: 75,
-        pricePerKwh: '24.00',
-        ownerWhatsappId: '919876543213',
-        maxQueueLength: 3,
-        currentQueueLength: 1,
-        averageSessionMinutes: 50,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '9.50',
+        ownerWhatsappId: '919876543212',
       },
 
-      // TRICHY - Central Tamil Nadu Hub
+      // Madurai Stations
       {
-        name: 'Trichy Central Bus Stand Charger',
-        address: 'Central Bus Stand, Tiruchirappalli, Tamil Nadu 620001',
+        name: 'Madurai Central EV Hub',
+        address: 'Anna Nagar, Madurai, Tamil Nadu 625020',
+        latitude: '9.9252',
+        longitude: '78.1198',
+        totalPorts: 4,
+        availablePorts: 2,
+        connectorTypes: ['CCS2', 'Type2'],
+        maxPowerKw: 50,
+        pricePerKwh: '11.50',
+        ownerWhatsappId: '919876543213',
+      },
+      {
+        name: 'Meenakshi Mission Hospital Charger',
+        address: 'Lake Area, Madurai, Tamil Nadu 625020',
+        latitude: '9.9197',
+        longitude: '78.1092',
+        totalPorts: 3,
+        availablePorts: 3,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '10.00',
+        ownerWhatsappId: '919876543213',
+      },
+
+      // Salem Stations
+      {
+        name: 'Salem Junction EV Point',
+        address: 'Junction, Salem, Tamil Nadu 636001',
+        latitude: '11.664',
+        longitude: '78.146',
+        totalPorts: 3,
+        availablePorts: 1,
+        connectorTypes: ['CCS2'],
+        maxPowerKw: 50,
+        pricePerKwh: '12.00',
+        ownerWhatsappId: '919876543214',
+      },
+      {
+        name: 'Salem Steel Plant Charger',
+        address: 'Steel Plant Area, Salem, Tamil Nadu 636001',
+        latitude: '11.6854',
+        longitude: '78.1832',
+        totalPorts: 6,
+        availablePorts: 4,
+        connectorTypes: ['CCS2', 'Type2', 'CHAdeMO'],
+        maxPowerKw: 120,
+        pricePerKwh: '14.00',
+        ownerWhatsappId: '919876543214',
+      },
+
+      // Other Tamil Nadu Cities
+      {
+        name: 'Tirupur Textile Hub Charger',
+        address: 'Tirupur, Tamil Nadu 641601',
+        latitude: '11.1085',
+        longitude: '77.3411',
+        totalPorts: 4,
+        availablePorts: 2,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '10.50',
+        ownerWhatsappId: '919876543210',
+      },
+      {
+        name: 'Erode Bus Stand EV Station',
+        address: 'Erode, Tamil Nadu 638001',
+        latitude: '11.341',
+        longitude: '77.717',
+        totalPorts: 3,
+        availablePorts: 2,
+        connectorTypes: ['CCS2'],
+        maxPowerKw: 50,
+        pricePerKwh: '11.00',
+        ownerWhatsappId: '919876543210',
+      },
+      {
+        name: 'Vellore Fort EV Point',
+        address: 'Vellore, Tamil Nadu 632001',
+        latitude: '12.9165',
+        longitude: '79.1325',
+        totalPorts: 2,
+        availablePorts: 1,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '10.00',
+        ownerWhatsappId: '919876543210',
+      },
+      {
+        name: 'Thanjavur Heritage Charger',
+        address: 'Thanjavur, Tamil Nadu 613001',
+        latitude: '10.7870',
+        longitude: '79.1378',
+        totalPorts: 3,
+        availablePorts: 3,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '9.00',
+        ownerWhatsappId: '919876543210',
+      },
+      {
+        name: 'Trichy Rock Fort Station',
+        address: 'Tiruchirappalli, Tamil Nadu 620001',
         latitude: '10.7905',
         longitude: '78.7047',
         totalPorts: 4,
         availablePorts: 2,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 100,
-        pricePerKwh: '22.50',
-        ownerWhatsappId: '919876543213',
-        maxQueueLength: 5,
-        currentQueueLength: 2,
-        averageSessionMinutes: 45,
+        connectorTypes: ['CCS2', 'Type2'],
+        maxPowerKw: 50,
+        pricePerKwh: '11.50',
+        ownerWhatsappId: '919876543210',
       },
-
-      // THOOTHUKUDI - Port City
       {
-        name: 'Thoothukudi Port Area Charger',
-        address: 'Port Area, Thoothukudi, Tamil Nadu 628001',
+        name: 'Thoothukudi Port EV Hub',
+        address: 'Thoothukudi, Tamil Nadu 628001',
         latitude: '8.7642',
         longitude: '78.1348',
-        totalPorts: 3,
+        totalPorts: 5,
         availablePorts: 3,
-        connectorTypes: JSON.stringify(['CCS2', 'Type2']),
-        maxPowerKw: 150,
-        pricePerKwh: '26.00',
+        connectorTypes: ['CCS2', 'CHAdeMO'],
+        maxPowerKw: 75,
+        pricePerKwh: '13.00',
         ownerWhatsappId: '919876543210',
-        maxQueueLength: 4,
-        currentQueueLength: 0,
-        averageSessionMinutes: 35,
       },
-
-      // KANYAKUMARI - Southern Tip
       {
         name: 'Kanyakumari Sunrise Point Charger',
-        address: 'Sunrise Point, Kanyakumari, Tamil Nadu 629702',
+        address: 'Kanyakumari, Tamil Nadu 629001',
         latitude: '8.0883',
         longitude: '77.5385',
         totalPorts: 2,
-        availablePorts: 1,
-        connectorTypes: JSON.stringify(['CCS2']),
-        maxPowerKw: 100,
-        pricePerKwh: '27.00',
-        ownerWhatsappId: '919876543213',
-        maxQueueLength: 3,
-        currentQueueLength: 1,
-        averageSessionMinutes: 40,
+        availablePorts: 2,
+        connectorTypes: ['Type2'],
+        maxPowerKw: 22,
+        pricePerKwh: '12.00',
+        ownerWhatsappId: '919876543210',
       },
     ];
 
-    // Insert stations
-    await db.insert(chargingStations).values(tamilNaduStations).onConflictDoNothing();
+    await db.insert(chargingStations).values(stations).onConflictDoNothing();
+    logger.info(`✅ Created ${stations.length} charging stations`);
 
-    // Sample test users for automated testing
-    const testUsers = [
-      {
-        whatsappId: '919999999901',
-        name: 'Test User Chennai',
-        phoneNumber: '919999999901',
-        evModel: 'Tata Nexon EV',
-        connectorType: 'CCS2',
-        chargingIntent: 'Quick Top-up',
-        queuePreference: 'Free Now',
-        preferencesCaptured: true,
-      },
-      {
-        whatsappId: '919999999902',
-        name: 'Test User Coimbatore',
-        phoneNumber: '919999999902',
-        evModel: 'MG ZS EV',
-        connectorType: 'Type2',
-        chargingIntent: 'Full Charge',
-        queuePreference: 'Wait 15m',
-        preferencesCaptured: true,
-      },
-      {
-        whatsappId: '919999999903',
-        name: 'Test User Madurai',
-        phoneNumber: '919999999903',
-        evModel: 'Tesla Model 3',
-        connectorType: 'CCS2',
-        chargingIntent: 'Emergency',
-        queuePreference: 'Any Queue',
-        preferencesCaptured: true,
-      },
-      {
-        whatsappId: '919999999904',
-        name: 'New Test User',
-        phoneNumber: '919999999904',
-        preferencesCaptured: false,
-      },
-    ];
-
-    // Insert test users
-    await db.insert(users).values(testUsers).onConflictDoNothing();
-
-    logger.info('✅ Tamil Nadu seed data created successfully!');
-    logger.info(`📍 Created ${tamilNaduStations.length} charging stations across Tamil Nadu`);
-    logger.info('🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari');
+    // Summary
+    const cities = ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Tirupur', 'Erode', 'Vellore', 'Thanjavur', 'Trichy', 'Thoothukudi', 'Kanyakumari'];
+    logger.info(`📍 Created ${stations.length} charging stations across Tamil Nadu`);
+    logger.info(`🏢 Cities covered: ${cities.join(', ')}`);
     logger.info(`👥 Created ${testUsers.length} test users for automated testing`);
+    logger.info('✅ Tamil Nadu seed data created successfully!');
 
   } catch (error) {
     logger.error('❌ Failed to seed Tamil Nadu data', { error });

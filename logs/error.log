@@ -2570,3 +2570,712 @@
     }
   }
 }
+2025-08-22 14:57:53 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:07:21 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:07:49 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:09:08 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:11:12 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:11:21 [ERROR]: ❌ Failed to seed Tamil Nadu data {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default, default), (default, $5, $6, default, default, default, default, default, default, default, default, default), (default, $7, $8, default, default, default, default, default, default, default, default, default), (default, $9, $10, default, default, default, default, default, default, default, default, default) on conflict do nothing",
+    "params": [
+      "919876543210",
+      "TN Green Energy Solutions",
+      "919876543211",
+      "Chennai PowerHub",
+      "919876543212",
+      "Coimbatore EcoCharge",
+      "919876543213",
+      "Madurai FastCharge",
+      "919876543214",
+      "Salem EV Station"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "60",
+      "file": "parse_target.c",
+      "line": "1065",
+      "routine": "checkInsertTargets"
+    }
+  }
+}
+2025-08-22 15:17:26 [ERROR]: Error: Failed query: insert into "station_owners" ("id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning "id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at"
+params: test_manual_123,Test Manual Owner
+    at NeonHttpPreparedQuery.queryWithCache (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/neon-http/session.ts:83:18)
+    at async testManualInsert (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/scripts/check-drizzle-schema.ts:80:20) {
+  "service": "sharaspot-bot",
+  "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\"",
+  "params": [
+    "test_manual_123",
+    "Test Manual Owner"
+  ],
+  "cause": {
+    "name": "NeonDbError",
+    "severity": "ERROR",
+    "code": "42703",
+    "position": "60",
+    "file": "parse_target.c",
+    "line": "1065",
+    "routine": "checkInsertTargets"
+  }
+}
+2025-08-22 15:21:26 [ERROR]: Error: Failed query: insert into "station_owners" ("id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning "id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at"
+params: test_manual_123,Test Manual Owner
+    at NeonHttpPreparedQuery.queryWithCache (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/neon-http/session.ts:83:18)
+    at async testManualInsert (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/scripts/check-drizzle-schema.ts:80:20) {
+  "service": "sharaspot-bot",
+  "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\"",
+  "params": [
+    "test_manual_123",
+    "Test Manual Owner"
+  ],
+  "cause": {
+    "name": "NeonDbError",
+    "severity": "ERROR",
+    "code": "42703",
+    "position": "60",
+    "file": "parse_target.c",
+    "line": "1065",
+    "routine": "checkInsertTargets"
+  }
+}
+2025-08-22 15:26:07 [ERROR]: Error: Failed query: insert into "station_owners" ("id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning "id", "whatsapp_id", "name", "phone_number", "email", "business_name", "business_type", "is_verified", "verification_documents", "is_active", "created_at", "updated_at"
+params: test_after_fix_1755856567565,Test Owner After Fix
+    at NeonHttpPreparedQuery.queryWithCache (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/neon-http/session.ts:83:18)
+    at async fixStationOwnersColumns (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/scripts/fix-station-owners-columns.ts:68:24) {
+  "service": "sharaspot-bot",
+  "query": "insert into \"station_owners\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\") values (default, $1, $2, default, default, default, default, default, default, default, default, default) on conflict do nothing returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"email\", \"business_name\", \"business_type\", \"is_verified\", \"verification_documents\", \"is_active\", \"created_at\", \"updated_at\"",
+  "params": [
+    "test_after_fix_1755856567565",
+    "Test Owner After Fix"
+  ],
+  "cause": {
+    "name": "NeonDbError",
+    "severity": "ERROR",
+    "code": "22001",
+    "file": "varchar.c",
+    "line": "637",
+    "routine": "varchar"
+  }
+}
+2025-08-22 15:31:30 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856889380",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:29 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AN12YsthYTIkPY4OjLYUv-y"
+    }
+  }
+}
+2025-08-22 15:31:30 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:30 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ADd27l8G1B7jSxgEyenn-CM"
+    }
+  }
+}
+2025-08-22 15:31:31 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856891677",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:31 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AIdzf83VaQTWtQyoqog-5ax"
+    }
+  }
+}
+2025-08-22 15:31:32 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:32 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A-I0ve1sGYptcq5yY5NIVTN"
+    }
+  }
+}
+2025-08-22 15:31:34 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856893522",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:33 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AReWw2z2wc2IKheFLSanuYY"
+    }
+  }
+}
+2025-08-22 15:31:34 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:34 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aat4ku53QCfGr2Ca6ioQIKk"
+    }
+  }
+}
+2025-08-22 15:31:35 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856895444",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:35 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aoplh8M-Tv4vjenguStugN6"
+    }
+  }
+}
+2025-08-22 15:31:36 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:35 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AdauolWfB6b2mK2MwpxF6xs"
+    }
+  }
+}
+2025-08-22 15:31:37 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856897308",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:37 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AgQZVSGHomAXnu8opGBRb_i"
+    }
+  }
+}
+2025-08-22 15:31:38 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:38 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A0K8Hg5aWLusTfl9Dqgibwc"
+    }
+  }
+}
+2025-08-22 15:31:40 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856899660",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:39 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AJ2S6DmYX4kgNurozn2TtbG"
+    }
+  }
+}
+2025-08-22 15:31:40 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:40 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Axhf1QH_dMG6FE86wUAGksS"
+    }
+  }
+}
+2025-08-22 15:31:42 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856901815",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:41 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AMY_lgh2edRQKBV687aH8YA"
+    }
+  }
+}
+2025-08-22 15:31:43 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:42 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A1L_CjswteXJ5cheizdUOSI"
+    }
+  }
+}
+2025-08-22 15:31:44 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856904167",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:44 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A9lkK8Y9ASaPgN1BPdQ2Mz3"
+    }
+  }
+}
+2025-08-22 15:31:45 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:01:44 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AwW1GHIZtDHtGEHrlQ_oFA3"
+    }
+  }
+}
+2025-08-22 15:31:46 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T10:01:46.222Z",
+      "2025-08-22T10:01:46.222Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 15:31:46 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 15:33:04 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856979720",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:04 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ADs2yuEdMzrdDJ7XecAlXzT"
+    }
+  }
+}
+2025-08-22 15:33:06 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:05 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A3ywIYIDLsEGfNPETCAiKv4"
+    }
+  }
+}
+2025-08-22 15:33:07 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856987033",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:07 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AlSsMMaAJu1mzk1Uiqmmf9t"
+    }
+  }
+}
+2025-08-22 15:33:10 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:10 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AzEvRSd5WyQkeda9R1Bzx5s"
+    }
+  }
+}
+2025-08-22 15:33:12 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856991703",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:11 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AoCvVMazfei5A6MuJ4qc1qh"
+    }
+  }
+}
+2025-08-22 15:33:12 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:12 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AHg9Mqdb0-JP1IpV-1-Rv8k"
+    }
+  }
+}
+2025-08-22 15:33:13 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856993693",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:13 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AKzttYW29ILmg5I18dWfShJ"
+    }
+  }
+}
+2025-08-22 15:33:14 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:14 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aj0iO5a4hw-_8n2BxPU7q1A"
+    }
+  }
+}
+2025-08-22 15:33:15 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856995389",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:15 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AVBeQ13z4jFHYl0RQxv-YiA"
+    }
+  }
+}
+2025-08-22 15:33:16 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:16 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AjauZFENvXEnO86bMzTnMOp"
+    }
+  }
+}
+2025-08-22 15:33:18 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856997880",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AJ4UhvvhvBdRLGFSh7o2_Vj"
+    }
+  }
+}
+2025-08-22 15:33:18 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ARjG80ypaNBgyU1ajU4oosC"
+    }
+  }
+}
+2025-08-22 15:33:20 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755856999820",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:19 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A1waWpzeuUu63yilAkwCSze"
+    }
+  }
+}
+2025-08-22 15:33:20 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:20 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A2R9lOhJ6feg0UiqFBPBObM"
+    }
+  }
+}
+2025-08-22 15:33:22 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755857001765",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:21 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Anb5IuN8UPAk7aMKRYBvpc9"
+    }
+  }
+}
+2025-08-22 15:33:22 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Friday, 22-Aug-25 03:00:00 PDT. The current time is Friday, 22-Aug-25 03:03:22 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AeLCAMvYRZf7n9ytvR-gjps"
+    }
+  }
+}
+2025-08-22 15:33:23 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T10:03:23.657Z",
+      "2025-08-22T10:03:23.657Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 15:33:23 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}

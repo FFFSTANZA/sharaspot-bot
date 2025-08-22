@@ -433,3 +433,4 @@ export class AutomatedBotTester {
 
 // Create singleton instance
 export const automatedBotTester = new AutomatedBotTester();
+
