@@ -3471,3 +3471,3868 @@
 2025-08-21 15:56:27 [INFO]: SIGINT received, shutting down gracefully... {
   "service": "sharaspot-bot"
 }
+2025-08-22 11:38:42 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:42 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:42 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:42 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:44 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:38:45 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842924290",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:44 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Auy3qWJLcgUqZy0oigGcPsa"
+    }
+  }
+}
+2025-08-22 11:38:45 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:45 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:45 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:38:45 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:45 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ApBQhPsweFKTeEUParOf8mE"
+    }
+  }
+}
+2025-08-22 11:38:45 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842925332",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:45 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AqPhWyoKH9qqx_ENts7dNiR"
+    }
+  }
+}
+2025-08-22 11:38:45 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:45 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A6gqF6vW7FDJNbk7hMTAraE"
+    }
+  }
+}
+2025-08-22 11:38:46 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:46 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:46 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:38:46 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": false
+}
+2025-08-22 11:38:46 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842926337",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:46 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ab5mhA0FzF6qvDckWK34bzI"
+    }
+  }
+}
+2025-08-22 11:38:46 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs"
+}
+2025-08-22 11:38:46 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:46 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A-TCKC-WHgB30OzPjv8tWwH"
+    }
+  }
+}
+2025-08-22 11:38:46 [ERROR]: ❌ List message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:46 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A5oOUcOsMEOKj-shXqQsJmV"
+    }
+  }
+}
+2025-08-22 11:38:47 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:47 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:47 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:38:47 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842927341",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:47 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A543FsPOAqj1eYbnZXCUGGi"
+    }
+  }
+}
+2025-08-22 11:38:47 [INFO]: 📋 List selected {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV"
+}
+2025-08-22 11:38:48 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:47 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ANN98YFIklYHFz8MU-dRiHt"
+    }
+  }
+}
+2025-08-22 11:38:48 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:48 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:48 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:48 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text"
+}
+2025-08-22 11:38:48 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:48 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AN5Pv4YVuKPJPEF0JFCd9iR"
+    }
+  }
+}
+2025-08-22 11:38:48 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842928346",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:48 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AydBjl0cO4GgKoG178aATV3"
+    }
+  }
+}
+2025-08-22 11:38:49 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:48 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Au9pMJncBkQZnkTG_TUfptr"
+    }
+  }
+}
+2025-08-22 11:38:49 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:49 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:49 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive"
+}
+2025-08-22 11:38:49 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842929348",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:49 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Axsxr8_L4BTMPwSTiOJ_pyY"
+    }
+  }
+}
+2025-08-22 11:38:49 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book"
+}
+2025-08-22 11:38:49 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:49 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ai55fhyuGDMuhqcsNTHvzZ2"
+    }
+  }
+}
+2025-08-22 11:38:49 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:49 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A3Pu2zsKuUjx24mWdMYARwV"
+    }
+  }
+}
+2025-08-22 11:38:50 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:50 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:50 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:50 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:38:50 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842930354",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:50 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A7e_XcqA0j5MMF-zZpfkuw3"
+    }
+  }
+}
+2025-08-22 11:38:51 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:50 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AVv3BRimiTBGRXyg1LhADpL"
+    }
+  }
+}
+2025-08-22 11:38:51 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:51 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:51 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:38:51 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755842931359",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:51 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A7W4a2TrfJpGz4lB06tCWqp"
+    }
+  }
+}
+2025-08-22 11:38:51 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "address": "RS Puram Coimbatore"
+}
+2025-08-22 11:38:52 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:51 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AVT8ukz7Akq838gXgFQhzNy"
+    }
+  }
+}
+2025-08-22 11:38:52 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "rs puram coimbatore",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:38:52 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "rs puram coimbatore",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      "11001010011111011100111011000111001",
+      "Coimbatore, Tamil Nadu, India",
+      "Coimbatore",
+      "Tamil Nadu",
+      "0.9",
+      "2025-08-22T06:08:52.256Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "searchTerm": "RS Puram Coimbatore",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919999999902",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      1,
+      "2025-08-22T06:08:52.335Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:38:52 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T06:08:52.370Z",
+      "2025-08-22T06:08:52.370Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 11:38:52 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:38:52 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:52 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AW4UY-tHB9lA_ojPL6BxTo6"
+    }
+  }
+}
+2025-08-22 11:38:52 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "location": {
+    "lat": 11.0168,
+    "lng": 76.9558
+  },
+  "radius": 25
+}
+2025-08-22 11:38:53 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:53 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AwyM3mf--tkhMiUugXAP8Ru"
+    }
+  }
+}
+2025-08-22 11:38:53 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:53 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AbLNDRaBKcUh2DaGIupuXCE"
+    }
+  }
+}
+2025-08-22 11:38:55 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:08:55 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ad9ycnK1BT24RTRh60bGpTK"
+    }
+  }
+}
+2025-08-22 11:41:08 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:08 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:08 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:08 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:09 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:41:10 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843069424",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:09 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AymoBdUPPoJuyNXtdd-AoDL"
+    }
+  }
+}
+2025-08-22 11:41:10 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:10 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ag9KlfsA4aJKbpuPLrMkDM4"
+    }
+  }
+}
+2025-08-22 11:41:10 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:10 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:10 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:41:10 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843070455",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:10 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "APWi9-IGpmgAA-qQVzB3b-d"
+    }
+  }
+}
+2025-08-22 11:41:11 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:10 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A3ZCL61GSZBQZiHJRqcgRW0"
+    }
+  }
+}
+2025-08-22 11:41:11 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": false
+}
+2025-08-22 11:41:11 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:11 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:11 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:41:11 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:11 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ALW_pJntR4Jt2G2z7BI5n7y"
+    }
+  }
+}
+2025-08-22 11:41:11 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843071460",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:11 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AQT8ivmGddYNgw2uD3zkSGN"
+    }
+  }
+}
+2025-08-22 11:41:11 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs"
+}
+2025-08-22 11:41:12 [ERROR]: ❌ List message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:11 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aji_XG-KKQoH9kEXDw4mtIm"
+    }
+  }
+}
+2025-08-22 11:41:12 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:12 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:12 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:41:12 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843072468",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:12 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A_rBdlRp18Z1jttkQcE3wST"
+    }
+  }
+}
+2025-08-22 11:41:13 [INFO]: 📋 List selected {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV"
+}
+2025-08-22 11:41:13 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:13 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AK1LiKOoVJ6fJg6TUS3rbm3"
+    }
+  }
+}
+2025-08-22 11:41:13 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:13 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:13 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:13 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text"
+}
+2025-08-22 11:41:13 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:13 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AUpg6gdSbcU9T8Vt9nRJw4o"
+    }
+  }
+}
+2025-08-22 11:41:13 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843073473",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:13 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ap-bjhobwxp5xq0wwfccElc"
+    }
+  }
+}
+2025-08-22 11:41:14 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:13 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A7Vb2CNMEFmKttuOLH5TlXs"
+    }
+  }
+}
+2025-08-22 11:41:14 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:14 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:14 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive"
+}
+2025-08-22 11:41:14 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843074475",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:14 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aj7JQsMaFjVN2Vw9je49Ljs"
+    }
+  }
+}
+2025-08-22 11:41:14 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:14 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AUQl_6rB23Ooq5CSwbyumEt"
+    }
+  }
+}
+2025-08-22 11:41:14 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book"
+}
+2025-08-22 11:41:15 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:14 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AsvstPg3oVRfz7ONVZqvHlj"
+    }
+  }
+}
+2025-08-22 11:41:15 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:15 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:15 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:15 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:41:15 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843075479",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:15 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A7QqwXZOOkjaDLkvW-ZaAE4"
+    }
+  }
+}
+2025-08-22 11:41:16 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:15 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AzxS440kyzlvz-2Lju8or_I"
+    }
+  }
+}
+2025-08-22 11:41:16 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:16 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:16 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:41:16 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843076482",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:16 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AamXhy1X-rlJBcdTgVhQ9Bt"
+    }
+  }
+}
+2025-08-22 11:41:16 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "address": "RS Puram Coimbatore"
+}
+2025-08-22 11:41:17 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:16 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AabDMkukPK_Xh8PAj5PH5qS"
+    }
+  }
+}
+2025-08-22 11:41:17 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "rs puram coimbatore",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:41:17 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "rs puram coimbatore",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      "11001010011111011100111011000111001",
+      "Coimbatore, Tamil Nadu, India",
+      "Coimbatore",
+      "Tamil Nadu",
+      "0.9",
+      "2025-08-22T06:11:17.237Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:41:17 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "searchTerm": "RS Puram Coimbatore",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919999999902",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      1,
+      "2025-08-22T06:11:17.305Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T06:11:17.496Z",
+      "2025-08-22T06:11:17.496Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 11:41:17 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:17 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AJswsAFR536ILxwTLd0YZLn"
+    }
+  }
+}
+2025-08-22 11:41:17 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:41:17 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "location": {
+    "lat": 11.0168,
+    "lng": 76.9558
+  },
+  "radius": 25
+}
+2025-08-22 11:41:18 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:17 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AuS2oHECkfjk_8xyDtCobk6"
+    }
+  }
+}
+2025-08-22 11:41:18 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A_9Vd3U0IWRJ5NacmkHJLtv"
+    }
+  }
+}
+2025-08-22 11:41:19 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:11:19 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A82_HYzzvakey_pAkOPAHsb"
+    }
+  }
+}
+2025-08-22 11:48:15 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:15 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:15 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:15 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:16 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:48:17 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843496873",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:17 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A5DTXLwuyJ7TtGoT4hvB3U2"
+    }
+  }
+}
+2025-08-22 11:48:17 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:17 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:17 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:48:17 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:17 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Aec93Z8q8XD-d-04MvVo71u"
+    }
+  }
+}
+2025-08-22 11:48:18 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843497907",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A5e--fwqUwX8n7RXX4yf99s"
+    }
+  }
+}
+2025-08-22 11:48:18 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ABhv4mzwd3p5cnbo3FhAcoi"
+    }
+  }
+}
+2025-08-22 11:48:18 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:18 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:18 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:48:18 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": false
+}
+2025-08-22 11:48:19 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AzbSIDfla-tNPIQ50MNU6wd"
+    }
+  }
+}
+2025-08-22 11:48:19 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843498914",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:18 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AnG0VFF7impRwIUVzES9Tb8"
+    }
+  }
+}
+2025-08-22 11:48:19 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs"
+}
+2025-08-22 11:48:19 [ERROR]: ❌ List message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:19 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A4aKRu83aVD-XE2cZ8TLeid"
+    }
+  }
+}
+2025-08-22 11:48:19 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:19 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:19 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:48:20 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843499921",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:19 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A5G998YuQF8HaBY_5uQUbm3"
+    }
+  }
+}
+2025-08-22 11:48:20 [INFO]: 📋 List selected {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV"
+}
+2025-08-22 11:48:20 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:20 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A8pfHICr5UsKHwvGJUruta1"
+    }
+  }
+}
+2025-08-22 11:48:20 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:20 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:20 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:20 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text"
+}
+2025-08-22 11:48:20 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:20 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AmKOVCTqq6rjnQn3pWoumqx"
+    }
+  }
+}
+2025-08-22 11:48:21 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843500926",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:20 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AVSu2ivbR_X2iUUEU78F73b"
+    }
+  }
+}
+2025-08-22 11:48:21 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:21 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ApsFSz9vdPZmFW9yQUb6TkE"
+    }
+  }
+}
+2025-08-22 11:48:21 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:21 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:21 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive"
+}
+2025-08-22 11:48:22 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843501930",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:21 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AfnfaEwfswfptDell1jIkAO"
+    }
+  }
+}
+2025-08-22 11:48:22 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:21 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Abi7a67y4PTTK5eo4BaTKLO"
+    }
+  }
+}
+2025-08-22 11:48:22 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book"
+}
+2025-08-22 11:48:22 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:22 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AKQoqN6HokTGX4x4KKAkRcw"
+    }
+  }
+}
+2025-08-22 11:48:22 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:22 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:22 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:22 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:48:23 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843502933",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:22 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "Ae22u8khZSWvGlHW_tMRjEF"
+    }
+  }
+}
+2025-08-22 11:48:23 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:23 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:23 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:48:24 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:23 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ATuXpBVfIP13UIyJ66Iw2-x"
+    }
+  }
+}
+2025-08-22 11:48:24 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843503938",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:23 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AjRdr2Bkd27PByWIUw4O19w"
+    }
+  }
+}
+2025-08-22 11:48:24 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "address": "RS Puram Coimbatore"
+}
+2025-08-22 11:48:24 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:24 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AbRL-77SJKFd5_qsFj1xa3o"
+    }
+  }
+}
+2025-08-22 11:48:24 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "rs puram coimbatore",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:24 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "rs puram coimbatore",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      "11001010011111011100111011000111001",
+      "Coimbatore, Tamil Nadu, India",
+      "Coimbatore",
+      "Tamil Nadu",
+      "0.9",
+      "2025-08-22T06:18:24.765Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:24 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "searchTerm": "RS Puram Coimbatore",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919999999902",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      1,
+      "2025-08-22T06:18:24.843Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:24 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T06:18:24.953Z",
+      "2025-08-22T06:18:24.953Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 11:48:25 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:25 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:24 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AWaGyP5dBs4d5lVXebAfM-g"
+    }
+  }
+}
+2025-08-22 11:48:25 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "location": {
+    "lat": 11.0168,
+    "lng": 76.9558
+  },
+  "radius": 25
+}
+2025-08-22 11:48:25 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:25 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AAlqGZm-JlzY1tmQCMrwo3n"
+    }
+  }
+}
+2025-08-22 11:48:25 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:25 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ATDQkLPUUKjBIMTlsjkvYfE"
+    }
+  }
+}
+2025-08-22 11:48:27 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:26 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AMI08E1v2_EspwoebVoYy3P"
+    }
+  }
+}
+2025-08-22 11:48:31 [INFO]: 🚀 SharaSpot Bot Testing Suite Starting... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:31 [INFO]: ============================================================ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:31 [INFO]: 📊 Step 1: Seeding Tamil Nadu test data... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:31 [INFO]: 🌱 Seeding Tamil Nadu EV charging stations... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: ✅ Tamil Nadu seed data created successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 📍 Created 19 charging stations across Tamil Nadu {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 🏢 Cities covered: Chennai, Coimbatore, Madurai, Salem, Tirupur, Erode, Vellore, Thanjavur, Trichy, Thoothukudi, Kanyakumari {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 👥 Created 4 test users for automated testing {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: ✅ Seed data completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 🤖 Step 2: Running automated bot tests... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 🧪 Starting automated bot testing... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 📋 Running scenario: New User Complete Onboarding {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]:    Step 1: Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:32 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:48:33 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843512942",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:33 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A0wZKAWnRdq6hJmB-xE6q4C"
+    }
+  }
+}
+2025-08-22 11:48:33 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:33 [INFO]:    Step 2: Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:33 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "text"
+}
+2025-08-22 11:48:34 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:33 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ArS8o8_jQW7Bt7enQ1ffn9b"
+    }
+  }
+}
+2025-08-22 11:48:34 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843513972",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:34 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AH5Nn_02xRpopO2ftfltwce"
+    }
+  }
+}
+2025-08-22 11:48:34 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:34 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AFg8TDuJpN2ZnOowqeLfdeJ"
+    }
+  }
+}
+2025-08-22 11:48:34 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:34 [INFO]:    Step 3: Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:34 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:48:35 [INFO]: Started preference flow {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "isOnboarding": false
+}
+2025-08-22 11:48:35 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843514977",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:34 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AAt3ZFIyZm8-IAJQ4WqMejw"
+    }
+  }
+}
+2025-08-22 11:48:35 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:35 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AuPMxHIVgV6-wJs3JA3maIA"
+    }
+  }
+}
+2025-08-22 11:48:35 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "buttonId": "popular_evs"
+}
+2025-08-22 11:48:35 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:35 [INFO]:    Step 4: Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:35 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "type": "interactive"
+}
+2025-08-22 11:48:36 [ERROR]: ❌ List message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:35 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AGev1gFYZBDUA124O9WOFGl"
+    }
+  }
+}
+2025-08-22 11:48:36 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843515982",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:35 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ALvKZRrA6_EIQbd-xcqNQ-9"
+    }
+  }
+}
+2025-08-22 11:48:36 [INFO]: 📋 List selected {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999904",
+  "listId": "Tata Nexon EV"
+}
+2025-08-22 11:48:36 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:36 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AAITFW9Z5qkaf5YzgplJZ3F"
+    }
+  }
+}
+2025-08-22 11:48:36 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:36 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ASXyNeAgCKA8WjX5f83cg6r"
+    }
+  }
+}
+2025-08-22 11:48:36 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:36 [INFO]: 📋 Running scenario: Existing User Quick Search {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:36 [INFO]:    Step 1: Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:36 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "text"
+}
+2025-08-22 11:48:37 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843516986",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:36 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AEvqzDxi1uSlo9CygHtk4hG"
+    }
+  }
+}
+2025-08-22 11:48:37 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:37 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A7uGGGhLGhtRRiF04VBsdiD"
+    }
+  }
+}
+2025-08-22 11:48:37 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:37 [INFO]:    Step 2: Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:37 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "type": "interactive"
+}
+2025-08-22 11:48:38 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843517989",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:37 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "ANd4OHRxWD6Yyb8cuWZvRim"
+    }
+  }
+}
+2025-08-22 11:48:38 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999904",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:37 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AxLyh16Qf8tUEVCTHyrXdqL"
+    }
+  }
+}
+2025-08-22 11:48:38 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999901",
+  "buttonId": "quick_book"
+}
+2025-08-22 11:48:38 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999901",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:38 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A3o6ZZnOOn6ClYd8wv9fYrQ"
+    }
+  }
+}
+2025-08-22 11:48:38 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:38 [INFO]: 📋 Running scenario: Address Search Flow {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:38 [INFO]:    Step 1: Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:38 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:48:39 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843518995",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:38 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AxopAPVGN_dgyA9kTFQe95p"
+    }
+  }
+}
+2025-08-22 11:48:39 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:39 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AHUD-s2hJPdrFiId6SXMowk"
+    }
+  }
+}
+2025-08-22 11:48:39 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:39 [INFO]:    Step 2: Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:40 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "type": "text"
+}
+2025-08-22 11:48:40 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "test_msg_1755843520000",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:40 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A3n1kSx2K-wmrwC0EUZDpZD"
+    }
+  }
+}
+2025-08-22 11:48:40 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919999999902",
+  "address": "RS Puram Coimbatore"
+}
+2025-08-22 11:48:40 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:40 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AlOcf0gOOsEFS1PV_w0d2Rm"
+    }
+  }
+}
+2025-08-22 11:48:40 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "rs puram coimbatore",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Step completed successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 
+📊 AUTOMATED TESTING REPORT {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: Total Tests: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Passed: 8 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ❌ Failed: 0 {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: Success Rate: 100.0% {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ================================================== {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 
+📋 New User Complete Onboarding: 4/4 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Send greeting message {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Provide name {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Select popular EV model {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Choose EV model from list {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 
+📋 Existing User Quick Search: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Send greeting {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Choose quick book {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 
+📋 Address Search Flow: 2/2 passed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Find stations command {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]:    ✅ Type Coimbatore address {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 
+🎯 PHASE COMPLETION SUMMARY: {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Phase 1: Database Schema & Basic Structure {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Phase 2: User Preferences & Profile Setup {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Phase 3: Location & Station Discovery {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 🔄 Phase 4: Booking & Queue Management (Next) {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ⏳ Phase 5: Owner Dashboard & Management {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ⏳ Phase 6: Admin Controls & Analytics {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Automated tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 🔧 Step 3: Testing individual components... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 🧪 Testing component: user-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: Testing User Service... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "rs puram coimbatore",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "rs puram coimbatore",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      "11001010011111011100111011000111001",
+      "Coimbatore, Tamil Nadu, India",
+      "Coimbatore",
+      "Tamil Nadu",
+      "0.9",
+      "2025-08-22T06:18:40.981Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:41 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919999999999",
+    "name": "Test User Component",
+    "phoneNumber": "919999999999"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919999999999",
+      "Test User Component",
+      "919999999999",
+      "2025-08-22T06:18:41.015Z",
+      "2025-08-22T06:18:41.015Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919999999999) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-22 11:48:41 [ERROR]: ❌ User creation failed {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ User retrieval successful {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 🧪 Testing component: location-service {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: Testing Location Services... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Location service structure verified {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: ✅ Component tests completed
+ {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 🎉 All tests completed successfully! {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [INFO]: 📝 Check the logs above for detailed results {
+  "service": "sharaspot-bot"
+}
+2025-08-22 11:48:41 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "searchTerm": "RS Puram Coimbatore",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919999999902",
+      "RS Puram Coimbatore",
+      "11.0168",
+      "76.9558",
+      1,
+      "2025-08-22T06:18:41.101Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 11:48:41 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:41 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AwyMpKYF1IRhUMABNTnXlIC"
+    }
+  }
+}
+2025-08-22 11:48:41 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919999999902",
+  "location": {
+    "lat": 11.0168,
+    "lng": 76.9558
+  },
+  "radius": 25
+}
+2025-08-22 11:48:42 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:42 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AHDNtDl-Fp2G3Sq4ZzgcC_M"
+    }
+  }
+}
+2025-08-22 11:48:42 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:42 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "A4hPBfWI0k6gAqhCcySlEjE"
+    }
+  }
+}
+2025-08-22 11:48:43 [ERROR]: ❌ Button message failed {
+  "service": "sharaspot-bot",
+  "to": "919999999902",
+  "error": {
+    "error": {
+      "message": "Error validating access token: Session has expired on Thursday, 21-Aug-25 04:00:00 PDT. The current time is Thursday, 21-Aug-25 23:18:43 PDT.",
+      "type": "OAuthException",
+      "code": 190,
+      "error_subcode": 463,
+      "fbtrace_id": "AhRko9CdQTIgmzE1yWF-Vmv"
+    }
+  }
+}
+2025-08-22 14:07:30 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:30 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:07:31 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 3000,
+  "environment": "development",
+  "webhookUrl": "http://localhost:3000/webhook",
+  "healthUrl": "http://localhost:3000/health",
+  "processId": 8935,
+  "nodeVersion": "v24.3.0"
+}
+2025-08-22 14:08:34 [INFO]: ✅ Webhook verified {
+  "service": "sharaspot-bot"
+}
+2025-08-22 14:08:34 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "11ms",
+  "ip": "::1",
+  "userAgent": "facebookplatform/1.0 (+http://developers.facebook.com)"
+}
+2025-08-22 14:11:33 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text"
+}
+2025-08-22 14:11:33 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "25ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:36 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOTI0MTQzMjU0MEEwQjEzMDMwAA=="
+}
+2025-08-22 14:11:37 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:38 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:38 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:42 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:11:42 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "7ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:44 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "help"
+}
+2025-08-22 14:11:45 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMjY2QUMzOTI1OEFEQUM2MEY4AA=="
+}
+2025-08-22 14:11:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:46 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:55 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:11:55 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "7ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:57 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "view_profile"
+}
+2025-08-22 14:11:58 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSOEY4OUQ2NERDRDRBMzdBQUI0AA=="
+}
+2025-08-22 14:11:59 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:11:59 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:02 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:12:02 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "3ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:03 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "update_preferences"
+}
+2025-08-22 14:12:04 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRjA2MUNGMzE1RUI5NkZDRUExAA=="
+}
+2025-08-22 14:12:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:19 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:12:19 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "6ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:20 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "update_profile"
+}
+2025-08-22 14:12:21 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQkJBQThEODRBNUQ0RDhGODI3AA=="
+}
+2025-08-22 14:12:22 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:22 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:30 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:12:30 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "6ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:31 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "quick_book"
+}
+2025-08-22 14:12:33 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSM0JDNTcwMkI4M0Q4M0Y1QzUzAA=="
+}
+2025-08-22 14:12:34 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:34 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:40 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:12:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "5ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:40 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNjg3NTQ5RDhGMzU3RjRDOTI3MEEzRTQwQ0Q1QUMyRkMA",
+  "error": ""
+}
+2025-08-22 14:12:41 [ERROR]: Failed to get user by WhatsApp ID {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "error": {
+    "query": "select \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\" from \"users\" where \"users\".\"whatsapp_id\" = $1 limit $2",
+    "params": [
+      "919790294221",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:41 [ERROR]: Failed to get user by WhatsApp ID {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "error": {
+    "query": "select \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\" from \"users\" where \"users\".\"whatsapp_id\" = $1 limit $2",
+    "params": [
+      "919790294221",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:42 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221",
+    "name": null,
+    "phoneNumber": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      null,
+      "919790294221",
+      "2025-08-22T08:42:41.936Z",
+      "2025-08-22T08:42:41.936Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:43 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": ""
+}
+2025-08-22 14:12:56 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:12:56 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "5ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:12:56 [ERROR]: ❌ Mark as read failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggM0I2QkVERTlENkEyNDZCQkNCMzUyOEI0NUU4Q0MwNzgA",
+  "error": ""
+}
+2025-08-22 14:12:57 [ERROR]: Failed to get user by WhatsApp ID {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "error": {
+    "query": "select \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\" from \"users\" where \"users\".\"whatsapp_id\" = $1 limit $2",
+    "params": [
+      "919790294221",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:57 [ERROR]: Failed to get user by WhatsApp ID {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "error": {
+    "query": "select \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\" from \"users\" where \"users\".\"whatsapp_id\" = $1 limit $2",
+    "params": [
+      "919790294221",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:58 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221",
+    "name": null,
+    "phoneNumber": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, $2, $3, default, default, default, default, default, default, default, $4, $5) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      null,
+      "919790294221",
+      "2025-08-22T08:42:57.979Z",
+      "2025-08-22T08:42:57.979Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-22 14:12:58 [ERROR]: ❌ Text message failed {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "error": ""
+}
+2025-08-22 14:13:06 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:13:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "4ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:07 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "location_help"
+}
+2025-08-22 14:13:08 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQ0VBQkVGNzRFRjUyNDUwMkM2AA=="
+}
+2025-08-22 14:13:09 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:09 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:18 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text"
+}
+2025-08-22 14:13:18 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "6ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:21 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSREUwNkU0NDk5NkQ2Q0MwOTA5AA=="
+}
+2025-08-22 14:13:22 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:25 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:13:25 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "4ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:26 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "type_address"
+}
+2025-08-22 14:13:27 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNUQxOTRCOEVFQ0QxRkY3NkIwAA=="
+}
+2025-08-22 14:13:28 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:29 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:44 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text"
+}
+2025-08-22 14:13:44 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "6ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:46 [INFO]: Address input received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "address": "Anna Nagar"
+}
+2025-08-22 14:13:47 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNTk4OTYxM0NCMTUyMUE2QUFGAA=="
+}
+2025-08-22 14:13:47 [ERROR]: Failed to get cached result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "select \"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\" from \"geocode_cache_v2\" where \"geocode_cache_v2\".\"search_term\" = $1 limit $2",
+    "params": [
+      "anna nagar",
+      1
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "227",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 14:13:48 [ERROR]: Failed to cache geocode result {
+  "service": "sharaspot-bot",
+  "searchTerm": "anna nagar",
+  "error": {
+    "query": "insert into \"geocode_cache_v2\" (\"id\", \"search_term\", \"original_address\", \"latitude\", \"longitude\", \"geohash\", \"formatted_address\", \"locality\", \"sub_locality\", \"state\", \"country\", \"postal_code\", \"confidence\", \"hit_count\", \"last_used\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default, default, $9, default, default, $10)",
+    "params": [
+      "anna nagar",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      "11001011100001100100000111010011100",
+      "Anna Nagar, Tamil Nadu, India",
+      "Anna Nagar",
+      "Tamil Nadu",
+      "1",
+      "2025-08-22T08:43:47.967Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 14:13:48 [ERROR]: Failed to save user search history {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "searchTerm": "Anna Nagar",
+  "error": {
+    "query": "insert into \"user_search_history\" (\"id\", \"user_whatsapp\", \"search_term\", \"latitude\", \"longitude\", \"result_count\", \"created_at\") values (default, $1, $2, $3, $4, $5, $6)",
+    "params": [
+      "919790294221",
+      "Anna Nagar",
+      "13.0878",
+      "80.2086",
+      1,
+      "2025-08-22T08:43:48.030Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42P01",
+      "position": "13",
+      "file": "parse_relation.c",
+      "line": "1449",
+      "routine": "parserOpenTable"
+    }
+  }
+}
+2025-08-22 14:13:49 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMUJBRjcxQzMwQzNFMkNEQkYzAA=="
+}
+2025-08-22 14:13:49 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:49 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:49 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "location": {
+    "lat": 13.0878,
+    "lng": 80.2086
+  },
+  "radius": 25
+}
+2025-08-22 14:13:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "0ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:50 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:50 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRDQ3OUZFNUYyNzBGODNCQjNFAA=="
+}
+2025-08-22 14:13:52 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSQUE2NTZBRTE0QTk3QTE1QjJGAA=="
+}
+2025-08-22 14:13:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:52 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:53 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:54 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNDNDMDQ1NDZBQTI4OEU3QjlEAA=="
+}
+2025-08-22 14:13:55 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:13:55 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:01 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:14:01 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "5ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:02 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "station_info_4"
+}
+2025-08-22 14:14:03 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRDUzOTk4Njc2M0VGMjdBOUZDAA=="
+}
+2025-08-22 14:14:05 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "0ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:05 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:14 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:14:14 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "4ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:19 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "load_more_stations"
+}
+2025-08-22 14:14:20 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSMkE5QkFBNTJDMDgwRTM5RTVBAA=="
+}
+2025-08-22 14:14:20 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "location": {
+    "lat": 13.0878,
+    "lng": 80.2086
+  },
+  "radius": 25
+}
+2025-08-22 14:14:21 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSREExMDA5M0JBMzgxQjQzNEQxAA=="
+}
+2025-08-22 14:14:21 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:21 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:22 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNUM1RUQwRjVDOEUxQ0NENjYzAA=="
+}
+2025-08-22 14:14:22 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:34 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:14:34 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "4ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:35 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "show_all_results"
+}
+2025-08-22 14:14:37 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNENFOTE5RThDNTE2RDYxODA0AA=="
+}
+2025-08-22 14:14:37 [INFO]: Searching stations {
+  "service": "sharaspot-bot",
+  "userWhatsapp": "919790294221",
+  "location": {
+    "lat": 13.0878,
+    "lng": 80.2086
+  },
+  "radius": 25
+}
+2025-08-22 14:14:38 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:38 [INFO]: ✅ List message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNjA2QjdDQjY4QUFEOEJCRjA5AA=="
+}
+2025-08-22 14:14:38 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:39 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:40 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:40 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSODNCNTZFQTE4NDU0NUNDRTI3AA=="
+}
+2025-08-22 14:14:41 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:14:41 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:00 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:15:00 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "5ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:01 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "book_station_99"
+}
+2025-08-22 14:15:01 [INFO]: 🎮 Queue button interaction {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "book_station_99",
+  "buttonTitle": "⚡ Book Now"
+}
+2025-08-22 14:15:01 [WARN]: 🤔 Unknown queue button action {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "book_station_99",
+  "action": "book"
+}
+2025-08-22 14:15:03 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNzk2NkEzOUIxREJENzUxNTdGAA=="
+}
+2025-08-22 14:15:04 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:04 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:19 [INFO]: 📨 Message received {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "interactive"
+}
+2025-08-22 14:15:19 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "5ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:21 [INFO]: 🔘 Button pressed {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "buttonId": "back_to_top_result"
+}
+2025-08-22 14:15:22 [INFO]: ✅ Text message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNjY0QTBCQTgyOEFFQjEyNzA1AA=="
+}
+2025-08-22 14:15:23 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:24 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-08-22 14:15:29 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
