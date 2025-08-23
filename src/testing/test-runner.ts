@@ -1,4 +1,4 @@
-import { seedTamilNaduData } from '../db/seed-tamil-nadu-data';
+import { seedTamilNaduData } from '../db/seed-sample-data.ts';
 import { automatedBotTester } from './automated-bot-tester';
 import { logger } from '../utils/logger';
 
