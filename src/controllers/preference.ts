@@ -949,7 +949,7 @@ export class PreferenceController {
         }
         break;
       case 'queuePreference':
-        if (!['Free Now', 'Wait 15m', 'Wait 30m', 'Any Queue'].includes(value)) {
+        if (!['Free Now', 'Wait 15mimport {userService}', 'Wait 30m', 'Any Queue'].includes(value)) {
           return { isValid: false, error: 'Invalid queue preference' };
         }
         break;
