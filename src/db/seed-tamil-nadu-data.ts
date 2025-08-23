@@ -1,14 +1,21 @@
-// src/db/seed-tamil-nadu-data.ts - FIXED VERSION TO MATCH CURRENT SCHEMA
+// src/db/seed-tamil-nadu-data.ts - FULLY FIXED TO MATCH DRIZZLE SCHEMA
 import { db } from '../config/database';
-import { users, stationOwners, chargingStations } from './schema';
+import {
+  users,
+  stationOwners,
+  chargingStations,
+} from './schema';
 import { logger } from '../utils/logger';
+
+// Import types for strict type-checking
+import type { NewStationOwner, NewUser, NewChargingStation } from './schema';
 
 export async function seedTamilNaduData(): Promise<void> {
   try {
     logger.info('🌱 Seeding Tamil Nadu EV charging stations...');
 
-    // Step 1: Create station owners (ONLY whatsappId and name - matches current schema)
-    const owners = [
+    // Step 1: Create station owners
+    const owners: NewStationOwner[] = [
       { whatsappId: '919876543210', name: 'TN Green Energy Solutions' },
       { whatsappId: '919876543211', name: 'Chennai PowerHub' },
       { whatsappId: '919876543212', name: 'Coimbatore EcoCharge' },
@@ -20,18 +27,19 @@ export async function seedTamilNaduData(): Promise<void> {
     logger.info(`✅ Created ${owners.length} station owners`);
 
     // Step 2: Create test users
-    const testUsers = [
+    const testUsers: NewUser[] = [
       { whatsappId: '919999999901', name: 'Chennai User', phoneNumber: '919999999901' },
-      { whatsappId: '919999999902', name: 'Coimbatore User', phoneNumber: '919999999902' },
-      { whatsappId: '919999999903', name: 'Madurai User', phoneNumber: '919999999903' },
-      { whatsappId: '919999999904', name: 'Salem User', phoneNumber: '919999999904' },
+      { whatsappId: '919999999902', name: 'Coimbatore User', phoneNumber: '9999999902' },
+      { whatsappId: '919999999903', name: 'Madurai User', phoneNumber: '9999999903' },
+      { whatsappId: '919999999904', name: 'Salem User', phoneNumber: '9999999904' },
     ];
 
     await db.insert(users).values(testUsers).onConflictDoNothing();
     logger.info(`✅ Created ${testUsers.length} test users`);
 
     // Step 3: Create charging stations
-    const stations = [
+    // ⚠️ IMPORTANT: latitude, longitude, pricePerKwh must be STRINGS for decimal fields
+    const stations: NewChargingStation[] = [
       // Chennai Stations
       {
         name: 'Anna Nagar EV Hub',
@@ -138,8 +146,8 @@ export async function seedTamilNaduData(): Promise<void> {
       {
         name: 'Salem Junction EV Point',
         address: 'Junction, Salem, Tamil Nadu 636001',
-        latitude: '11.664',
-        longitude: '78.146',
+        latitude: '11.6640',
+        longitude: '78.1460',
         totalPorts: 3,
         availablePorts: 1,
         connectorTypes: ['CCS2'],
@@ -176,8 +184,8 @@ export async function seedTamilNaduData(): Promise<void> {
       {
         name: 'Erode Bus Stand EV Station',
         address: 'Erode, Tamil Nadu 638001',
-        latitude: '11.341',
-        longitude: '77.717',
+        latitude: '11.3410',
+        longitude: '77.7170',
         totalPorts: 3,
         availablePorts: 2,
         connectorTypes: ['CCS2'],
@@ -251,7 +259,19 @@ export async function seedTamilNaduData(): Promise<void> {
     logger.info(`✅ Created ${stations.length} charging stations`);
 
     // Summary
-    const cities = ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Tirupur', 'Erode', 'Vellore', 'Thanjavur', 'Trichy', 'Thoothukudi', 'Kanyakumari'];
+    const cities = [
+      'Chennai',
+      'Coimbatore',
+      'Madurai',
+      'Salem',
+      'Tirupur',
+      'Erode',
+      'Vellore',
+      'Thanjavur',
+      'Trichy',
+      'Thoothukudi',
+      'Kanyakumari',
+    ];
     logger.info(`📍 Created ${stations.length} charging stations across Tamil Nadu`);
     logger.info(`🏢 Cities covered: ${cities.join(', ')}`);
     logger.info(`👥 Created ${testUsers.length} test users for automated testing`);
