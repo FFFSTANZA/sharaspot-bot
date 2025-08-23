@@ -1,70 +1,70 @@
-// src/services/userService.ts - COMPLETE FIXED VERSION
-// Replace your entire userService.ts file with this content
-
+// src/services/userService.ts
 import { db } from '../config/database';
-import { users } from '../db/schema';
+import { users, auditLogs, type User, type NewUser } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger';
+import { validateWhatsAppId, userPreferencesSchema } from '../utils/validation';
 
 export class UserService {
   /**
-   * Get or create user - the safe way (string parameter)
+   * Get or create user - the safe way (handles race conditions)
    */
-  static async getOrCreateUser(whatsappId: string) {
+  async getOrCreateUser(whatsappId: string): Promise<User> {
     try {
       logger.info('🔍 Looking for user', { whatsappId });
 
-      // First, try to find existing user
-      const existingUser = await db
-        .select()
-        .from(users)
-        .where(eq(users.whatsappId, whatsappId))
-        .limit(1);
+      if (!validateWhatsAppId(whatsappId)) {
+        throw new Error('Invalid WhatsApp ID format');
+      }
 
-      if (existingUser.length > 0) {
+      // First, try to find existing user
+      const existingUser = await this.getUserByWhatsAppId(whatsappId);
+      
+      if (existingUser) {
         logger.info('✅ Found existing user', { 
           whatsappId, 
-          userId: existingUser[0].id 
+          userId: existingUser.id 
         });
-        return existingUser[0];
+        return existingUser;
       }
 
       // If user doesn't exist, create new one
       logger.info('➕ Creating new user', { whatsappId });
       
-      const newUser = await db
-        .insert(users)
-        .values({
-          whatsappId,
-          // Don't set other fields, let them use schema defaults
-        })
-        .returning();
+      try {
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            whatsappId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .returning();
 
-      logger.info('✅ Successfully created new user', { 
-        whatsappId, 
-        userId: newUser[0].id 
-      });
+        // Log the user creation
+        await this.logUserAction(whatsappId, 'user_created', null, newUser);
 
-      return newUser[0];
+        logger.info('✅ Successfully created new user', { 
+          whatsappId, 
+          userId: newUser.id 
+        });
 
-    } catch (error: any) {
-      // Handle the specific constraint violation
-      if (error?.code === '23505' && error?.constraint === 'users_whatsapp_id_unique') {
-        logger.warn('🔄 User creation race condition detected, fetching existing user', { whatsappId });
-        
-        // Race condition: user was created between our check and insert
-        // Just fetch the existing user
-        const existingUser = await db
-          .select()
-          .from(users)
-          .where(eq(users.whatsappId, whatsappId))
-          .limit(1);
-
-        if (existingUser.length > 0) {
-          return existingUser[0];
+        return newUser;
+      } catch (error: any) {
+        // Handle the specific constraint violation (race condition)
+        if (error?.code === '23505' && error?.constraint === 'users_whatsapp_id_unique') {
+          logger.warn('🔄 User creation race condition detected, fetching existing user', { whatsappId });
+          
+          // Race condition: user was created between our check and insert
+          // Just fetch the existing user
+          const existingUser = await this.getUserByWhatsAppId(whatsappId);
+          if (existingUser) {
+            return existingUser;
+          }
         }
+        throw error;
       }
-
+    } catch (error: any) {
       logger.error('❌ Failed to get or create user', { 
         whatsappId, 
         error: error?.message || 'Unknown error',
@@ -75,55 +75,246 @@ export class UserService {
   }
 
   /**
-   * Create user with object parameter (for backward compatibility with webhook)
+   * Get user by WhatsApp ID
    */
-  static async createUser(userData: { whatsappId: string; name?: string }) {
+  async getUserByWhatsAppId(whatsappId: string): Promise<User | null> {
     try {
-      const { whatsappId, name } = userData;
+      if (!validateWhatsAppId(whatsappId)) {
+        logger.warn('Invalid WhatsApp ID format', { whatsappId });
+        return null;
+      }
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.whatsappId, whatsappId))
+        .limit(1);
+
+      return user || null;
+    } catch (error) {
+      logger.error('Failed to get user by WhatsApp ID', { whatsappId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Create new user with optional profile data
+   */
+  async createUser(userData: NewUser): Promise<User> {
+    try {
+      if (!validateWhatsAppId(userData.whatsappId)) {
+        throw new Error('Invalid WhatsApp ID format');
+      }
+
+      // Use getOrCreateUser which handles race conditions
+      const user = await this.getOrCreateUser(userData.whatsappId);
       
-      logger.info('📝 Creating/updating user', { whatsappId, name });
+      // Build update object only with non-null/undefined values
+      const updates: Partial<User> = {};
+      if (typeof userData.name === 'string') updates.name = userData.name;
+      if (typeof userData.phoneNumber === 'string') updates.phoneNumber = userData.phoneNumber;
       
-      // Use the existing getOrCreateUser method
-      const existingUser = await this.getOrCreateUser(whatsappId);
-      
-      // If name is provided and user doesn't have a name, update it
-      if (name && !existingUser.name) {
-        const updatedUser = await db
-          .update(users)
-          .set({ 
-            name,
-            updatedAt: new Date()
-          })
-          .where(eq(users.whatsappId, whatsappId))
-          .returning();
-          
-        logger.info('✅ Updated user with name', { whatsappId, name });
-        return updatedUser[0];
+      if (Object.keys(updates).length > 0) {
+        return await this.updateUserProfile(userData.whatsappId, updates);
       }
       
-      return existingUser;
-      
+      return user;
     } catch (error: any) {
-      logger.error('❌ Failed to create user', { 
-        userData, 
-        error: error?.message || 'Unknown error' 
-      });
+      logger.error('Failed to create user', { userData, error });
       throw error;
     }
   }
 
   /**
-   * Alternative: Use upsert pattern (PostgreSQL specific)
+   * Update user preferences
    */
-  static async upsertUser(whatsappId: string) {
+  async updateUserPreferences(
+    whatsappId: string, 
+    preferences: {
+      evModel?: string;
+      connectorType?: string;
+      chargingIntent?: string;
+      queuePreference?: string;
+    }
+  ): Promise<User | null> {
     try {
+      // Validate preferences
+      const validationResult = userPreferencesSchema.safeParse(preferences);
+      if (!validationResult.success) {
+        logger.warn('Invalid user preferences', { whatsappId, preferences, errors: validationResult.error });
+        return null;
+      }
+
+      // Get current user data for audit log
+      const currentUser = await this.getUserByWhatsAppId(whatsappId);
+      if (!currentUser) {
+        logger.warn('User not found for preferences update', { whatsappId });
+        return null;
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          ...preferences,
+          preferencesCaptured: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.whatsappId, whatsappId))
+        .returning();
+
+      // Log the preference update
+      await this.logUserAction(whatsappId, 'preferences_updated', currentUser, updatedUser);
+
+      logger.info('✅ User preferences updated', { 
+        whatsappId, 
+        preferences,
+        userId: updatedUser.id 
+      });
+
+      return updatedUser;
+    } catch (error) {
+      logger.error('Failed to update user preferences', { whatsappId, preferences, error });
+      return null;
+    }
+  }
+
+  /**
+   * Update user profile (name, phone)
+   * Accepts null or string, but filters nulls out before DB update
+   */
+  async updateUserProfile(
+    whatsappId: string,
+    profileData: { name?: string | null; phoneNumber?: string | null }
+  ): Promise<User> {
+    try {
+      const currentUser = await this.getUserByWhatsAppId(whatsappId);
+      if (!currentUser) {
+        throw new Error('User not found');
+      }
+
+      // Only include defined (non-null) fields
+      const updateData: { name?: string; phoneNumber?: string } = {};
+      if (profileData.name != null) updateData.name = profileData.name;
+      if (profileData.phoneNumber != null) updateData.phoneNumber = profileData.phoneNumber;
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          ...updateData,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.whatsappId, whatsappId))
+        .returning();
+
+      // Log the profile update
+      await this.logUserAction(whatsappId, 'profile_updated', currentUser, updatedUser);
+
+      logger.info('✅ User profile updated', { 
+        whatsappId, 
+        profileData,
+        userId: updatedUser.id 
+      });
+
+      return updatedUser;
+    } catch (error: any) {
+      logger.error('Failed to update user profile', { whatsappId, profileData, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if user has completed preferences setup
+   */
+  async hasCompletedPreferences(whatsappId: string): Promise<boolean> {
+    try {
+      const user = await this.getUserByWhatsAppId(whatsappId);
+      return user?.preferencesCaptured || false;
+    } catch (error) {
+      logger.error('Failed to check user preferences completion', { whatsappId, error });
+      return false;
+    }
+  }
+
+  /**
+   * Ban/unban user
+   */
+  async updateUserBanStatus(whatsappId: string, isBanned: boolean, adminWhatsappId: string): Promise<boolean> {
+    try {
+      const currentUser = await this.getUserByWhatsAppId(whatsappId);
+      if (!currentUser) {
+        logger.warn('User not found for ban status update', { whatsappId });
+        return false;
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          isBanned,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.whatsappId, whatsappId))
+        .returning();
+
+      // Log the ban/unban action
+      await db.insert(auditLogs).values({
+        actorWhatsappId: adminWhatsappId,
+        actorType: 'admin',
+        action: isBanned ? 'user_banned' : 'user_unbanned',
+        resourceType: 'user',
+        resourceId: whatsappId,
+        oldValues: { isBanned: currentUser.isBanned },
+        newValues: { isBanned },
+        createdAt: new Date(),
+      });
+
+      logger.info(`✅ User ${isBanned ? 'banned' : 'unbanned'}`, { 
+        whatsappId, 
+        adminWhatsappId,
+        userId: updatedUser.id 
+      });
+
+      return true;
+    } catch (error) {
+      logger.error('Failed to update user ban status', { whatsappId, isBanned, adminWhatsappId, error });
+      return false;
+    }
+  }
+
+  /**
+   * Check if user is banned
+   */
+  async isUserBanned(whatsappId: string): Promise<boolean> {
+    try {
+      const user = await this.getUserByWhatsAppId(whatsappId);
+      return user?.isBanned || false;
+    } catch (error) {
+      logger.error('Failed to check user ban status', { whatsappId, error });
+      return false;
+    }
+  }
+
+  /**
+   * Upsert user (PostgreSQL specific)
+   */
+  async upsertUser(whatsappId: string, userData?: Partial<NewUser>): Promise<User> {
+    try {
+      if (!validateWhatsAppId(whatsappId)) {
+        throw new Error('Invalid WhatsApp ID format');
+      }
+
       const result = await db
         .insert(users)
-        .values({ whatsappId })
+        .values({
+          whatsappId,
+          ...userData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
         .onConflictDoUpdate({
           target: users.whatsappId,
           set: {
-            updatedAt: new Date(), // Update timestamp on conflict
+            ...userData,
+            updatedAt: new Date(),
           }
         })
         .returning();
@@ -134,7 +325,6 @@ export class UserService {
       });
 
       return result[0];
-
     } catch (error: any) {
       logger.error('❌ Failed to upsert user', { whatsappId, error: error?.message || 'Unknown error' });
       throw error;
@@ -142,68 +332,44 @@ export class UserService {
   }
 
   /**
-   * Update user profile
+   * Log user action for audit trail
    */
-  static async updateUserProfile(whatsappId: string, updates: { name?: string; phoneNumber?: string }) {
+  private async logUserAction(
+    whatsappId: string, 
+    action: string, 
+    oldValues: any, 
+    newValues: any
+  ): Promise<void> {
     try {
-      const updatedUser = await db
-        .update(users)
-        .set({
-          ...updates,
-          updatedAt: new Date()
-        })
-        .where(eq(users.whatsappId, whatsappId))
-        .returning();
-
-      if (updatedUser.length > 0) {
-        logger.info('✅ User profile updated', { whatsappId, updates });
-        return updatedUser[0];
-      }
-
-      return null;
-    } catch (error: any) {
-      logger.error('❌ Failed to update user profile', { whatsappId, updates, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Get user by WhatsApp ID
-   */
-  static async getUserByWhatsAppId(whatsappId: string) {
-    try {
-      const user = await db
-        .select()
-        .from(users)
-        .where(eq(users.whatsappId, whatsappId))
-        .limit(1);
-
-      return user.length > 0 ? user[0] : null;
-    } catch (error: any) {
-      logger.error('❌ Failed to get user', { whatsappId, error });
-      return null;
+      await db.insert(auditLogs).values({
+        actorWhatsappId: whatsappId,
+        actorType: 'user',
+        action,
+        resourceType: 'user',
+        resourceId: whatsappId,
+        oldValues,
+        newValues,
+        createdAt: new Date(),
+      });
+    } catch (error) {
+      logger.error('Failed to log user action', { whatsappId, action, error });
     }
   }
 }
 
-// Export a default instance for backward compatibility with existing imports
-export const userService = {
-  createUser: UserService.createUser.bind(UserService),
-  getOrCreateUser: UserService.getOrCreateUser.bind(UserService),
-  upsertUser: UserService.upsertUser.bind(UserService),
-  updateUserProfile: UserService.updateUserProfile.bind(UserService),
-  getUserByWhatsAppId: UserService.getUserByWhatsAppId.bind(UserService)
-};
+// Export a singleton instance
+export const userService = new UserService();
 
-// Export individual functions for modern usage
+// Helper function for message processing
 export async function handleIncomingMessage(whatsappId: string, message: any) {
   try {
     logger.info('📨 Processing message', { whatsappId, messageType: message?.type });
 
     // Use the safe user creation method
-    const user = await UserService.getOrCreateUser(whatsappId);
+    const user = await userService.getOrCreateUser(whatsappId);
     
     // Continue with your message processing logic...
+    return user;
     
   } catch (error: any) {
     logger.error('❌ Message processing failed', { 
@@ -214,6 +380,7 @@ export async function handleIncomingMessage(whatsappId: string, message: any) {
     
     // Send error response to user
     await sendErrorMessage(whatsappId, "Sorry, something went wrong. Please try again.");
+    throw error;
   }
 }
 

@@ -477,6 +477,88 @@ class QueueService {
 
     return Number(result[0]?.avgWait || 45);
   }
+   
+
+  async getStationQueueInfo(stationId: number): Promise<{
+  stationId: number;
+  totalInQueue: number;
+  availablePorts: number;
+  totalPorts: number;
+  averageWaitTime: number;
+  turnoverRate?: string;
+}> {
+  try {
+    const [queueCount, station] = await Promise.all([
+      this.getQueueLength(stationId),
+      db.select()
+        .from(chargingStations)
+        .where(eq(chargingStations.id, stationId))
+        .limit(1)
+    ]);
+
+    if (!station.length) {
+      throw new Error(`Station ${stationId} not found`);
+    }
+
+    const stationData = station[0];
+    const avgWaitTime = await this.getAverageWaitTime(stationId);
+
+    return {
+      stationId,
+      totalInQueue: queueCount,
+      availablePorts: stationData.availablePorts || 0,
+      totalPorts: stationData.totalPorts || 1,
+      averageWaitTime: avgWaitTime,
+      turnoverRate: `${Math.round(60 / (avgWaitTime || 45))} sessions/hour`
+    };
+  } catch (error) {
+    logger.error('Failed to get station queue info', { stationId, error });
+    return {
+      stationId,
+      totalInQueue: 0,
+      availablePorts: 0,
+      totalPorts: 1,
+      averageWaitTime: 45
+    };
+  }
+}
+
+/**
+ * Get user's queue position at a specific station
+ */
+async getUserQueueAtStation(userWhatsapp: string, stationId: number): Promise<QueuePosition | null> {
+  try {
+    const userQueue = await db.select({
+      id: queues.id,
+      userWhatsapp: queues.userWhatsapp,
+      stationId: queues.stationId,
+      position: queues.position,
+      estimatedWaitMinutes: queues.estimatedWaitMinutes,
+      status: queues.status,
+      reservationExpiry: queues.reservationExpiry,
+      createdAt: queues.createdAt,
+      stationName: chargingStations.name,
+      stationAddress: chargingStations.address,
+    })
+    .from(queues)
+    .leftJoin(chargingStations, eq(queues.stationId, chargingStations.id))
+    .where(and(
+      eq(queues.userWhatsapp, userWhatsapp),
+      eq(queues.stationId, stationId),
+      sql`status NOT IN ('completed', 'cancelled')`
+    ))
+    .limit(1);
+
+    if (!userQueue.length) {
+      return null;
+    }
+
+    return this.formatQueuePosition(userQueue[0]);
+  } catch (error) {
+    logger.error('Failed to get user queue at station', { userWhatsapp, stationId, error });
+    return null;
+  }
+}
 
   private async getPeakHours(stationId: number): Promise<string[]> {
     const result = await db.select({ 

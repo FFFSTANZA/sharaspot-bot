@@ -14,15 +14,22 @@ type QueueAction =
   | 'start' | 'session' | 'extend'
   | 'live' | 'station' | 'user'
   | 'nearby' | 'cheaper' | 'faster'
-  | 'rate' | 'share' | 'cancel';
+  | 'rate' | 'share' | 'cancel'
+  | 'confirm';
 
-// Button ID patterns
+// Standardized button ID patterns - More specific patterns first
 const BUTTON_ID_PATTERNS = {
-  BOOK_STATION: /^book(?:_station)?_(\d+)$/,
-  JOIN_QUEUE: /^join(?:_queue)?_(\d+)$/,
-  STATION_ID: /^(?:.*_)?station_(\d+)$/,
-  GENERAL_ID: /^.*_(\d+)$/,
-  NUMERIC: /^(\d+)$/
+  BOOK_STATION: /^book_station_(\d+)$/,
+  JOIN_QUEUE: /^join_queue_(\d+)$/,
+  CONFIRM_CANCEL: /^confirm_cancel_(\d+)$/,
+  STATION_INFO: /^station_info_(\d+)$/,
+  QUEUE_STATUS: /^queue_status_(\d+)$/,
+  SESSION_START: /^start_session_(\d+)$/,
+  EXTEND_SESSION: /^extend_(\d+)_(\d+)$/, // extend_minutes_stationId
+  RATE_STATION: /^rate_(\d)_(\d+)$/, // rate_score_stationId
+  GENERAL_STATION: /^(?:.*_)?station_(\d+)$/,
+  GENERAL_ACTION: /^.*_(\d+)$/,
+  NUMERIC_ONLY: /^(\d+)$/
 };
 
 export class QueueWebhookController {
@@ -40,9 +47,7 @@ export class QueueWebhookController {
       logger.info('Queue button interaction', { whatsappId, buttonId, buttonTitle });
 
       // Extract action and station ID from button ID
-      const parts = buttonId.split('_');
-      const action = parts[0] as QueueAction;
-      const stationId = this.extractStationId(buttonId);
+      const { action, stationId, additionalData } = this.parseButtonId(buttonId);
 
       // Handle actions based on type
       switch (action) {
@@ -69,7 +74,7 @@ export class QueueWebhookController {
           break;
 
         case 'extend':
-          await this.handleSessionExtension(whatsappId, stationId);
+          await this.handleSessionExtension(whatsappId, stationId, additionalData);
           break;
 
         // Information Actions
@@ -100,7 +105,7 @@ export class QueueWebhookController {
 
         // Misc Actions
         case 'rate':
-          await this.handleRating(whatsappId, buttonId, stationId);
+          await this.handleRating(whatsappId, buttonId, stationId, additionalData);
           break;
 
         case 'share':
@@ -109,6 +114,10 @@ export class QueueWebhookController {
 
         case 'cancel':
           await this.handleCancelActions(whatsappId, buttonId, stationId);
+          break;
+
+        case 'confirm':
+          await this.handleConfirmActions(whatsappId, buttonId, stationId);
           break;
 
         default:
@@ -146,7 +155,7 @@ export class QueueWebhookController {
       logger.info('Queue list interaction', { whatsappId, listId, listTitle });
 
       // Extract station ID if present
-      const stationId = this.extractStationId(listId);
+      const { stationId } = this.parseButtonId(listId);
 
       // Process based on list type pattern
       if (listId.startsWith('queue_status_')) {
@@ -161,6 +170,9 @@ export class QueueWebhookController {
         await this.handleQueueCancellation(whatsappId, stationId);
       } else if (listId.startsWith('queue_share_')) {
         await this.handleQueueSharing(whatsappId, stationId);
+      } else if (listId.startsWith('select_station_')) {
+        // Delegate station selection to booking controller
+        await bookingController.handleStationSelection(whatsappId, stationId);
       } else {
         await whatsappService.sendTextMessage(
           whatsappId,
@@ -182,32 +194,130 @@ export class QueueWebhookController {
   }
 
   /**
-   * Extracts station ID from button/list ID with robust pattern matching
-   * Returns 0 if no valid ID found
+   * Enhanced button ID parsing with consistent pattern matching
    */
-  private extractStationId(inputId: string): number {
-    if (!inputId) return 0;
-    
+  private parseButtonId(buttonId: string): { action: string; stationId: number; additionalData?: number } {
+    if (!buttonId) {
+      return { action: '', stationId: 0 };
+    }
+
     try {
-      // Try each pattern in order of specificity
-      for (const [_, pattern] of Object.entries(BUTTON_ID_PATTERNS)) {
-        const match = inputId.match(pattern);
-        if (match && match[1]) {
-          const id = parseInt(match[1], 10);
-          if (!isNaN(id) && id > 0) {
-            return id;
-          }
-        }
-      }
+      // Try specific patterns first (most specific to least specific)
       
-      logger.warn('Could not extract valid station ID', { inputId });
-      return 0;
+      // Handle extend session: extend_30_123 -> minutes=30, stationId=123
+      const extendMatch = buttonId.match(BUTTON_ID_PATTERNS.EXTEND_SESSION);
+      if (extendMatch) {
+        return {
+          action: 'extend',
+          stationId: parseInt(extendMatch[2], 10),
+          additionalData: parseInt(extendMatch[1], 10) // minutes
+        };
+      }
+
+      // Handle rating: rate_5_123 -> rating=5, stationId=123
+      const rateMatch = buttonId.match(BUTTON_ID_PATTERNS.RATE_STATION);
+      if (rateMatch) {
+        return {
+          action: 'rate',
+          stationId: parseInt(rateMatch[2], 10),
+          additionalData: parseInt(rateMatch[1], 10) // rating score
+        };
+      }
+
+      // Handle confirm cancel: confirm_cancel_123
+      const confirmCancelMatch = buttonId.match(BUTTON_ID_PATTERNS.CONFIRM_CANCEL);
+      if (confirmCancelMatch) {
+        return {
+          action: 'confirm',
+          stationId: parseInt(confirmCancelMatch[1], 10)
+        };
+      }
+
+      // Handle book station: book_station_123
+      const bookMatch = buttonId.match(BUTTON_ID_PATTERNS.BOOK_STATION);
+      if (bookMatch) {
+        return {
+          action: 'book',
+          stationId: parseInt(bookMatch[1], 10)
+        };
+      }
+
+      // Handle join queue: join_queue_123
+      const joinMatch = buttonId.match(BUTTON_ID_PATTERNS.JOIN_QUEUE);
+      if (joinMatch) {
+        return {
+          action: 'join',
+          stationId: parseInt(joinMatch[1], 10)
+        };
+      }
+
+      // Handle station info: station_info_123
+      const stationInfoMatch = buttonId.match(BUTTON_ID_PATTERNS.STATION_INFO);
+      if (stationInfoMatch) {
+        return {
+          action: 'station',
+          stationId: parseInt(stationInfoMatch[1], 10)
+        };
+      }
+
+      // Handle queue status: queue_status_123
+      const queueStatusMatch = buttonId.match(BUTTON_ID_PATTERNS.QUEUE_STATUS);
+      if (queueStatusMatch) {
+        return {
+          action: 'queue',
+          stationId: parseInt(queueStatusMatch[1], 10)
+        };
+      }
+
+      // Handle session start: start_session_123
+      const sessionStartMatch = buttonId.match(BUTTON_ID_PATTERNS.SESSION_START);
+      if (sessionStartMatch) {
+        return {
+          action: 'start',
+          stationId: parseInt(sessionStartMatch[1], 10)
+        };
+      }
+
+      // Generic patterns
+      const parts = buttonId.split('_');
+      const action = parts[0];
+
+      // Try general station pattern
+      const generalStationMatch = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_STATION);
+      if (generalStationMatch) {
+        return {
+          action,
+          stationId: parseInt(generalStationMatch[1], 10)
+        };
+      }
+
+      // Try general action pattern
+      const generalActionMatch = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_ACTION);
+      if (generalActionMatch) {
+        return {
+          action,
+          stationId: parseInt(generalActionMatch[1], 10)
+        };
+      }
+
+      // Try numeric only pattern
+      const numericMatch = buttonId.match(BUTTON_ID_PATTERNS.NUMERIC_ONLY);
+      if (numericMatch) {
+        return {
+          action: 'station', // Default action for numeric IDs
+          stationId: parseInt(numericMatch[1], 10)
+        };
+      }
+
+      logger.warn('Could not parse button ID', { buttonId });
+      return { action, stationId: 0 };
+
     } catch (error) {
-      logger.error('Station ID extraction failed', { 
-        inputId, 
+      logger.error('Button ID parsing failed', { 
+        buttonId, 
         error: error instanceof Error ? error.message : String(error)
       });
-      return 0;
+      return { action: '', stationId: 0 };
     }
   }
 
@@ -216,7 +326,7 @@ export class QueueWebhookController {
   // ===============================================
 
   /**
-   * Handle station booking request
+   * Handle station booking request - Delegate to booking controller
    */
   private async handleBookStation(whatsappId: string, stationId: number, buttonId: string): Promise<void> {
     if (!stationId) {
@@ -234,7 +344,7 @@ export class QueueWebhookController {
   }
 
   /**
-   * Handle queue joining
+   * Handle queue joining - Delegate to booking controller
    */
   private async handleJoinQueue(whatsappId: string, stationId: number, buttonId: string): Promise<void> {
     if (!stationId) {
@@ -247,36 +357,8 @@ export class QueueWebhookController {
 
     logger.info('Processing queue join request', { whatsappId, stationId });
     
-    // Initial feedback to user
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `🚗 Joining queue for station #${stationId}. Please wait while we process your request...`
-    );
-    
-    // Attempt to join queue
-    const queuePosition = await queueService.joinQueue(whatsappId, stationId);
-    
-    if (!queuePosition) {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Unable to join queue. The station may be unavailable or the queue is full. Please try another station.'
-      );
-      return;
-    }
-    
-    // Queue position details handled by notification service
-    // Additional buttons for queue management
-    setTimeout(() => {
-      whatsappService.sendButtonMessage(
-        whatsappId,
-        '🎮 *Queue Management*\n\nUse these options to manage your spot in the queue:',
-        [
-          { id: `queue_status_${stationId}`, title: '📊 Queue Status' },
-          { id: `queue_cancel_${stationId}`, title: '❌ Cancel' },
-          { id: 'find_stations', title: '🔍 Find Others' }
-        ]
-      );
-    }, 1500);
+    // Delegate to booking controller for consistent handling
+    await bookingController.processQueueJoin(whatsappId, stationId);
   }
 
   /**
@@ -326,7 +408,7 @@ export class QueueWebhookController {
   // ===============================================
 
   /**
-   * Handle charging session start
+   * Handle charging session start - Delegate to booking controller
    */
   private async handleSessionStart(whatsappId: string, stationId: number): Promise<void> {
     if (!stationId) {
@@ -337,34 +419,10 @@ export class QueueWebhookController {
       return;
     }
     
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `⚡ Starting charging session at station #${stationId}. Please connect your vehicle...`
-    );
+    logger.info('Processing session start', { whatsappId, stationId });
     
-    // Session creation delegated to session service
-    const session = await sessionService.startSession(whatsappId, stationId);
-    
-    if (!session) {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Failed to start charging session. Please ensure you have an active reservation.'
-      );
-      return;
-    }
-    
-    // Session started successfully
-    setTimeout(() => {
-      whatsappService.sendButtonMessage(
-        whatsappId,
-        '✅ *Charging Session Started*\n\nYour session has been initialized successfully!',
-        [
-          { id: `session_status_${stationId}`, title: '📊 Session Status' },
-          { id: `session_extend_${stationId}`, title: '⏳ Extend Time' },
-          { id: `session_stop_${stationId}`, title: '⏹️ Stop Charging' }
-        ]
-      );
-    }, 2000);
+    // Delegate to booking controller for consistent handling
+    await bookingController.handleChargingStart(whatsappId, stationId);
   }
 
   /**
@@ -405,7 +463,8 @@ export class QueueWebhookController {
         '⚙️ *Session Management*\n\nWhat would you like to do?',
         [
           { id: `session_stop_${stationId}`, title: '⏹️ Stop Charging' },
-          { id: `session_extend_${stationId}`, title: '⏳ Extend Time' }
+          { id: `extend_30_${stationId}`, title: '⏳ Extend 30min' },
+          { id: `extend_60_${stationId}`, title: '⏳ Extend 1hr' }
         ]
       );
     }, 1000);
@@ -414,7 +473,7 @@ export class QueueWebhookController {
   /**
    * Handle session extension
    */
-  private async handleSessionExtension(whatsappId: string, stationId: number): Promise<void> {
+  private async handleSessionExtension(whatsappId: string, stationId: number, minutes?: number): Promise<void> {
     const activeSession = await sessionService.getActiveSession(whatsappId, stationId);
     
     if (!activeSession) {
@@ -425,16 +484,33 @@ export class QueueWebhookController {
       return;
     }
     
-    // Show extension options
-    await whatsappService.sendButtonMessage(
-      whatsappId,
-      '⏳ *Extend Charging Session*\n\nHow much additional time would you like?',
-      [
-        { id: `extend_15_${stationId}`, title: '+15 minutes' },
-        { id: `extend_30_${stationId}`, title: '+30 minutes' },
-        { id: `extend_60_${stationId}`, title: '+1 hour' }
-      ]
-    );
+    if (minutes) {
+      // Process the extension
+      const success = await sessionService.extendSession(whatsappId, stationId, minutes);
+      
+      if (success) {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          `✅ *Session Extended*\n\nAdded ${minutes} minutes to your charging session.\n\nYour updated session will end at ${new Date(Date.now() + minutes * 60000).toLocaleTimeString()}.`
+        );
+      } else {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          '❌ Failed to extend session. Please try again or contact support.'
+        );
+      }
+    } else {
+      // Show extension options
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '⏳ *Extend Charging Session*\n\nHow much additional time would you like?',
+        [
+          { id: `extend_15_${stationId}`, title: '+15 minutes' },
+          { id: `extend_30_${stationId}`, title: '+30 minutes' },
+          { id: `extend_60_${stationId}`, title: '+1 hour' }
+        ]
+      );
+    }
   }
 
   // ===============================================
@@ -452,24 +528,13 @@ export class QueueWebhookController {
       // Live session updates
       await this.handleSessionActions(whatsappId, stationId);
     } else {
-      // Check for queue position
-      const userQueues = await queueService.getUserQueueStatus(whatsappId);
-      const relevantQueue = userQueues.find(q => q.stationId === stationId);
-      
-      if (relevantQueue) {
-        await this.handleQueueStatus(whatsappId, stationId);
-      } else {
-        // No active state to update
-        await whatsappService.sendTextMessage(
-          whatsappId,
-          '❓ You don\'t have an active queue position or charging session to monitor.'
-        );
-      }
+      // Check for queue position - Delegate to booking controller
+      await bookingController.handleQueueStatus(whatsappId);
     }
   }
 
   /**
-   * Handle station information
+   * Handle station information - Delegate to booking controller
    */
   private async handleStationInfo(whatsappId: string, stationId: number): Promise<void> {
     if (!stationId) {
@@ -480,46 +545,10 @@ export class QueueWebhookController {
       return;
     }
     
-    // Show station details
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `📍 *Station #${stationId} Information*\n\nLoading station details...`
-    );
+    logger.info('Processing station info request', { whatsappId, stationId });
     
-    // Get station analytics
-    const analytics = await analyticsService.getStationAnalytics(stationId);
-    
-    if (!analytics) {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Unable to retrieve station information.'
-      );
-      return;
-    }
-    
-    const messageLines = [
-      `📍 *Station #${stationId} Details*`,
-      '',
-      `👥 Current queue: ${analytics.currentQueueLength} people`,
-      `⏱️ Average wait: ${analytics.averageWaitTime} minutes`,
-      `⚡ Utilization: ${Math.round(analytics.utilization * 100)}%`,
-      `🕒 Peak hours: ${analytics.peakHours.join(', ')}`
-    ];
-    
-    await whatsappService.sendTextMessage(whatsappId, messageLines.join('\n'));
-    
-    // Station action options
-    setTimeout(() => {
-      whatsappService.sendButtonMessage(
-        whatsappId,
-        '⚙️ *Station Options*\n\nWhat would you like to do?',
-        [
-          { id: `book_station_${stationId}`, title: '⚡ Book Now' },
-          { id: `join_queue_${stationId}`, title: '🚶 Join Queue' },
-          { id: 'nearby_stations', title: '🔍 Find Others' }
-        ]
-      );
-    }, 1000);
+    // Delegate to booking controller for consistent handling
+    await bookingController.showStationDetails(whatsappId, stationId);
   }
 
   /**
@@ -602,51 +631,14 @@ export class QueueWebhookController {
   // ===============================================
 
   /**
-   * Handle queue status check
+   * Handle queue status check - Delegate to booking controller
    */
   private async handleQueueStatus(whatsappId: string, stationId: number): Promise<void> {
-    // If stationId is provided, check specific queue
     if (stationId) {
-      const queues = await queueService.getUserQueueStatus(whatsappId);
-      const relevantQueue = queues.find(q => q.stationId === stationId);
-      
-      if (!relevantQueue) {
-        await whatsappService.sendTextMessage(
-          whatsappId,
-          `❓ You are not currently in the queue for station #${stationId}.`
-        );
-        return;
-      }
-      
-      // Format wait time
-      const waitTimeText = relevantQueue.estimatedWaitMinutes > 60 
-        ? `${Math.floor(relevantQueue.estimatedWaitMinutes / 60)} hr ${relevantQueue.estimatedWaitMinutes % 60} min`
-        : `${relevantQueue.estimatedWaitMinutes} min`;
-      
-      // Send queue status
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        `📊 *Queue Status*\n\n` +
-        `📍 Station: #${stationId}\n` +
-        `🎯 Your position: #${relevantQueue.position}\n` +
-        `⏱️ Estimated wait: ${waitTimeText}\n` +
-        `📅 Joined: ${relevantQueue.createdAt.toLocaleTimeString()}\n` +
-        `🔄 Status: ${this.formatQueueStatus(relevantQueue.status)}`
-      );
-      
-      // Queue management options
-      setTimeout(() => {
-        whatsappService.sendButtonMessage(
-          whatsappId,
-          '⚙️ *Queue Management*\n\nWhat would you like to do?',
-          [
-            { id: `queue_cancel_${stationId}`, title: '❌ Cancel' },
-            { id: 'nearby_stations', title: '🔍 Other Options' }
-          ]
-        );
-      }, 1000);
+      // Check specific station queue - delegate to booking controller
+      await bookingController.handleStationQueueStatus(whatsappId, stationId);
     } else {
-      // Check all active queues for this user
+      // Check all active queues - delegate to booking controller
       await bookingController.handleQueueStatus(whatsappId);
     }
   }
@@ -775,12 +767,8 @@ export class QueueWebhookController {
   /**
    * Handle rating submission
    */
-  private async handleRating(whatsappId: string, buttonId: string, stationId: number): Promise<void> {
-    // Extract rating from button ID if available
-    const ratingMatch = buttonId.match(/rate_(\d)_/);
-    const rating = ratingMatch ? parseInt(ratingMatch[1], 10) : 0;
-    
-    if (rating > 0) {
+  private async handleRating(whatsappId: string, buttonId: string, stationId: number, rating?: number): Promise<void> {
+    if (rating && rating > 0) {
       // Submit the rating
       await analyticsService.submitRating(whatsappId, stationId, rating);
       
@@ -830,11 +818,28 @@ export class QueueWebhookController {
   private async handleCancelActions(whatsappId: string, buttonId: string, stationId: number): Promise<void> {
     // Check if cancellation is confirmed
     if (buttonId.startsWith('confirm_cancel_')) {
-      // Process the cancellation
+      // Process the cancellation - delegate to booking controller
       await bookingController.handleQueueCancel(whatsappId, stationId);
     } else {
       // Request confirmation
       await this.handleQueueCancellation(whatsappId, stationId);
+    }
+  }
+
+  /**
+   * Handle confirmation actions
+   */
+  private async handleConfirmActions(whatsappId: string, buttonId: string, stationId: number): Promise<void> {
+    if (buttonId.startsWith('confirm_cancel_')) {
+      // Process the cancellation - delegate to booking controller
+      await bookingController.handleQueueCancel(whatsappId, stationId);
+    } else {
+      // Other confirmation actions
+      logger.warn('Unknown confirmation action', { whatsappId, buttonId });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❓ Unknown confirmation action. Please try again.'
+      );
     }
   }
 

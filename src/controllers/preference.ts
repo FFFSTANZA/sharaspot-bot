@@ -358,14 +358,16 @@ export class PreferenceController {
     
     const buttons = isBike 
       ? [
-          { id: 'Standard', title: '🔌 Standard' },
-          { id: 'Fast Charge', title: '⚡ Fast Charge' },
+          { id: 'CCS2', title: '🔌 Standard' },
+          { id: 'Type2', title: '⚡ Fast Charge' },
+          { id: 'CHAdeMO', title: '🔌 CHAdeMO' },
           { id: 'Any', title: '🔀 Any Type' }
         ]
       : [
           { id: 'CCS2', title: '🔌 CCS2' },
           { id: 'Type2', title: '🔌 Type2' },
-          { id: 'CHAdeMO', title: '🔌 CHAdeMO' }
+          { id: 'CHAdeMO', title: '🔌 CHAdeMO' },
+          { id: 'Any', title: '🔀  Any' }
         ];
 
     await whatsappService.sendButtonMessage(

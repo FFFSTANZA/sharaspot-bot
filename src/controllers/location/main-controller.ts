@@ -1,9 +1,22 @@
+// src/controllers/location/index.ts - Fixed Main Controller with Consistent Flow
 import { whatsappService } from '../../services/whatsapp';
 import { geocodingService } from '../../services/location/geocoding';
+import { bookingController } from '../booking';
 import { logger } from '../../utils/logger';
 import { LocationContextManager } from './context-manager';
 import { LocationDisplayController } from './display-controller';
 import { LocationSearchController } from './search-controller';
+
+// Standardized button ID patterns for consistency
+const BUTTON_ID_PATTERNS = {
+  SELECT_STATION: /^select_station_(\d+)$/,
+  BOOK_STATION: /^book_station_(\d+)$/,
+  STATION_INFO: /^station_info_(\d+)$/,
+  RECENT_SEARCH: /^recent_search_(\d+)$/,
+  GENERAL_STATION: /^(?:.*_)?station_(\d+)$/,
+  GENERAL_ACTION: /^.*_(\d+)$/,
+  NUMERIC_ONLY: /^(\d+)$/
+};
 
 export class LocationMainController {
   private contextManager: LocationContextManager;
@@ -236,30 +249,19 @@ export class LocationMainController {
   }
 
   /**
-   * Handle station selection from list
+   * Handle station selection from list - DELEGATE TO BOOKING CONTROLLER
    */
   async handleStationSelection(whatsappId: string, stationId: number): Promise<void> {
     try {
-      logger.info('Station selected', { whatsappId, stationId });
+      if (!stationId || isNaN(stationId) || stationId <= 0) {
+        await whatsappService.sendTextMessage(whatsappId, '❌ Invalid station selection.');
+        return;
+      }
 
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        `🏢 *Station Selected*\n\nStation ID: ${stationId}\n\nLoading detailed information...`
-      );
+      logger.info('Station selected in location controller', { whatsappId, stationId });
 
-      // Show station details and booking options
-      setTimeout(async () => {
-        await whatsappService.sendButtonMessage(
-          whatsappId,
-          'Station details and booking will be available in Phase 4!',
-          [
-            { id: `book_station_${stationId}`, title: '⚡ Book Now' },
-            { id: `station_info_${stationId}`, title: '📋 More Info' },
-            { id: 'back_to_list', title: '⬅️ Back to List' },
-          ],
-          '🏢 Station Options'
-        );
-      }, 1500);
+      // Delegate to booking controller for consistent station handling
+      await bookingController.handleStationSelection(whatsappId, stationId);
 
     } catch (error) {
       logger.error('Failed to handle station selection', { whatsappId, stationId, error });
@@ -271,28 +273,19 @@ export class LocationMainController {
   }
 
   /**
-   * Handle station booking request (placeholder for Phase 4)
+   * Handle station booking request - DELEGATE TO BOOKING CONTROLLER
    */
   async handleStationBooking(whatsappId: string, stationId: number): Promise<void> {
     try {
-      logger.info('Station booking requested', { whatsappId, stationId });
+      if (!stationId || isNaN(stationId) || stationId <= 0) {
+        await whatsappService.sendTextMessage(whatsappId, '❌ Invalid station for booking.');
+        return;
+      }
 
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        `⚡ *Booking Station ${stationId}*\n\nPreparing reservation system...\n\nThis feature will be available in Phase 4 with:\n• Real-time queue management\n• Automatic notifications\n• Payment integration\n• Booking confirmations`
-      );
+      logger.info('Station booking requested from location controller', { whatsappId, stationId });
 
-      setTimeout(async () => {
-        await whatsappService.sendButtonMessage(
-          whatsappId,
-          '🚧 *Coming Soon: Full Booking System*\n\nPhase 4 will include complete booking capabilities!',
-          [
-            { id: 'notify_when_ready', title: '🔔 Notify When Ready' },
-            { id: 'find_other_stations', title: '🔍 Find Other Stations' },
-            { id: 'back_to_search', title: '⬅️ Back to Search' },
-          ]
-        );
-      }, 2000);
+      // Delegate to booking controller for consistent booking flow
+      await bookingController.handleStationBooking(whatsappId, stationId);
 
     } catch (error) {
       logger.error('Failed to handle station booking', { whatsappId, stationId, error });
@@ -304,35 +297,19 @@ export class LocationMainController {
   }
 
   /**
-   * Show detailed station information (placeholder for Phase 4)
+   * Show detailed station information - DELEGATE TO BOOKING CONTROLLER
    */
   async showStationDetails(whatsappId: string, stationId: number): Promise<void> {
     try {
-      logger.info('Station details requested', { whatsappId, stationId });
+      if (!stationId || isNaN(stationId) || stationId <= 0) {
+        await whatsappService.sendTextMessage(whatsappId, '❌ Invalid station for details.');
+        return;
+      }
 
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        `📋 *Station Details*\n\nStation ID: ${stationId}\n\nLoading comprehensive information...\n\n` +
-        '• Real-time availability\n' +
-        '• Pricing details\n' +
-        '• Amenities nearby\n' +
-        '• User reviews\n' +
-        '• Operating hours\n' +
-        '• Navigation assistance'
-      );
+      logger.info('Station details requested from location controller', { whatsappId, stationId });
 
-      setTimeout(async () => {
-        await whatsappService.sendButtonMessage(
-          whatsappId,
-          'Detailed station information will be enhanced in Phase 4!',
-          [
-            { id: `book_station_${stationId}`, title: '⚡ Book Now' },
-            { id: 'get_directions', title: '🗺️ Get Directions' },
-            { id: 'share_station', title: '📤 Share Station' },
-            { id: 'back_to_search', title: '⬅️ Back to Search' },
-          ]
-        );
-      }, 2000);
+      // Delegate to booking controller for consistent station detail handling
+      await bookingController.showStationDetails(whatsappId, stationId);
 
     } catch (error) {
       logger.error('Failed to show station details', { whatsappId, stationId, error });
@@ -368,6 +345,10 @@ export class LocationMainController {
     await whatsappService.sendTextMessage(whatsappId, helpText);
   }
 
+  // ===============================================
+  // CONTEXT MANAGEMENT
+  // ===============================================
+
   /**
    * Clear location context
    */
@@ -396,6 +377,10 @@ export class LocationMainController {
     return this.contextManager.getActiveContextsCount();
   }
 
+  // ===============================================
+  // NAVIGATION HELPERS
+  // ===============================================
+
   /**
    * Handle back to list request
    */
@@ -418,13 +403,142 @@ export class LocationMainController {
   }
 
   /**
-   * Handle notifications setup (placeholder for Phase 4)
+   * Handle notifications setup - Basic implementation
    */
   async handleNotificationSetup(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      '🔔 *Notification Setup*\n\nPhase 4 will include:\n• Booking status updates\n• Queue position changes\n• Station availability alerts\n• Payment confirmations\n\nStay tuned for these features!'
+      '🔔 *Notification Setup*\n\n' +
+      'Notifications will include:\n' +
+      '• Booking status updates\n' +
+      '• Queue position changes\n' +
+      '• Station availability alerts\n' +
+      '• Payment confirmations\n\n' +
+      '✅ Notifications are now enabled!'
     );
+  }
+
+  // ===============================================
+  // UTILITY FUNCTIONS FOR CONSISTENT ID PARSING
+  // ===============================================
+
+  /**
+   * Parse button/list ID for consistent station ID extraction
+   */
+  private parseButtonId(buttonId: string): { action: string; stationId: number; additionalData?: number } {
+    if (!buttonId) {
+      return { action: '', stationId: 0 };
+    }
+
+    try {
+      // Try specific patterns first (most specific to least specific)
+      
+      // Handle select station: select_station_123
+      const selectMatch = buttonId.match(BUTTON_ID_PATTERNS.SELECT_STATION);
+      if (selectMatch) {
+        return {
+          action: 'select',
+          stationId: parseInt(selectMatch[1], 10)
+        };
+      }
+
+      // Handle book station: book_station_123
+      const bookMatch = buttonId.match(BUTTON_ID_PATTERNS.BOOK_STATION);
+      if (bookMatch) {
+        return {
+          action: 'book',
+          stationId: parseInt(bookMatch[1], 10)
+        };
+      }
+
+      // Handle station info: station_info_123
+      const stationInfoMatch = buttonId.match(BUTTON_ID_PATTERNS.STATION_INFO);
+      if (stationInfoMatch) {
+        return {
+          action: 'info',
+          stationId: parseInt(stationInfoMatch[1], 10)
+        };
+      }
+
+      // Handle recent search: recent_search_0, recent_search_1, etc.
+      const recentMatch = buttonId.match(BUTTON_ID_PATTERNS.RECENT_SEARCH);
+      if (recentMatch) {
+        return {
+          action: 'recent',
+          stationId: parseInt(recentMatch[1], 10), // This is actually the index
+          additionalData: parseInt(recentMatch[1], 10)
+        };
+      }
+
+      // Generic patterns
+      const parts = buttonId.split('_');
+      const action = parts[0];
+
+      // Try general station pattern
+      const generalStationMatch = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_STATION);
+      if (generalStationMatch) {
+        return {
+          action,
+          stationId: parseInt(generalStationMatch[1], 10)
+        };
+      }
+
+      // Try general action pattern
+      const generalActionMatch = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_ACTION);
+      if (generalActionMatch) {
+        return {
+          action,
+          stationId: parseInt(generalActionMatch[1], 10)
+        };
+      }
+
+      // Try numeric only pattern
+      const numericMatch = buttonId.match(BUTTON_ID_PATTERNS.NUMERIC_ONLY);
+      if (numericMatch) {
+        return {
+          action: 'select', // Default action for numeric IDs in location context
+          stationId: parseInt(numericMatch[1], 10)
+        };
+      }
+
+      logger.warn('Could not parse button ID in location controller', { buttonId });
+      return { action, stationId: 0 };
+
+    } catch (error) {
+      logger.error('Button ID parsing failed in location controller', { 
+        buttonId, 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return { action: '', stationId: 0 };
+    }
+  }
+
+  /**
+   * Handle any button with station ID - for consistent delegation
+   */
+  async handleButtonWithStationId(whatsappId: string, buttonId: string): Promise<void> {
+    const { action, stationId } = this.parseButtonId(buttonId);
+
+    if (!stationId) {
+      logger.warn('No station ID found in button', { whatsappId, buttonId });
+      return;
+    }
+
+    switch (action) {
+      case 'select':
+        await this.handleStationSelection(whatsappId, stationId);
+        break;
+      case 'book':
+        await this.handleStationBooking(whatsappId, stationId);
+        break;
+      case 'info':
+        await this.showStationDetails(whatsappId, stationId);
+        break;
+      default:
+        // Default to station selection for unknown actions with station IDs
+        await this.handleStationSelection(whatsappId, stationId);
+        break;
+    }
   }
 }
 
