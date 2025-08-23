@@ -3461,3 +3461,800 @@ params: test_after_fix_1755856567565,Test Owner After Fix
   "from": "919790294221",
   "error": {}
 }
+2025-08-23 09:34:04 [ERROR]: Error: Failed query: CREATE TABLE "geocode_cache_v2" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"search_term" text NOT NULL,
+	"original_address" text NOT NULL,
+	"latitude" numeric(10, 8) NOT NULL,
+	"longitude" numeric(11, 8) NOT NULL,
+	"geohash" text NOT NULL,
+	"formatted_address" text,
+	"locality" text,
+	"sub_locality" text,
+	"state" text,
+	"country" text DEFAULT 'India',
+	"postal_code" text,
+	"confidence" numeric(3, 2) DEFAULT '1.0',
+	"hit_count" integer DEFAULT 1,
+	"last_used" timestamp DEFAULT now(),
+	"created_at" timestamp DEFAULT now(),
+	CONSTRAINT "geocode_cache_v2_search_term_unique" UNIQUE("search_term")
+);
+
+params: 
+    at NeonHttpPreparedQuery.queryWithCache (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async migrate (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/src/neon-http/migrator.ts:45:5)
+    at async runMigrations (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/db/migrate.ts:8:5) {
+  "service": "sharaspot-bot",
+  "query": "CREATE TABLE \"geocode_cache_v2\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"search_term\" text NOT NULL,\n\t\"original_address\" text NOT NULL,\n\t\"latitude\" numeric(10, 8) NOT NULL,\n\t\"longitude\" numeric(11, 8) NOT NULL,\n\t\"geohash\" text NOT NULL,\n\t\"formatted_address\" text,\n\t\"locality\" text,\n\t\"sub_locality\" text,\n\t\"state\" text,\n\t\"country\" text DEFAULT 'India',\n\t\"postal_code\" text,\n\t\"confidence\" numeric(3, 2) DEFAULT '1.0',\n\t\"hit_count\" integer DEFAULT 1,\n\t\"last_used\" timestamp DEFAULT now(),\n\t\"created_at\" timestamp DEFAULT now(),\n\tCONSTRAINT \"geocode_cache_v2_search_term_unique\" UNIQUE(\"search_term\")\n);\n",
+  "params": [],
+  "cause": {
+    "name": "NeonDbError",
+    "severity": "ERROR",
+    "code": "42P07",
+    "file": "heap.c",
+    "line": "1160",
+    "routine": "heap_create_with_catalog"
+  }
+}
+2025-08-23 10:53:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:23:31.679Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:54:34 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:55:33 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:55:33 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:25:31.680Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:57:33 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:27:31.683Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:58:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:59:31 [ERROR]: ❌ analytics process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:59:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 10:59:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:29:31.688Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:01:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:01:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:31:31.692Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:03:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:33:31.692Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:04:31 [ERROR]: ❌ performance process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select count(*) from \"queues\" where status IN ('waiting', 'reserved')",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:04:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:04:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:05:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:35:31.792Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:07:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:07:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:37:31.876Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:09:31 [ERROR]: ❌ analytics process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:09:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:09:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:39:31.877Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:10:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:11:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:41:31.977Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:13:31 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:13:31 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:43:31.978Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:14:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:15:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:45:32.078Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:16:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:17:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:47:32.078Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:19:31 [ERROR]: ❌ performance process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select count(*) from \"queues\" where status IN ('waiting', 'reserved')",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:19:31 [ERROR]: ❌ analytics process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:19:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:19:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:19:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:49:32.078Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:21:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:51:32.080Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:22:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:23:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:53:32.180Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:24:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:25:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:25:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:55:32.180Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:27:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:57:32.213Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:28:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:29:31 [ERROR]: ❌ analytics process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:29:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:29:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T05:59:32.214Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:31:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T06:01:32.246Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:31:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:33:32 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-23T06:03:32.248Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:34:31 [ERROR]: ❌ performance process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select count(*) from \"queues\" where status IN ('waiting', 'reserved')",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:34:31 [ERROR]: ❌ optimization process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"name\", \"address\", \"latitude\", \"longitude\", \"total_ports\", \"available_ports\", \"connector_types\", \"max_power_kw\", \"price_per_kwh\", \"is_active\", \"is_open\", \"is_paused\", \"current_queue_length\", \"max_queue_length\", \"average_session_minutes\", \"owner_whatsapp_id\", \"created_at\", \"updated_at\" from \"charging_stations\" where \"charging_stations\".\"is_active\" = $1",
+    "params": [
+      true
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:34:32 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "sourceError": {}
+    }
+  }
+}
+2025-08-23 11:59:55 [ERROR]: Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/node_modules/express/lib/application.js:635:24)
+    at ServerManager.start (/home/fffstanza/Folonite/SharaSpot/SharaSpot v1/src/index.ts:281:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  "service": "sharaspot-bot",
+  "error": "listen EADDRINUSE: address already in use :::3000"
+}
+2025-08-23 12:11:57 [ERROR]: ❌ Database connection failed {
+  "service": "sharaspot-bot",
+  "error": "Database connection timeout"
+}
+2025-08-23 12:17:49 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-23T06:47:48.549Z",
+      "2025-08-23T06:47:48.549Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 12:17:49 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggN0JBNUIzOUU0NDJBQzhBQ0MzNTE3MzA5QkJEQTA4MUUA",
+  "from": "919790294221",
+  "error": {}
+}
+2025-08-23 12:18:05 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-23T06:48:04.837Z",
+      "2025-08-23T06:48:04.837Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 12:18:05 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggRUU0NzgwOTc5QjY1RUM1MjQyNzc5MkVDN0FGMTg0MDMA",
+  "from": "919790294221",
+  "error": {}
+}
+2025-08-23 12:20:22 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-23T06:50:22.169Z",
+      "2025-08-23T06:50:22.169Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 12:20:22 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggREE0M0JGQzU1OUM5MjFCNzkyMTkwRUI4MzVBQTREQUYA",
+  "from": "919790294221",
+  "error": {}
+}

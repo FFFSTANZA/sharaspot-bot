@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { whatsappService } from '../services/whatsapp';
-import { userService } from '../services/user';
+import { userService } from '../services/userService';
 import { preferenceService } from '../services/preference';
 import { preferenceController } from './preference';
 import { profileService } from '../services/profile';

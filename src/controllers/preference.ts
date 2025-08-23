@@ -1,7 +1,7 @@
 // src/controllers/preference.ts - OPTIMIZED WHATSAPP PREFERENCE CONTROLLER
 import { whatsappService } from '../services/whatsapp';
 import { preferenceService, type UserContext } from '../services/preference';
-import { userService } from '../services/user';
+import { userService } from '../services/userService';
 import { logger } from '../utils/logger';
 
 // Streamlined types that work with existing UserContext

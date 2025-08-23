@@ -1,4 +1,6 @@
-// src/services/userService.ts - Fix user creation logic
+// src/services/userService.ts - COMPLETE FIXED VERSION
+// Replace your entire userService.ts file with this content
+
 import { db } from '../config/database';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
@@ -6,7 +8,7 @@ import { logger } from '../utils/logger';
 
 export class UserService {
   /**
-   * Get or create user - the safe way
+   * Get or create user - the safe way (string parameter)
    */
   static async getOrCreateUser(whatsappId: string) {
     try {
@@ -73,6 +75,44 @@ export class UserService {
   }
 
   /**
+   * Create user with object parameter (for backward compatibility with webhook)
+   */
+  static async createUser(userData: { whatsappId: string; name?: string }) {
+    try {
+      const { whatsappId, name } = userData;
+      
+      logger.info('📝 Creating/updating user', { whatsappId, name });
+      
+      // Use the existing getOrCreateUser method
+      const existingUser = await this.getOrCreateUser(whatsappId);
+      
+      // If name is provided and user doesn't have a name, update it
+      if (name && !existingUser.name) {
+        const updatedUser = await db
+          .update(users)
+          .set({ 
+            name,
+            updatedAt: new Date()
+          })
+          .where(eq(users.whatsappId, whatsappId))
+          .returning();
+          
+        logger.info('✅ Updated user with name', { whatsappId, name });
+        return updatedUser[0];
+      }
+      
+      return existingUser;
+      
+    } catch (error: any) {
+      logger.error('❌ Failed to create user', { 
+        userData, 
+        error: error?.message || 'Unknown error' 
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Alternative: Use upsert pattern (PostgreSQL specific)
    */
   static async upsertUser(whatsappId: string) {
@@ -100,12 +140,65 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Update user profile
+   */
+  static async updateUserProfile(whatsappId: string, updates: { name?: string; phoneNumber?: string }) {
+    try {
+      const updatedUser = await db
+        .update(users)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(users.whatsappId, whatsappId))
+        .returning();
+
+      if (updatedUser.length > 0) {
+        logger.info('✅ User profile updated', { whatsappId, updates });
+        return updatedUser[0];
+      }
+
+      return null;
+    } catch (error: any) {
+      logger.error('❌ Failed to update user profile', { whatsappId, updates, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Get user by WhatsApp ID
+   */
+  static async getUserByWhatsAppId(whatsappId: string) {
+    try {
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.whatsappId, whatsappId))
+        .limit(1);
+
+      return user.length > 0 ? user[0] : null;
+    } catch (error: any) {
+      logger.error('❌ Failed to get user', { whatsappId, error });
+      return null;
+    }
+  }
 }
 
-// Update your message handler to use the fixed user service
+// Export a default instance for backward compatibility with existing imports
+export const userService = {
+  createUser: UserService.createUser.bind(UserService),
+  getOrCreateUser: UserService.getOrCreateUser.bind(UserService),
+  upsertUser: UserService.upsertUser.bind(UserService),
+  updateUserProfile: UserService.updateUserProfile.bind(UserService),
+  getUserByWhatsAppId: UserService.getUserByWhatsAppId.bind(UserService)
+};
+
+// Export individual functions for modern usage
 export async function handleIncomingMessage(whatsappId: string, message: any) {
   try {
-    logger.info('📨 Processing message', { whatsappId, messageType: message.type });
+    logger.info('📨 Processing message', { whatsappId, messageType: message?.type });
 
     // Use the safe user creation method
     const user = await UserService.getOrCreateUser(whatsappId);
