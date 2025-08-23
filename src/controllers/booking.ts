@@ -1,4 +1,4 @@
-// src/controllers/booking.ts - COMPLETE & OPTIMIZED IMPLEMENTATION
+// src/controllers/booking.ts - FIXED & OPTIMIZED IMPLEMENTATION
 import { whatsappService } from '../services/whatsapp';
 import { queueService } from '../services/queue';
 import { sessionService } from '../services/session';
@@ -11,7 +11,7 @@ import { eq } from 'drizzle-orm';
 
 export class BookingController {
   // ===============================================
-  // MISSING METHODS - IMPLEMENTING ALL REQUIRED METHODS
+  // CORE BOOKING METHODS - FIXED
   // ===============================================
 
   /**
@@ -92,42 +92,6 @@ export class BookingController {
       );
     }
   }
-
-  /**
-   * Handle specific station queue status (called from queue-webhook)
-   */
-  async handleStationQueueStatus(whatsappId: string, stationId: number): Promise<void> {
-    try {
-      logger.info('Checking specific station queue status', { whatsappId, stationId });
-
-      const [queueInfo, userQueue] = await Promise.all([
-        queueService.getStationQueueInfo(stationId),
-        queueService.getUserQueueAtStation(whatsappId, stationId)
-      ]);
-
-      if (!queueInfo) {
-        await whatsappService.sendTextMessage(
-          whatsappId,
-          '❌ Unable to get queue information for this station.'
-        );
-        return;
-      }
-
-      // Send station-specific queue status
-      await this.sendStationQueueDetails(whatsappId, stationId, queueInfo, userQueue);
-
-    } catch (error) {
-      logger.error('Failed to get station queue status', { whatsappId, stationId, error });
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Failed to get queue status for this station.'
-      );
-    }
-  }
-
-  // ===============================================
-  // EXISTING METHODS - ENHANCED & OPTIMIZED
-  // ===============================================
 
   /**
    * Handle station booking with smart queue management
@@ -309,156 +273,205 @@ export class BookingController {
   }
 
   // ===============================================
-  // NEW HELPER METHODS FOR MISSING FUNCTIONALITY
+  // CORE HELPER METHODS - FIXED
   // ===============================================
 
   /**
-   * Show station overview with essential information and actions
+   * Get complete station details from database - FIXED
    */
-  private async showStationOverview(whatsappId: string, station: any): Promise<void> {
-    const queueInfo = await queueService.getStationQueueInfo(station.id).catch(() => null);
-    const analytics = await analyticsService.getStationAnalytics(station.id).catch(() => null);
-    
-    const overviewMessage = `🏢 *${station.name}*\n` +
-      `📍 ${station.address}\n\n` +
-      `⚡ *Quick Info:*\n` +
-      `• Status: ${this.getStationStatusEmoji(station)} ${station.isOpen ? 'Open' : 'Closed'}\n` +
-      `• Available: ${station.availablePorts || 0}/${station.totalPorts || 1} ports\n` +
-      `• Price: ₹${station.pricePerKwh}/kWh\n` +
-      `• Queue: ${queueInfo?.totalInQueue || 0} people\n\n` +
-      `${this.getQuickRecommendation(station, queueInfo, analytics)}`;
+  async getStationDetails(stationId: number): Promise<any> {
+    try {
+      const station = await db
+        .select({
+          id: chargingStations.id,
+          name: chargingStations.name,
+          address: chargingStations.address,
+          latitude: chargingStations.latitude,
+          longitude: chargingStations.longitude,
+          totalSlots: chargingStations.totalSlots,
+          availableSlots: chargingStations.availableSlots,
+          totalPorts: chargingStations.totalPorts,
+          availablePorts: chargingStations.availablePorts,
+          pricePerUnit: chargingStations.pricePerUnit,
+          pricePerKwh: chargingStations.pricePerKwh,
+          connectorTypes: chargingStations.connectorTypes,
+          amenities: chargingStations.amenities,
+          operatingHours: chargingStations.operatingHours,
+          rating: chargingStations.rating,
+          averageRating: chargingStations.averageRating,
+          totalReviews: chargingStations.totalReviews,
+          reviewCount: chargingStations.reviewCount,
+          distance: chargingStations.distance,
+          isActive: chargingStations.isActive,
+          isOpen: chargingStations.isOpen,
+          lastUpdated: chargingStations.updatedAt
+        })
+        .from(chargingStations)
+        .where(eq(chargingStations.id, stationId))
+        .limit(1);
 
-    await whatsappService.sendTextMessage(whatsappId, overviewMessage);
-
-    // Send quick action buttons
-    setTimeout(async () => {
-      await this.sendQuickActionButtons(whatsappId, station.id, station, queueInfo);
-    }, 1500);
-  }
-
-  /**
-   * Format detailed station information
-   */
-  private formatDetailedStationInfo(station: any, analytics: any, queueInfo: any): string {
-    const statusEmoji = this.getStationStatusEmoji(station);
-    const ratingStars = this.formatRating(analytics?.averageRating);
-    
-    return `🏢 *${station.name}*\n` +
-      `📍 ${station.address}\n` +
-      `${ratingStars} (${analytics?.totalReviews || 0} reviews)\n\n` +
-      `⚡ *Station Details:*\n` +
-      `• Status: ${statusEmoji} ${station.isOpen ? 'Open' : 'Closed'}\n` +
-      `• Type: ${station.stationType || 'Public'}\n` +
-      `• Power: ${station.maxPower || 'N/A'} kW\n` +
-      `• Connectors: ${station.connectorTypes || 'CCS, Type-2'}\n` +
-      `• Ports: ${station.availablePorts || 0}/${station.totalPorts || 1} available\n\n` +
-      `💰 *Pricing:*\n` +
-      `• Rate: ₹${station.pricePerKwh}/kWh\n` +
-      `• Parking: ${station.parkingFee ? `₹${station.parkingFee}` : 'Free'}\n\n` +
-      `📊 *Live Queue:*\n` +
-      `• In queue: ${queueInfo?.totalInQueue || 0} people\n` +
-      `• Est. wait: ${queueInfo?.estimatedWaitTime || 'N/A'} min\n` +
-      `• Peak hours: ${analytics?.peakHours?.join(', ') || '9AM-6PM'}\n\n` +
-      `🕒 *Hours:* ${station.operatingHours || '24/7'}\n` +
-      `📞 *Support:* ${station.supportPhone || '+91-XXX-XXXX'}`;
-  }
-
-  /**
-   * Send station-specific queue details
-   */
-  private async sendStationQueueDetails(whatsappId: string, stationId: number, queueInfo: any, userQueue: any): Promise<void> {
-    const station = await this.getStationDetails(stationId);
-    
-    let message = `📊 *Queue Status - ${station?.name || `Station #${stationId}`}*\n\n`;
-    
-    if (userQueue) {
-      message += `🎯 *Your Position:* #${userQueue.position}\n` +
-        `⏱️ *Your Wait Time:* ~${userQueue.estimatedWaitMinutes} min\n` +
-        `🕐 *Expected At:* ${this.calculateExpectedTime(userQueue.estimatedWaitMinutes)}\n` +
-        `📋 *Status:* ${this.getStatusDescription(userQueue.status)}\n\n`;
-    }
-    
-    message += `👥 *Total in Queue:* ${queueInfo.totalInQueue}\n` +
-      `⚡ *Available Ports:* ${queueInfo.availablePorts}/${queueInfo.totalPorts}\n` +
-      `📈 *Average Wait:* ${queueInfo.averageWaitTime} min\n` +
-      `🔄 *Turnover Rate:* ${queueInfo.turnoverRate || 'N/A'} sessions/hour`;
-
-    await whatsappService.sendTextMessage(whatsappId, message);
-
-    // Send management buttons if user is in queue
-    if (userQueue) {
-      setTimeout(async () => {
-        await whatsappService.sendButtonMessage(
-          whatsappId,
-          '🎛️ *Manage Your Queue Position:*',
-          [
-            { id: `queue_status_${stationId}`, title: '🔄 Refresh Status' },
-            { id: `live_updates_${stationId}`, title: '📱 Live Updates' },
-            { id: `cancel_queue_${stationId}`, title: '❌ Leave Queue' }
-          ]
-        );
-      }, 2000);
-    }
-  }
-
-  /**
-   * Send appropriate action buttons based on station status
-   */
-  private async sendStationActionButtons(whatsappId: string, stationId: number, station: any, queueInfo: any): Promise<void> {
-    const buttons = [];
-    
-    if (station.isOpen && station.isActive) {
-      if (station.availablePorts > 0) {
-        buttons.push({ id: `book_station_${stationId}`, title: '⚡ Book Now' });
-      } else if (queueInfo && queueInfo.totalInQueue < (station.maxQueueLength || 10)) {
-        buttons.push({ id: `join_queue_${stationId}`, title: '🕐 Join Queue' });
+      if (station.length === 0) {
+        logger.warn('Station not found', { stationId });
+        return null;
       }
-    }
-    
-    buttons.push(
-      { id: `get_directions_${stationId}`, title: '🗺️ Get Directions' },
-      { id: `share_station_${stationId}`, title: '📤 Share Station' }
-    );
 
-    if (buttons.length > 0) {
-      await whatsappService.sendButtonMessage(
+      const stationData = station[0];
+
+      // Calculate additional metrics using available slots (FIXED)
+      const slots = stationData.availableSlots || stationData.availablePorts || 0;
+      const totalSlots = stationData.totalSlots || stationData.totalPorts || 1;
+      
+      const utilization = totalSlots > 0 
+        ? Math.round(((totalSlots - slots) / totalSlots) * 100)
+        : 0;
+
+      const availability = slots > 0 ? 'Available' 
+        : totalSlots > 0 ? 'Full' 
+        : 'Offline';
+
+      // Use proper field names and convert to numbers (FIXED)
+      const rating = Number(stationData.rating || stationData.averageRating) || 0;
+      const reviews = Number(stationData.totalReviews || stationData.reviewCount) || 0;
+      const price = Number(stationData.pricePerUnit || stationData.pricePerKwh) || 0;
+      const distance = Number(stationData.distance) || 0;
+
+      return {
+        ...stationData,
+        utilization,
+        availability,
+        isAvailable: slots > 0,
+        isBusy: utilization > 80,
+        priceDisplay: `₹${price.toFixed(2)}/kWh`, // FIXED: Convert to number first
+        distanceDisplay: distance > 0 ? `${distance.toFixed(1)} km` : 'Unknown', // FIXED: Convert to number first
+        ratingDisplay: rating > 0 ? `${rating.toFixed(1)} ⭐` : 'No ratings', // FIXED: Convert to number first
+        slotsDisplay: `${slots}/${totalSlots} available`,
+        finalRating: rating,
+        finalReviews: reviews
+      };
+
+    } catch (error) {
+      logger.error('Failed to get station details', { stationId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Show station overview with booking options - FIXED
+   */
+  async showStationOverview(whatsappId: string, station: any): Promise<void> {
+    try {
+      if (!station) {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          '❌ Station information not available.'
+        );
+        return;
+      }
+
+      // Format overview message
+      const overviewText = `🏢 *${station.name}*\n\n` +
+        `📍 ${station.address}\n` +
+        `📏 ${station.distanceDisplay} away\n` +
+        `⚡ ${station.slotsDisplay}\n` +
+        `💰 ${station.priceDisplay}\n` +
+        `⭐ ${station.ratingDisplay} (${station.finalReviews || 0} reviews)\n\n` +
+        `🔌 *Connectors:* ${Array.isArray(station.connectorTypes) 
+          ? station.connectorTypes.join(', ') 
+          : station.connectorTypes || 'Standard'}\n` +
+        `🕒 *Hours:* ${station.operatingHours || '24/7'}\n` +
+        `🎯 *Status:* ${station.availability}`;
+
+      await whatsappService.sendTextMessage(whatsappId, overviewText);
+
+      // Send action buttons based on availability
+      setTimeout(async () => {
+        const buttons = [];
+
+        if (station.isAvailable) {
+          buttons.push({ id: `book_station_${station.id}`, title: '⚡ Book Now' });
+          buttons.push({ id: `station_info_${station.id}`, title: '📊 Details' });
+          buttons.push({ id: `get_directions_${station.id}`, title: '🗺️ Directions' });
+        } else {
+          buttons.push({ id: `join_queue_${station.id}`, title: '📋 Join Queue' });
+          buttons.push({ id: `station_info_${station.id}`, title: '📊 Details' });
+          buttons.push({ id: `find_alternatives_${station.id}`, title: '🔍 Find Alternatives' });
+        }
+
+        if (buttons.length > 0) {
+          await whatsappService.sendButtonMessage(
+            whatsappId,
+            `What would you like to do at *${station.name}*?`,
+            buttons.slice(0, 3), // WhatsApp supports max 3 buttons
+            '⚡ Station Actions'
+          );
+        }
+      }, 2000);
+
+    } catch (error) {
+      logger.error('Failed to show station overview', { whatsappId, stationId: station?.id, error });
+      await whatsappService.sendTextMessage(
         whatsappId,
-        '🎯 *What would you like to do?*',
-        buttons,
-        '🏢 Station Actions'
+        '❌ Failed to load station overview. Please try again.'
       );
     }
   }
 
   /**
-   * Send quick action buttons for station overview
+   * Format detailed station information message - FIXED
    */
-  private async sendQuickActionButtons(whatsappId: string, stationId: number, station: any, queueInfo: any): Promise<void> {
-    const buttons = [];
-    
-    // Primary action based on availability
-    if (station.availablePorts > 0) {
-      buttons.push({ id: `book_station_${stationId}`, title: '⚡ Book Now' });
-    } else {
-      buttons.push({ id: `join_queue_${stationId}`, title: '🕐 Join Queue' });
+  private formatDetailedStationInfo(station: any, analytics?: any, queueInfo?: any): string {
+    if (!station) {
+      return '❌ Station information not available.';
     }
-    
-    // Secondary actions
-    buttons.push(
-      { id: `station_info_${stationId}`, title: '📋 Full Details' },
-      { id: 'back_to_search', title: '⬅️ Back to Search' }
-    );
 
-    await whatsappService.sendButtonMessage(
-      whatsappId,
-      '🚀 *Quick Actions:*',
-      buttons,
-      '⚡ Station Options'
-    );
+    const slots = station.availableSlots || station.availablePorts || 0;
+    const totalSlots = station.totalSlots || station.totalPorts || 1;
+    const rating = station.finalRating || Number(station.rating || station.averageRating) || 0;
+    const reviews = station.finalReviews || Number(station.totalReviews || station.reviewCount) || 0;
+
+    let detailsText = `🏢 *${station.name}*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `📍 *Location:*\n${station.address}\n\n` +
+      `⚡ *Charging Details:*\n` +
+      `• Available Slots: ${slots}/${totalSlots}\n` +
+      `• Price: ${station.priceDisplay}\n` +
+      `• Connectors: ${Array.isArray(station.connectorTypes) 
+        ? station.connectorTypes.join(', ') 
+        : station.connectorTypes || 'Standard'}\n\n` +
+      `🕒 *Operating Hours:*\n${station.operatingHours || '24/7'}\n\n` +
+      `⭐ *Rating:* ${rating > 0 ? rating.toFixed(1) : 'No rating'} (${reviews} reviews)\n` + // FIXED: Check if rating > 0
+      `📊 *Utilization:* ${station.utilization}%\n`;
+
+    // Add analytics if available
+    if (analytics) {
+      detailsText += `\n🔍 *Live Analytics:*\n` +
+        `• Current Wait: ${analytics.estimatedWaitTime || 'Unknown'} minutes\n` +
+        `• Peak Hours: ${analytics.peakHours?.join(', ') || 'Not available'}\n` +
+        `• Efficiency: ${analytics.efficiency || 0}%\n`;
+    }
+
+    // Add queue information if available
+    if (queueInfo) {
+      detailsText += `\n📋 *Queue Status:*\n` +
+        `• People Waiting: ${queueInfo.queueLength || 0}\n` +
+        `• Estimated Wait: ${queueInfo.averageWaitTime || 'Unknown'} minutes\n`;
+    }
+
+    // Add amenities if available
+    if (station.amenities && Array.isArray(station.amenities) && station.amenities.length > 0) {
+      detailsText += `\n🎯 *Amenities:*\n${station.amenities.map((a: any) => `• ${a}`).join('\n')}\n`;
+    }
+
+    // Add availability status
+    const statusEmoji = station.availability === 'Available' ? '✅' : 
+                       station.availability === 'Full' ? '🔴' : '⚫';
+    detailsText += `\n${statusEmoji} *Status:* ${station.availability}`;
+
+    return detailsText;
   }
 
   // ===============================================
-  // EXISTING PRIVATE HELPER METHODS (ENHANCED)
+  // SMART BOOKING INTERFACE METHODS
   // ===============================================
 
   private async showSmartBookingInterface(whatsappId: string, station: any, analytics: any, user: any): Promise<void> {
@@ -472,7 +485,7 @@ export class BookingController {
       `👥 Queue: ${currentQueue}/${station.maxQueueLength || 10} people\n` +
       `⏱️ Est. Wait: ${waitTime} minutes\n` +
       `📈 ${peakStatus}\n` +
-      `💰 Rate: ₹${station.pricePerKwh}/kWh\n\n` +
+      `💰 Rate: ${station.priceDisplay}\n\n` +
       `🔌 *Your EV:* ${user.evModel || 'Not specified'}\n` +
       `🔗 *Connector:* ${user.connectorType || 'CCS'}\n\n` +
       `${this.getSmartRecommendation(analytics)}`;
@@ -516,25 +529,6 @@ export class BookingController {
       return '⚠️ *Peak Hours:* Consider booking for later or check nearby stations.';
     } else {
       return '💡 *Tip:* Queue is longer than usual. Book now or get notified when it\'s shorter.';
-    }
-  }
-
-  private getQuickRecommendation(station: any, queueInfo: any, analytics: any): string {
-    if (!station.isOpen) {
-      return '🕐 *Station is currently closed.* Check back during operating hours.';
-    }
-    
-    if (station.availablePorts > 0) {
-      return '🎉 *Available Now!* Perfect time to charge.';
-    }
-    
-    const queueLength = queueInfo?.totalInQueue || 0;
-    if (queueLength === 0) {
-      return '⚡ *No queue!* All ports busy but you can book instantly.';
-    } else if (queueLength < 3) {
-      return `✨ *Short Queue!* Only ${queueLength} ahead of you.`;
-    } else {
-      return `⏳ *${queueLength} in queue.* Consider nearby alternatives.`;
     }
   }
 
@@ -597,89 +591,7 @@ export class BookingController {
   }
 
   // ===============================================
-  // UTILITY HELPER METHODS
-  // ===============================================
-
-  private getStationStatusEmoji(station: any): string {
-    if (!station.isActive) return '🔴';
-    if (!station.isOpen) return '🟡';
-    if (station.availablePorts > 0) return '🟢';
-    return '🟠'; // Busy but open
-  }
-
-  private formatRating(rating: number | undefined): string {
-    if (!rating || rating === 0) return '⭐ No ratings yet';
-    
-    const stars = Math.round(rating);
-    const starEmojis = '⭐'.repeat(Math.min(stars, 5));
-    return `${starEmojis} (${rating.toFixed(1)})`;
-  }
-
-  private async getStationDetails(stationId: number): Promise<any> {
-    try {
-      const stations = await db.select()
-        .from(chargingStations)
-        .where(eq(chargingStations.id, stationId))
-        .limit(1);
-      
-      return stations[0] || null;
-    } catch (error) {
-      logger.error('Failed to get station details', { stationId, error });
-      return null;
-    }
-  }
-
-  private calculateExpectedTime(waitMinutes: number): string {
-    const now = new Date();
-    const expectedTime = new Date(now.getTime() + (waitMinutes * 60 * 1000));
-    return expectedTime.toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  }
-
-  private getStatusEmoji(status: string): string {
-    const emojis: Record<string, string> = {
-      waiting: '⏳',
-      reserved: '🎯',
-      charging: '⚡',
-      completed: '✅',
-      cancelled: '❌'
-    };
-    return emojis[status] || '📍';
-  }
-
-  private generateProgressBar(position: number, maxLength: number): string {
-    const filled = Math.max(0, maxLength - position);
-    const empty = Math.max(0, position - 1);
-    return '🟢'.repeat(filled) + '⚪'.repeat(empty);
-  }
-
-  private getStatusDescription(status: string): string {
-    const descriptions: Record<string, string> = {
-      waiting: 'In Queue',
-      reserved: 'Slot Reserved - Come Now!',
-      charging: 'Charging Active',
-      completed: 'Session Complete',
-      cancelled: 'Booking Cancelled'
-    };
-    return descriptions[status] || 'Unknown';
-  }
-
-  private getLiveStatusTip(queue: any): string {
-    if (queue.status === 'reserved') {
-      return '🚀 *Your slot is ready!* Please arrive within 15 minutes.';
-    } else if (queue.position === 2) {
-      return '🎉 *You\'re next!* Get ready to charge soon.';
-    } else if (queue.position <= 3) {
-      return '🔔 *Almost there!* Stay nearby for quick notifications.';
-    } else {
-      return '💡 *Perfect time* to grab coffee or run errands nearby!';
-    }
-  }
-
-  // ===============================================
-  // ENHANCED CONFIRMATION METHODS
+  // NOTIFICATION AND CONFIRMATION METHODS
   // ===============================================
 
   private async sendQueueJoinConfirmation(whatsappId: string, queuePosition: any): Promise<void> {
@@ -747,10 +659,88 @@ export class BookingController {
     }
   }
 
-  private async initializeSmartMonitoring(whatsappId: string, stationId: number): Promise<void> {
-    // This will be handled by the queue scheduler
-    logger.info('🧠 Smart monitoring initialized', { whatsappId, stationId });
+  private async sendStationActionButtons(whatsappId: string, stationId: number, station: any, queueInfo: any): Promise<void> {
+    const buttons = [];
+    
+    if (station.isOpen && station.isActive) {
+      if ((station.availableSlots || station.availablePorts) > 0) {
+        buttons.push({ id: `book_station_${stationId}`, title: '⚡ Book Now' });
+      } else if (queueInfo && queueInfo.totalInQueue < (station.maxQueueLength || 10)) {
+        buttons.push({ id: `join_queue_${stationId}`, title: '🕐 Join Queue' });
+      }
+    }
+    
+    buttons.push(
+      { id: `get_directions_${stationId}`, title: '🗺️ Get Directions' },
+      { id: `share_station_${stationId}`, title: '📤 Share Station' }
+    );
+
+    if (buttons.length > 0) {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🎯 *What would you like to do?*',
+        buttons,
+        '🏢 Station Actions'
+      );
+    }
   }
+
+  // ===============================================
+  // UTILITY HELPER METHODS - CLEANED UP
+  // ===============================================
+
+  private calculateExpectedTime(waitMinutes: number): string {
+    const now = new Date();
+    const expectedTime = new Date(now.getTime() + (waitMinutes * 60 * 1000));
+    return expectedTime.toLocaleTimeString('en-IN', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  }
+
+  private getStatusEmoji(status: string): string {
+    const emojis: Record<string, string> = {
+      waiting: '⏳',
+      reserved: '🎯',
+      charging: '⚡',
+      completed: '✅',
+      cancelled: '❌'
+    };
+    return emojis[status] || '📍';
+  }
+
+  private generateProgressBar(position: number, maxLength: number): string {
+    const filled = Math.max(0, maxLength - position);
+    const empty = Math.max(0, position - 1);
+    return '🟢'.repeat(filled) + '⚪'.repeat(empty);
+  }
+
+  private getStatusDescription(status: string): string {
+    const descriptions: Record<string, string> = {
+      waiting: 'In Queue',
+      reserved: 'Slot Reserved - Come Now!',
+      charging: 'Charging Active',
+      completed: 'Session Complete',
+      cancelled: 'Booking Cancelled'
+    };
+    return descriptions[status] || 'Unknown';
+  }
+
+  private getLiveStatusTip(queue: any): string {
+    if (queue.status === 'reserved') {
+      return '🚀 *Your slot is ready!* Please arrive within 15 minutes.';
+    } else if (queue.position === 2) {
+      return '🎉 *You\'re next!* Get ready to charge soon.';
+    } else if (queue.position <= 3) {
+      return '🔔 *Almost there!* Stay nearby for quick notifications.';
+    } else {
+      return '💡 *Perfect time* to grab coffee or run errands nearby!';
+    }
+  }
+
+  // ===============================================
+  // ERROR HANDLING AND EDGE CASES
+  // ===============================================
 
   private async handleUnavailableStation(whatsappId: string, stationId: number, station: any): Promise<void> {
     let reason = '❌ Station is currently unavailable.';
@@ -804,14 +794,60 @@ export class BookingController {
     }, 2000);
   }
 
+  private async handleQueueJoinFailure(whatsappId: string, stationId: number): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      `❌ *Unable to Join Queue*\n\n` +
+      `The station queue might be full or temporarily unavailable.\n\n` +
+      `💡 *Let's find you alternatives!*`
+    );
+
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🔍 *Alternative Options:*',
+        [
+          { id: `notify_when_available_${stationId}`, title: '🔔 Notify When Available' },
+          { id: 'find_nearby_alternatives', title: '🗺️ Find Nearby' },
+          { id: 'try_again_later', title: '⏰ Try Again Later' }
+        ]
+      );
+    }, 1500);
+  }
+
+  private async handleNoActiveQueues(whatsappId: string): Promise<void> {
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      `📍 *No Active Bookings*\n\n` +
+      `You don't have any current charging bookings.\n\n` +
+      `⚡ *Ready to charge?* Let's find you a station!`
+    );
+
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🚀 *Start Your Charging Journey:*',
+        [
+          { id: 'find_nearest_station', title: '🎯 Find Nearest' },
+          { id: 'share_location_book', title: '📍 Share Location' },
+          { id: 'browse_all_stations', title: '📋 Browse All' }
+        ]
+      );
+    }, 1500);
+  }
+
+  // ===============================================
+  // SESSION MANAGEMENT HELPERS
+  // ===============================================
+
   private async sendNavigationAssistance(whatsappId: string, stationId: number): Promise<void> {
     const station = await this.getStationDetails(stationId);
     
     if (station?.latitude && station?.longitude) {
       await whatsappService.sendLocationMessage(
         whatsappId,
-        station.latitude,
-        station.longitude,
+        Number(station.latitude),
+        Number(station.longitude),
         `🎯 ${station.name} - Your Reserved Slot`,
         'Navigate here now - your charging slot is ready!'
       );
@@ -883,47 +919,11 @@ export class BookingController {
     }, 3000);
   }
 
-  private async handleQueueJoinFailure(whatsappId: string, stationId: number): Promise<void> {
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `❌ *Unable to Join Queue*\n\n` +
-      `The station queue might be full or temporarily unavailable.\n\n` +
-      `💡 *Let's find you alternatives!*`
-    );
-
-    setTimeout(async () => {
-      await whatsappService.sendButtonMessage(
-        whatsappId,
-        '🔍 *Alternative Options:*',
-        [
-          { id: `notify_when_available_${stationId}`, title: '🔔 Notify When Available' },
-          { id: 'find_nearby_alternatives', title: '🗺️ Find Nearby' },
-          { id: 'try_again_later', title: '⏰ Try Again Later' }
-        ]
-      );
-    }, 1500);
-  }
-
-  private async handleNoActiveQueues(whatsappId: string): Promise<void> {
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `📍 *No Active Bookings*\n\n` +
-      `You don't have any current charging bookings.\n\n` +
-      `⚡ *Ready to charge?* Let's find you a station!`
-    );
-
-    setTimeout(async () => {
-      await whatsappService.sendButtonMessage(
-        whatsappId,
-        '🚀 *Start Your Charging Journey:*',
-        [
-          { id: 'find_nearest_station', title: '🎯 Find Nearest' },
-          { id: 'share_location_book', title: '📍 Share Location' },
-          { id: 'browse_all_stations', title: '📋 Browse All' }
-        ]
-      );
-    }, 1500);
+  private async initializeSmartMonitoring(whatsappId: string, stationId: number): Promise<void> {
+    // This will be handled by the queue scheduler
+    logger.info('🧠 Smart monitoring initialized', { whatsappId, stationId });
   }
 }
 
+// Export singleton instance
 export const bookingController = new BookingController();

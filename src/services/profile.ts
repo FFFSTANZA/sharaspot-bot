@@ -1,19 +1,25 @@
 import { whatsappService } from './whatsapp';
-import { userService } from './user';
+import { userService } from './userService';
 import { logger } from '../utils/logger';
+
+/**
+ * Type for WhatsApp Business API profile response
+ */
+interface WhatsAppProfileResponse {
+  name?: string;
+  profile?: {
+    name?: string;
+  };
+}
 
 export class ProfileService {
   /**
    * Extract and update user profile from WhatsApp
    */
-  async updateUserProfileFromWhatsApp(whatsappId: string, messageContext?: any): Promise<void> {
+  async updateUserProfileFromWhatsApp(whatsappId: string): Promise<void> {
     try {
-      // In a real implementation, you would call WhatsApp Business API
-      // to get user profile information. For now, we'll simulate this.
-      
-      // This would be implemented with WhatsApp Business API profile endpoint
       const profileData = await this.fetchWhatsAppProfile(whatsappId);
-      
+
       if (profileData) {
         await userService.updateUserProfile(whatsappId, {
           name: profileData.name,
@@ -29,22 +35,47 @@ export class ProfileService {
 
   /**
    * Fetch user profile from WhatsApp Business API
-   * Note: This is a placeholder - actual implementation depends on WhatsApp Business API
    */
-  private async fetchWhatsAppProfile(whatsappId: string): Promise<{name?: string, phoneNumber?: string} | null> {
+  private async fetchWhatsAppProfile(whatsappId: string): Promise<{ name?: string; phoneNumber?: string } | null> {
     try {
-      // Placeholder for actual WhatsApp Business API call
-      // In real implementation, you would call:
-      // GET https://graph.facebook.com/v18.0/{whatsappId}
-      
-      // For now, we'll extract the phone number from WhatsApp ID
-      return {
+      logger.info('Fetching WhatsApp profile', { whatsappId });
+
+      const profileUrl = `https://graph.facebook.com/v18.0/${whatsappId}`;
+
+      const response = await fetch(profileUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          logger.warn('WhatsApp profile not found', { whatsappId, status: response.status });
+          return { phoneNumber: whatsappId };
+        }
+
+        logger.error('WhatsApp API error', {
+          whatsappId,
+          status: response.status,
+          statusText: response.statusText,
+        });
+        return null;
+      }
+
+      const data = (await response.json()) as WhatsAppProfileResponse;
+
+      const result = {
         phoneNumber: whatsappId,
-        // name would come from actual API call
+        name: data.profile?.name || data.name || undefined,
       };
+
+      logger.info('WhatsApp profile fetched successfully', { whatsappId, hasName: !!result.name });
+      return result;
     } catch (error) {
       logger.error('Failed to fetch WhatsApp profile', { whatsappId, error });
-      return null;
+      return { phoneNumber: whatsappId };
     }
   }
 
@@ -55,8 +86,8 @@ export class ProfileService {
     await whatsappService.sendTextMessage(
       whatsappId,
       '👋 *What should I call you?*\n\n' +
-      'Please tell me your name so I can personalize your experience!\n\n' +
-      'Just type your name (e.g., "Ravi" or "Priya")'
+        'Please tell me your name so I can personalize your experience!\n\n' +
+        'Just type your name (e.g., "Ravi" or "Priya")'
     );
   }
 
@@ -75,7 +106,7 @@ export class ProfileService {
       }
 
       const updatedUser = await userService.updateUserProfile(whatsappId, { name: cleanName });
-      
+
       if (updatedUser) {
         await whatsappService.sendTextMessage(
           whatsappId,
@@ -92,7 +123,7 @@ export class ProfileService {
   }
 
   /**
-   * Show user profile summary
+   * Show user profile summary (without charging history)
    */
   async showProfileSummary(whatsappId: string): Promise<void> {
     try {
@@ -114,6 +145,7 @@ export class ProfileService {
         `🚶‍♂️ Queue Preference: ${user.queuePreference || 'Not set'}\n` +
         `✅ Preferences Complete: ${user.preferencesCaptured ? 'Yes' : 'No'}\n` +
         `📅 Member Since: ${user.createdAt ? user.createdAt.toLocaleDateString() : 'Unknown'}`;
+
       await whatsappService.sendButtonMessage(
         whatsappId,
         profileText,
@@ -123,13 +155,45 @@ export class ProfileService {
         ],
         '👤 Your Profile'
       );
-
     } catch (error) {
       logger.error('Failed to show profile summary', { whatsappId, error });
       await whatsappService.sendTextMessage(
         whatsappId,
         '❌ Failed to load profile. Please try again.'
       );
+    }
+  }
+
+  /**
+   * Update user profile with new information
+   */
+  async updateUserProfile(
+    whatsappId: string,
+    updates: { name?: string; phoneNumber?: string }
+  ): Promise<any> {
+    try {
+      const updatedUser = await userService.updateUserProfile(whatsappId, updates);
+
+      if (updatedUser) {
+        logger.info('Profile updated successfully', { whatsappId, updates });
+
+        let updateMessage = `✅ *Profile Updated!*\n\nYour profile has been successfully updated.\n\nUpdated information:\n`;
+        if (updates.name) updateMessage += `• Name: ${updates.name}\n`;
+        if (updates.phoneNumber) updateMessage += `• Phone: ${updates.phoneNumber}\n`;
+        updateMessage += `\nType "profile" anytime to view your complete profile.`;
+
+        await whatsappService.sendTextMessage(whatsappId, updateMessage);
+        return updatedUser;
+      }
+
+      throw new Error('Update failed: No user returned');
+    } catch (error) {
+      logger.error('Failed to update user profile', { whatsappId, updates, error });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❌ Failed to update your profile. Please try again later.'
+      );
+      return null;
     }
   }
 
@@ -142,11 +206,11 @@ export class ProfileService {
         const { preferenceController } = await import('../controllers/preference');
         await preferenceController.startPreferenceGathering(whatsappId, false);
         break;
-        
+
       case 'update_profile':
         await this.requestUserName(whatsappId);
         break;
-        
+
       default:
         await whatsappService.sendTextMessage(
           whatsappId,

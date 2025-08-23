@@ -636,7 +636,7 @@ export class QueueWebhookController {
   private async handleQueueStatus(whatsappId: string, stationId: number): Promise<void> {
     if (stationId) {
       // Check specific station queue - delegate to booking controller
-      await bookingController.handleStationQueueStatus(whatsappId, stationId);
+      await bookingController.handleQueueStatus(whatsappId, stationId);
     } else {
       // Check all active queues - delegate to booking controller
       await bookingController.handleQueueStatus(whatsappId);

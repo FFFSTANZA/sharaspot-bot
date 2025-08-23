@@ -1,6 +1,6 @@
 // src/services/notification.ts
 import { whatsappService } from './whatsapp';
-import { userService } from './user';
+import { userService } from './userService';
 import { logger } from '../utils/logger';
 import { chargingStations } from '../db/schema';
 import { db } from '../db/connection';
@@ -728,19 +728,80 @@ class NotificationService {
 
   // Helper methods
 
-  private async getStationDetails(stationId: number): Promise<any> {
+  async getStationDetails(stationId: number): Promise<any> {
     try {
-      const stations = await db.select()
+      const station = await db
+        .select({
+          id: chargingStations.id,
+          name: chargingStations.name,
+          address: chargingStations.address,
+          latitude: chargingStations.latitude,
+          longitude: chargingStations.longitude,
+          totalSlots: chargingStations.totalSlots,
+          availableSlots: chargingStations.availableSlots,
+          totalPorts: chargingStations.totalPorts,
+          availablePorts: chargingStations.availablePorts,
+          pricePerUnit: chargingStations.pricePerUnit,
+          pricePerKwh: chargingStations.pricePerKwh,
+          connectorTypes: chargingStations.connectorTypes,
+          amenities: chargingStations.amenities,
+          operatingHours: chargingStations.operatingHours,
+          rating: chargingStations.rating,
+          averageRating: chargingStations.averageRating,
+          totalReviews: chargingStations.totalReviews,
+          reviewCount: chargingStations.reviewCount,
+          distance: chargingStations.distance,
+          isActive: chargingStations.isActive,
+          lastUpdated: chargingStations.updatedAt
+        })
         .from(chargingStations)
         .where(eq(chargingStations.id, stationId))
         .limit(1);
+
+      if (station.length === 0) {
+        logger.warn('Station not found', { stationId });
+        return null;
+      }
+
+      const stationData = station[0];
+
+      // Calculate additional metrics using available slots
+      const slots = stationData.availableSlots || stationData.availablePorts || 0;
+      const totalSlots = stationData.totalSlots || stationData.totalPorts || 1;
       
-      return stations[0] || null;
+      const utilization = totalSlots > 0 
+        ? Math.round(((totalSlots - slots) / totalSlots) * 100)
+        : 0;
+
+      const availability = slots > 0 ? 'Available' 
+        : totalSlots > 0 ? 'Full' 
+        : 'Offline';
+
+      // Use proper field names
+      const rating = stationData.rating || stationData.averageRating || 0;
+      const reviews = stationData.totalReviews || stationData.reviewCount || 0;
+      const price = stationData.pricePerUnit || stationData.pricePerKwh || 0;
+
+      return {
+        ...stationData,
+        utilization,
+        availability,
+        isAvailable: slots > 0,
+        isBusy: utilization > 80,
+        priceDisplay: `₹${price}/kWh`,
+        distanceDisplay: stationData.distance ? `${Number(stationData.distance).toFixed(1)} km` : 'Unknown',
+        ratingDisplay: rating ? `${Number(rating).toFixed(1)} ⭐` : 'No ratings',
+        slotsDisplay: `${slots}/${totalSlots} available`,
+        finalRating: rating,
+        finalReviews: reviews
+      };
+
     } catch (error) {
       logger.error('Failed to get station details', { stationId, error });
       return null;
     }
   }
+
 
   private formatQueueJoinedMessage(queuePosition: any, station: any): string {
     const waitTime = queuePosition.estimatedWaitMinutes;

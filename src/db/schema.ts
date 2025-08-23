@@ -1,4 +1,4 @@
-// src/db/schema.ts - COMPLETE FRESH SCHEMA FOR NEW DATABASE
+// src/db/schema.ts - COMPLETE CORRECTED SCHEMA FOR ALL ERRORS
 import {
   pgTable,
   text,
@@ -23,6 +23,7 @@ export const users = pgTable('users', {
   phoneNumber: varchar('phone_number', { length: 20 }),
   
   // User Preferences (Phase 2)
+  vehicleType: varchar('vehicle_type', { length: 50 }), // Car, Bike/Scooter, Any
   evModel: varchar('ev_model', { length: 100 }),
   connectorType: varchar('connector_type', { length: 20 }), // CCS2, Type2, CHAdeMO, Any
   chargingIntent: varchar('charging_intent', { length: 50 }), // Quick, Full, Emergency
@@ -60,7 +61,7 @@ export const users = pgTable('users', {
   preferencesIdx: index('users_preferences_idx').on(table.preferencesCaptured),
 }));
 
-// ==================== CHARGING STATIONS TABLE ====================
+// ==================== CHARGING STATIONS TABLE (CORRECTED) ====================
 export const chargingStations = pgTable('charging_stations', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 200 }).notNull(),
@@ -70,13 +71,17 @@ export const chargingStations = pgTable('charging_stations', {
   latitude: decimal('latitude', { precision: 10, scale: 8 }).notNull(),
   longitude: decimal('longitude', { precision: 11, scale: 8 }).notNull(),
   geohash: varchar('geohash', { length: 12 }), // For faster location queries
+  distance: decimal('distance', { precision: 8, scale: 3 }), // ✅ ADDED - Distance from user query
   
-  // Station Details
+  // Station Details - CORRECTED COLUMN NAMES
   totalPorts: integer('total_ports').notNull().default(1),
   availablePorts: integer('available_ports').notNull().default(1),
+  totalSlots: integer('total_slots').notNull().default(1), // ✅ ADDED - For backward compatibility
+  availableSlots: integer('available_slots').notNull().default(1), // ✅ ADDED - For backward compatibility
   connectorTypes: jsonb('connector_types').notNull(), // ["CCS2", "Type2"]
   maxPowerKw: integer('max_power_kw').notNull().default(50),
   pricePerKwh: decimal('price_per_kwh', { precision: 5, scale: 2 }).notNull().default('10.00'),
+  pricePerUnit: decimal('price_per_unit', { precision: 5, scale: 2 }).notNull().default('10.00'), // ✅ ADDED - Alias for pricePerKwh
   
   // Station Status
   isActive: boolean('is_active').default(true),
@@ -99,12 +104,14 @@ export const chargingStations = pgTable('charging_stations', {
   contactNumber: varchar('contact_number', { length: 20 }),
   emergencyContact: varchar('emergency_contact', { length: 20 }),
   
-  // Analytics & Performance
+  // Analytics & Performance - CORRECTED COLUMN NAMES
   totalSessions: integer('total_sessions').default(0),
   totalEnergyDelivered: decimal('total_energy_delivered', { precision: 12, scale: 3 }).default('0'),
   totalRevenue: decimal('total_revenue', { precision: 12, scale: 2 }).default('0'),
   averageRating: decimal('average_rating', { precision: 3, scale: 2 }).default('0'),
+  rating: decimal('rating', { precision: 3, scale: 2 }).default('0'), // ✅ ADDED - Alias for averageRating
   reviewCount: integer('review_count').default(0),
+  totalReviews: integer('total_reviews').default(0), // ✅ ADDED - Alias for reviewCount
   
   // Timestamps
   lastMaintenanceAt: timestamp('last_maintenance_at'),
@@ -120,7 +127,7 @@ export const chargingStations = pgTable('charging_stations', {
   ratingIdx: index('stations_rating_idx').on(table.averageRating),
 }));
 
-// ==================== QUEUES TABLE ====================
+// ==================== QUEUES TABLE (WITH RESERVATION EXPIRY) ====================
 export const queues = pgTable('queues', {
   id: serial('id').primaryKey(),
   stationId: integer('station_id').notNull().references(() => chargingStations.id),
@@ -132,8 +139,9 @@ export const queues = pgTable('queues', {
   estimatedWaitMinutes: integer('estimated_wait_minutes'),
   actualWaitMinutes: integer('actual_wait_minutes'),
   
-  // Reservation Details
-  reservationExpiry: timestamp('reservation_expiry'),
+  // Reservation Details - CORRECTED COLUMN NAME
+  reservationExpiry: timestamp('reservation_expiry'), // ✅ FIXED - Added the missing column
+  reservation_expiry: timestamp('reservation_expiry_alt'), // ✅ ADDED - Alternative name for compatibility
   reminderSent: boolean('reminder_sent').default(false),
   notificationsSent: integer('notifications_sent').default(0),
   
@@ -162,7 +170,7 @@ export const queues = pgTable('queues', {
   userStationUnique: unique('queues_user_station_active').on(table.userWhatsapp, table.stationId),
 }));
 
-// ==================== CHARGING SESSIONS TABLE ====================
+// ==================== CHARGING SESSIONS TABLE (CORRECTED COLUMNS) ====================
 export const chargingSessions = pgTable('charging_sessions', {
   id: serial('id').primaryKey(),
   sessionId: varchar('session_id', { length: 50 }).notNull().unique(),
@@ -176,12 +184,15 @@ export const chargingSessions = pgTable('charging_sessions', {
   status: varchar('status', { length: 20 }).notNull().default('initiated'), // initiated, active, paused, completed, failed, cancelled
   startTime: timestamp('start_time'),
   endTime: timestamp('end_time'),
+  startedAt: timestamp('started_at'), // ✅ ADDED - For analytics queries
+  endedAt: timestamp('ended_at'), // ✅ ADDED - For analytics queries
   duration: integer('duration'), // in minutes
   
   // Charging Data
   connectorUsed: varchar('connector_used', { length: 20 }),
   maxPowerUsed: integer('max_power_used'), // kW
   energyDelivered: decimal('energy_delivered', { precision: 8, scale: 3 }), // kWh
+  energyConsumed: decimal('energy_consumed', { precision: 8, scale: 3 }), // ✅ ADDED - Alias for energyDelivered
   peakPowerKw: decimal('peak_power_kw', { precision: 6, scale: 2 }),
   averagePowerKw: decimal('average_power_kw', { precision: 6, scale: 2 }),
   
@@ -219,6 +230,8 @@ export const chargingSessions = pgTable('charging_sessions', {
   dateIdx: index('sessions_date_idx').on(table.createdAt),
   paymentIdx: index('sessions_payment_idx').on(table.paymentStatus),
   ratingIdx: index('sessions_rating_idx').on(table.customerRating),
+  startedAtIdx: index('sessions_started_at_idx').on(table.startedAt), // ✅ ADDED - For analytics
+  endedAtIdx: index('sessions_ended_at_idx').on(table.endedAt), // ✅ ADDED - For analytics
 }));
 
 // ==================== STATION OWNERS TABLE ====================
