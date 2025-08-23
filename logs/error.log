@@ -3279,3 +3279,185 @@ params: test_after_fix_1755856567565,Test Owner After Fix
 2025-08-22 15:33:23 [ERROR]: ❌ User creation failed {
   "service": "sharaspot-bot"
 }
+2025-08-23 00:00:06 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-22T18:30:06.170Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "115",
+      "file": "parse_relation.c",
+      "line": "3716",
+      "routine": "errorMissingColumn"
+    }
+  }
+}
+2025-08-23 00:01:06 [ERROR]: ❌ notifications process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where status IN ('waiting', 'reserved') order by \"queues\".\"created_at\"",
+    "params": [],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "115",
+      "file": "parse_relation.c",
+      "line": "3716",
+      "routine": "errorMissingColumn"
+    }
+  }
+}
+2025-08-23 00:01:11 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-22T18:31:10.735Z",
+      "2025-08-22T18:31:10.735Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 00:01:11 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNjBDQ0NEOEU0MDI4NTVCQjk0Q0U5QUJCNEYyQkUyN0MA",
+  "from": "919790294221",
+  "error": {}
+}
+2025-08-23 00:01:30 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-22T18:31:29.927Z",
+      "2025-08-22T18:31:29.927Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 00:01:30 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQzVFOUIzOTJEQkY1RTc0NDIzRDIzMDA2N0U5RTdCNjMA",
+  "from": "919790294221",
+  "error": {}
+}
+2025-08-23 00:01:37 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-22T18:31:36.785Z",
+      "2025-08-22T18:31:36.785Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 00:01:37 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggNUE4NjZEQUU4OTYzQzgzNUI3MDA0QzFBQjIzNDkxODQA",
+  "from": "919790294221",
+  "error": {}
+}
+2025-08-23 00:02:07 [ERROR]: ❌ cleanup process failed {
+  "service": "sharaspot-bot",
+  "error": {
+    "query": "select \"id\", \"station_id\", \"user_whatsapp\", \"position\", \"status\", \"estimated_wait_minutes\", \"reservation_expiry\", \"reminder_sent\", \"created_at\", \"updated_at\" from \"queues\" where (\"queues\".\"status\" = $1 and \"queues\".\"reservation_expiry\" < $2)",
+    "params": [
+      "reserved",
+      "2025-08-22T18:32:06.168Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "42703",
+      "position": "115",
+      "file": "parse_relation.c",
+      "line": "3716",
+      "routine": "errorMissingColumn"
+    }
+  }
+}
+2025-08-23 00:16:21 [ERROR]: Failed to create user {
+  "service": "sharaspot-bot",
+  "userData": {
+    "whatsappId": "919790294221"
+  },
+  "error": {
+    "query": "insert into \"users\" (\"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\") values (default, $1, default, default, default, default, default, default, default, default, default, $2, $3) returning \"id\", \"whatsapp_id\", \"name\", \"phone_number\", \"ev_model\", \"connector_type\", \"charging_intent\", \"queue_preference\", \"is_active\", \"is_banned\", \"preferences_captured\", \"created_at\", \"updated_at\"",
+    "params": [
+      "919790294221",
+      "2025-08-22T18:46:21.226Z",
+      "2025-08-22T18:46:21.226Z"
+    ],
+    "cause": {
+      "name": "NeonDbError",
+      "severity": "ERROR",
+      "code": "23505",
+      "detail": "Key (whatsapp_id)=(919790294221) already exists.",
+      "schema": "public",
+      "table": "users",
+      "constraint": "users_whatsapp_id_unique",
+      "file": "nbtinsert.c",
+      "line": "666",
+      "routine": "_bt_check_unique"
+    }
+  }
+}
+2025-08-23 00:16:21 [ERROR]: Message processing failed {
+  "service": "sharaspot-bot",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggMDM2QTU3OUU1MDQ2NDk5NUUxNjJGRDk5RjUwRkU1N0YA",
+  "from": "919790294221",
+  "error": {}
+}
