@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.automatedBotTester = exports.AutomatedBotTester = void 0;
 const webhook_main_1 = require("../controllers/webhook-main");
-const user_1 = require("../services/user");
+const user_1 = require("../services/userService");
 const logger_1 = require("../utils/logger");
 class AutomatedBotTester {
     constructor() {

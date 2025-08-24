@@ -13,11 +13,12 @@ export interface UserContext {
   whatsappId: string;
   currentStep: PreferenceStep['step'];
   preferenceData: {
-    evModel?: string;
-    connectorType?: string;
-    chargingIntent?: string;
-    queuePreference?: string;
-  };
+  vehicleType?: string;  // ✅ ADDED
+  evModel?: string;
+  connectorType?: string;
+  chargingIntent?: string;
+  queuePreference?: string;
+}
   isOnboarding: boolean;
 }
 
@@ -71,6 +72,13 @@ export class PreferenceService {
    // Replace the savePreferences method in src/services/preference.ts
   // src/services/preference.ts - Fix the savePreferences method
 
+// ===============================================
+// FOR src/services/preference.ts - COMPLETE SAVE PREFERENCES METHOD
+// ===============================================
+
+/**
+ * Save user preferences to database - COMPLETE IMPLEMENTATION
+ */
 async savePreferences(whatsappId: string): Promise<User | null> {
   try {
     logger.info('💾 Attempting to save preferences', { whatsappId });
@@ -81,8 +89,9 @@ async savePreferences(whatsappId: string): Promise<User | null> {
       return null;
     }
 
-    // Get or create user first
-    const user = await UserService.getOrCreateUser(whatsappId);
+    // Get or create user first - using the correct import
+    const { userService } = await import('./userService');
+    const user = await userService.getOrCreateUser(whatsappId);
     if (!user) {
       logger.error('Failed to get/create user for preferences', { whatsappId });
       return null;
@@ -94,6 +103,7 @@ async savePreferences(whatsappId: string): Promise<User | null> {
     const [updatedUser] = await db
       .update(users)
       .set({
+        vehicleType: context.preferenceData.vehicleType || user.vehicleType || null,
         evModel: context.preferenceData.evModel || user.evModel || null,
         connectorType: context.preferenceData.connectorType || user.connectorType || null,
         chargingIntent: context.preferenceData.chargingIntent || user.chargingIntent || null,

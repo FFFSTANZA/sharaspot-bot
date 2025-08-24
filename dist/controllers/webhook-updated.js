@@ -4,7 +4,7 @@ exports.webhookControllerUpdated = exports.WebhookControllerUpdated = void 0;
 const env_1 = require("../config/env");
 const logger_1 = require("../utils/logger");
 const whatsapp_1 = require("../services/whatsapp");
-const user_1 = require("../services/user");
+const user_1 = require("../services/userService");
 const preference_1 = require("../services/preference");
 const preference_2 = require("./preference");
 const profile_1 = require("../services/profile");

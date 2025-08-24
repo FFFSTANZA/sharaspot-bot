@@ -1,6 +1,6 @@
 import { geocodingService } from '../../services/location/geocoding';
 import { stationSearchService, type StationSearchOptions } from '../../services/location/station-search';
-import { userService } from '../../services/user';
+import { userService } from '../../services/userService';
 import { whatsappService } from '../../services/whatsapp';
 import { logger } from '../../utils/logger';
 import { LocationContextManager } from './context-manager';

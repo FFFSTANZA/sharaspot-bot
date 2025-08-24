@@ -1,10 +1,10 @@
-// src/scripts/seed-sample-data.ts - Comprehensive Sample Data for Location Testing
+// src/scripts/seed-sample-data.ts - Comprehensive Sample Data for Location Testing (Tamil Nadu Focus)
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { config } from 'dotenv';
 import { logger } from '../utils/logger';
-import { stationOwners, chargingStations, users } from './schema';
-import geohash from 'ngeohash'; // You may need to install: npm i ngeohash @types/ngeohash
+import { stationOwners, chargingStations } from '../db/schema';
+import geohash from 'ngeohash';
 
 // Load environment variables
 config({ path: '.env' });
@@ -17,10 +17,10 @@ const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
 // ===============================================
-// SAMPLE DATA DEFINITIONS
+// SAMPLE DATA DEFINITIONS - TAMIL NADU FOCUS
 // ===============================================
 
-// Station Owners Data
+// Station Owners Data (Tamil Nadu based)
 const sampleOwners = [
   {
     whatsappId: '919876543210',
@@ -38,25 +38,11 @@ const sampleOwners = [
   },
   {
     whatsappId: '919876543211',
-    name: 'Priya Sharma',
+    name: 'Priya Sundaram',
     phoneNumber: '919876543211',
-    email: 'priya.sharma@example.com',
-    businessName: 'Green Power Bangalore',
-    businessType: 'corporate',
-    address: 'Brigade Road, Bangalore, Karnataka',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    pincode: '560001',
-    isVerified: true,
-    kycStatus: 'approved'
-  },
-  {
-    whatsappId: '919876543212',
-    name: 'Arjun Patel',
-    phoneNumber: '919876543212',
-    email: 'arjun.patel@example.com',
+    email: 'priya.sundaram@example.com',
     businessName: 'Coimbatore EV Solutions',
-    businessType: 'individual',
+    businessType: 'corporate',
     address: 'RS Puram, Coimbatore, Tamil Nadu',
     city: 'Coimbatore',
     state: 'Tamil Nadu',
@@ -65,80 +51,36 @@ const sampleOwners = [
     kycStatus: 'approved'
   },
   {
+    whatsappId: '919876543212',
+    name: 'Arunachalam M',
+    phoneNumber: '919876543212',
+    email: 'arunachalam.m@example.com',
+    businessName: 'Madurai Green Energy',
+    businessType: 'individual',
+    address: 'KK Nagar, Madurai, Tamil Nadu',
+    city: 'Madurai',
+    state: 'Tamil Nadu',
+    pincode: '625020',
+    isVerified: true,
+    kycStatus: 'approved'
+  },
+  {
     whatsappId: '919876543213',
     name: 'Lakshmi Narayanan',
     phoneNumber: '919876543213',
     email: 'lakshmi.n@example.com',
-    businessName: 'Mumbai Charge Network',
-    businessType: 'corporate',
-    address: 'Andheri East, Mumbai, Maharashtra',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400069',
-    isVerified: true,
-    kycStatus: 'approved'
-  },
-  {
-    whatsappId: '919876543214',
-    name: 'Vikram Singh',
-    phoneNumber: '919876543214',
-    email: 'vikram.singh@example.com',
-    businessName: 'Delhi Fast Charge',
-    businessType: 'corporate',
-    address: 'Connaught Place, New Delhi',
-    city: 'New Delhi',
-    state: 'Delhi',
-    pincode: '110001',
+    businessName: 'Trichy Charge Point',
+    businessType: 'individual',
+    address: 'BHEL Township, Trichy, Tamil Nadu',
+    city: 'Trichy',
+    state: 'Tamil Nadu',
+    pincode: '620014',
     isVerified: true,
     kycStatus: 'approved'
   }
 ];
 
-// Test Users Data
-const sampleUsers = [
-  {
-    whatsappId: '919999999901',
-    name: 'Arun Krishnan',
-    phoneNumber: '919999999901',
-    evModel: 'Tata Nexon EV',
-    connectorType: 'CCS2',
-    chargingIntent: 'Daily Commute',
-    queuePreference: 'Free Now',
-    preferencesCaptured: true
-  },
-  {
-    whatsappId: '919999999902',
-    name: 'Sneha Reddy',
-    phoneNumber: '919999999902',
-    evModel: 'MG ZS EV',
-    connectorType: 'Type2',
-    chargingIntent: 'Long Trip',
-    queuePreference: 'Short Queue',
-    preferencesCaptured: true
-  },
-  {
-    whatsappId: '919999999903',
-    name: 'Rahul Gupta',
-    phoneNumber: '919999999903',
-    evModel: 'Hyundai Kona Electric',
-    connectorType: 'CCS2',
-    chargingIntent: 'Emergency',
-    queuePreference: 'Free Now',
-    preferencesCaptured: true
-  },
-  {
-    whatsappId: '919999999904',
-    name: 'Deepika Iyer',
-    phoneNumber: '919999999904',
-    evModel: 'Mahindra eXUV300',
-    connectorType: 'Type2',
-    chargingIntent: 'Weekly Top-up',
-    queuePreference: 'Short Queue',
-    preferencesCaptured: true
-  }
-];
-
-// Charging Stations Data - Major cities with realistic locations
+// Charging Stations Data - Tamil Nadu cities with realistic locations
 const sampleStations = [
   // CHENNAI STATIONS
   {
@@ -226,71 +168,6 @@ const sampleStations = [
     amenities: ['parking', 'wifi', 'food']
   },
 
-  // BANGALORE STATIONS
-  {
-    name: 'Brigade Road Fast Charge',
-    address: 'Brigade Road, Bangalore, Karnataka 560001',
-    latitude: 12.9716,
-    longitude: 77.5946,
-    geohash: geohash.encode(12.9716, 77.5946, 9),
-    totalPorts: 8,
-    availablePorts: 6,
-    connectorTypes: ['Type2', 'CCS2', 'CHAdeMO'],
-    maxPowerKw: 80,
-    pricePerKwh: 11.00,
-    ownerWhatsappId: '919876543211',
-    currentQueueLength: 0,
-    maxQueueLength: 10,
-    averageSessionMinutes: 50,
-    operatingHours: {
-      monday: '24/7', tuesday: '24/7', wednesday: '24/7',
-      thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
-    },
-    amenities: ['parking', 'wifi', 'restroom', 'food', 'shopping']
-  },
-  {
-    name: 'Forum Mall Charging Center',
-    address: 'Hosur Road, Bangalore, Karnataka 560029',
-    latitude: 12.9279,
-    longitude: 77.6271,
-    geohash: geohash.encode(12.9279, 77.6271, 9),
-    totalPorts: 6,
-    availablePorts: 3,
-    connectorTypes: ['CCS2', 'Type2', 'CHAdeMO'],
-    maxPowerKw: 90,
-    pricePerKwh: 9.75,
-    ownerWhatsappId: '919876543211',
-    currentQueueLength: 1,
-    maxQueueLength: 8,
-    averageSessionMinutes: 42,
-    operatingHours: {
-      monday: '10:00-22:00', tuesday: '10:00-22:00', wednesday: '10:00-22:00',
-      thursday: '10:00-22:00', friday: '10:00-22:00', saturday: '10:00-23:00', sunday: '10:00-23:00'
-    },
-    amenities: ['parking', 'wifi', 'restroom', 'food', 'shopping', 'cinema']
-  },
-  {
-    name: 'Electronic City Hub',
-    address: 'Electronic City Phase 1, Bangalore, Karnataka 560100',
-    latitude: 12.8456,
-    longitude: 77.6603,
-    geohash: geohash.encode(12.8456, 77.6603, 9),
-    totalPorts: 14,
-    availablePorts: 10,
-    connectorTypes: ['CCS2', 'Type2'],
-    maxPowerKw: 120,
-    pricePerKwh: 10.25,
-    ownerWhatsappId: '919876543211',
-    currentQueueLength: 2,
-    maxQueueLength: 16,
-    averageSessionMinutes: 35,
-    operatingHours: {
-      monday: '24/7', tuesday: '24/7', wednesday: '24/7',
-      thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
-    },
-    amenities: ['parking', 'wifi', 'food']
-  },
-
   // COIMBATORE STATIONS
   {
     name: 'RS Puram Charging Point',
@@ -303,7 +180,7 @@ const sampleStations = [
     connectorTypes: ['CCS2', 'CHAdeMO'],
     maxPowerKw: 75,
     pricePerKwh: 10.50,
-    ownerWhatsappId: '919876543212',
+    ownerWhatsappId: '919876543211',
     currentQueueLength: 1,
     maxQueueLength: 6,
     averageSessionMinutes: 40,
@@ -324,7 +201,7 @@ const sampleStations = [
     connectorTypes: ['CCS2', 'Type2'],
     maxPowerKw: 50,
     pricePerKwh: 11.75,
-    ownerWhatsappId: '919876543212',
+    ownerWhatsappId: '919876543211',
     currentQueueLength: 0,
     maxQueueLength: 8,
     averageSessionMinutes: 45,
@@ -334,93 +211,158 @@ const sampleStations = [
     },
     amenities: ['parking', 'wifi', 'shopping', 'food', 'restroom']
   },
-
-  // MUMBAI STATIONS
   {
-    name: 'Andheri East PowerHub',
-    address: 'Andheri East, Mumbai, Maharashtra 400069',
-    latitude: 19.1136,
-    longitude: 72.8697,
-    geohash: geohash.encode(19.1136, 72.8697, 9),
-    totalPorts: 10,
-    availablePorts: 7,
-    connectorTypes: ['CCS2', 'Type2', 'CHAdeMO'],
-    maxPowerKw: 100,
-    pricePerKwh: 14.50,
-    ownerWhatsappId: '919876543213',
-    currentQueueLength: 1,
-    maxQueueLength: 12,
+    name: 'Peelamedu Industrial Hub',
+    address: 'Peelamedu, Coimbatore, Tamil Nadu 641004',
+    latitude: 11.0256,
+    longitude: 77.0233,
+    geohash: geohash.encode(11.0256, 77.0233, 9),
+    totalPorts: 8,
+    availablePorts: 6,
+    connectorTypes: ['CCS2', 'Type2'],
+    maxPowerKw: 80,
+    pricePerKwh: 10.00,
+    ownerWhatsappId: '919876543211',
+    currentQueueLength: 0,
+    maxQueueLength: 10,
     averageSessionMinutes: 38,
     operatingHours: {
       monday: '24/7', tuesday: '24/7', wednesday: '24/7',
       thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
     },
-    amenities: ['parking', 'wifi', 'restroom', 'food']
-  },
-  {
-    name: 'Phoenix Mills Charging Hub',
-    address: 'Phoenix Mills, Lower Parel, Mumbai, Maharashtra 400013',
-    latitude: 19.0144,
-    longitude: 72.8312,
-    geohash: geohash.encode(19.0144, 72.8312, 9),
-    totalPorts: 12,
-    availablePorts: 8,
-    connectorTypes: ['CCS2', 'Type2'],
-    maxPowerKw: 150,
-    pricePerKwh: 16.00,
-    ownerWhatsappId: '919876543213',
-    currentQueueLength: 2,
-    maxQueueLength: 15,
-    averageSessionMinutes: 28,
-    operatingHours: {
-      monday: '10:00-23:00', tuesday: '10:00-23:00', wednesday: '10:00-23:00',
-      thursday: '10:00-23:00', friday: '10:00-23:00', saturday: '10:00-23:30', sunday: '10:00-23:30'
-    },
-    amenities: ['parking', 'wifi', 'restroom', 'food', 'shopping', 'cinema']
+    amenities: ['parking', 'wifi', 'food']
   },
 
-  // DELHI STATIONS
+  // MADURAI STATIONS
   {
-    name: 'Connaught Place Central',
-    address: 'Connaught Place, New Delhi, Delhi 110001',
-    latitude: 28.6304,
-    longitude: 77.2177,
-    geohash: geohash.encode(28.6304, 77.2177, 9),
+    name: 'KK Nagar Charging Center',
+    address: 'KK Nagar, Madurai, Tamil Nadu 625020',
+    latitude: 9.9391,
+    longitude: 78.1219,
+    geohash: geohash.encode(9.9391, 78.1219, 9),
+    totalPorts: 5,
+    availablePorts: 3,
+    connectorTypes: ['CCS2', 'Type2'],
+    maxPowerKw: 60,
+    pricePerKwh: 11.25,
+    ownerWhatsappId: '919876543212',
+    currentQueueLength: 1,
+    maxQueueLength: 7,
+    averageSessionMinutes: 42,
+    operatingHours: {
+      monday: '06:00-22:00', tuesday: '06:00-22:00', wednesday: '06:00-22:00',
+      thursday: '06:00-22:00', friday: '06:00-22:00', saturday: '06:00-22:00', sunday: '06:00-22:00'
+    },
+    amenities: ['parking', 'wifi', 'restroom']
+  },
+  {
+    name: 'Meenakshi Temple Charging',
+    address: 'Near Meenakshi Temple, Madurai, Tamil Nadu 625001',
+    latitude: 9.9196,
+    longitude: 78.1193,
+    geohash: geohash.encode(9.9196, 78.1193, 9),
+    totalPorts: 4,
+    availablePorts: 2,
+    connectorTypes: ['Type2', 'CHAdeMO'],
+    maxPowerKw: 45,
+    pricePerKwh: 12.50,
+    ownerWhatsappId: '919876543212',
+    currentQueueLength: 2,
+    maxQueueLength: 6,
+    averageSessionMinutes: 48,
+    operatingHours: {
+      monday: '06:00-21:00', tuesday: '06:00-21:00', wednesday: '06:00-21:00',
+      thursday: '06:00-21:00', friday: '06:00-21:00', saturday: '06:00-21:00', sunday: '06:00-21:00'
+    },
+    amenities: ['parking']
+  },
+
+  // TRICHY STATIONS
+  {
+    name: 'BHEL Township Charging',
+    address: 'BHEL Township, Trichy, Tamil Nadu 620014',
+    latitude: 10.8055,
+    longitude: 78.6978,
+    geohash: geohash.encode(10.8055, 78.6978, 9),
+    totalPorts: 6,
+    availablePorts: 4,
+    connectorTypes: ['CCS2', 'Type2'],
+    maxPowerKw: 70,
+    pricePerKwh: 10.75,
+    ownerWhatsappId: '919876543213',
+    currentQueueLength: 0,
+    maxQueueLength: 8,
+    averageSessionMinutes: 40,
+    operatingHours: {
+      monday: '24/7', tuesday: '24/7', wednesday: '24/7',
+      thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
+    },
+    amenities: ['parking', 'wifi', 'restroom']
+  },
+  {
+    name: 'Trichy Central Station',
+    address: 'Central Bus Stand, Trichy, Tamil Nadu 620001',
+    latitude: 10.7905,
+    longitude: 78.7047,
+    geohash: geohash.encode(10.7905, 78.7047, 9),
     totalPorts: 8,
     availablePorts: 5,
     connectorTypes: ['CCS2', 'Type2', 'CHAdeMO'],
-    maxPowerKw: 120,
-    pricePerKwh: 13.25,
-    ownerWhatsappId: '919876543214',
+    maxPowerKw: 90,
+    pricePerKwh: 11.00,
+    ownerWhatsappId: '919876543213',
     currentQueueLength: 1,
     maxQueueLength: 10,
-    averageSessionMinutes: 42,
+    averageSessionMinutes: 35,
     operatingHours: {
-      monday: '24/7', tuesday: '24/7', wednesday: '24/7',
-      thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
+      monday: '05:00-23:00', tuesday: '05:00-23:00', wednesday: '05:00-23:00',
+      thursday: '05:00-23:00', friday: '05:00-23:00', saturday: '05:00-23:00', sunday: '05:00-23:00'
     },
-    amenities: ['parking', 'wifi', 'restroom', 'food', 'shopping']
+    amenities: ['parking', 'wifi', 'food', 'restroom']
+  },
+
+  // OTHER TAMIL NADU CITIES
+  {
+    name: 'Salem City Center',
+    address: 'City Center, Salem, Tamil Nadu 636001',
+    latitude: 11.6643,
+    longitude: 78.1460,
+    geohash: geohash.encode(11.6643, 78.1460, 9),
+    totalPorts: 4,
+    availablePorts: 2,
+    connectorTypes: ['Type2', 'CHAdeMO'],
+    maxPowerKw: 50,
+    pricePerKwh: 11.50,
+    ownerWhatsappId: '919876543210',
+    currentQueueLength: 0,
+    maxQueueLength: 6,
+    averageSessionMinutes: 45,
+    operatingHours: {
+      monday: '06:00-22:00', tuesday: '06:00-22:00', wednesday: '06:00-22:00',
+      thursday: '06:00-22:00', friday: '06:00-22:00', saturday: '06:00-22:00', sunday: '06:00-22:00'
+    },
+    amenities: ['parking', 'wifi']
   },
   {
-    name: 'Cyber City Gurgaon Hub',
-    address: 'DLF Cyber City, Gurgaon, Haryana 122002',
-    latitude: 28.4948,
-    longitude: 77.0850,
-    geohash: geohash.encode(28.4948, 77.0850, 9),
-    totalPorts: 16,
-    availablePorts: 11,
-    connectorTypes: ['CCS2', 'Type2'],
-    maxPowerKw: 180,
-    pricePerKwh: 12.50,
-    ownerWhatsappId: '919876543214',
-    currentQueueLength: 3,
-    maxQueueLength: 20,
-    averageSessionMinutes: 32,
+    name: 'Tirunelveli Junction',
+    address: 'Railway Station Road, Tirunelveli, Tamil Nadu 627001',
+    latitude: 8.7139,
+    longitude: 77.7567,
+    geohash: geohash.encode(8.7139, 77.7567, 9),
+    totalPorts: 3,
+    availablePorts: 1,
+    connectorTypes: ['Type2'],
+    maxPowerKw: 40,
+    pricePerKwh: 12.00,
+    ownerWhatsappId: '919876543212',
+    currentQueueLength: 1,
+    maxQueueLength: 5,
+    averageSessionMinutes: 50,
     operatingHours: {
-      monday: '24/7', tuesday: '24/7', wednesday: '24/7',
-      thursday: '24/7', friday: '24/7', saturday: '24/7', sunday: '24/7'
+      monday: '06:00-21:00', tuesday: '06:00-21:00', wednesday: '06:00-21:00',
+      thursday: '06:00-21:00', friday: '06:00-21:00', saturday: '06:00-21:00', sunday: '06:00-21:00'
     },
-    amenities: ['parking', 'wifi', 'food']
+    amenities: ['parking']
   }
 ];
 
@@ -467,45 +409,6 @@ async function seedStationOwners() {
     }
   } catch (error) {
     logger.error('❌ Failed to seed station owners:', error);
-    throw error;
-  }
-}
-
-async function seedUsers() {
-  try {
-    logger.info('👥 Seeding test users...');
-    
-    for (const user of sampleUsers) {
-      try {
-        const result = await db
-          .insert(users)
-          .values({
-            whatsappId: user.whatsappId,
-            name: user.name,
-            phoneNumber: user.phoneNumber,
-            evModel: user.evModel,
-            connectorType: user.connectorType as 'Type2' | 'CCS2' | 'CHAdeMO',
-            chargingIntent: user.chargingIntent,
-            queuePreference: user.queuePreference as 'Free Now' | 'Short Queue' | 'Any',
-            preferencesCaptured: user.preferencesCaptured,
-            totalBookings: 0,
-            totalSessions: 0,
-            totalEnergyConsumed: '0'
-          })
-          .onConflictDoNothing()
-          .returning();
-
-        if (result.length > 0) {
-          logger.info(`✅ Created user: ${user.name} (${user.whatsappId})`);
-        } else {
-          logger.info(`ℹ️ User already exists: ${user.name} (${user.whatsappId})`);
-        }
-      } catch (error) {
-        logger.error(`❌ Failed to create user ${user.name}:`, error);
-      }
-    }
-  } catch (error) {
-    logger.error('❌ Failed to seed users:', error);
     throw error;
   }
 }
@@ -592,39 +495,32 @@ async function updateOwnerStationCounts() {
 
 async function seedSampleData() {
   try {
-    logger.info('🌱 Starting sample data seeding...');
+    logger.info('🌱 Starting Tamil Nadu sample data seeding...');
     
-    // Seed in order: owners -> users -> stations -> update counts
+    // Seed in order: owners -> stations -> update counts
     await seedStationOwners();
-    await seedUsers();
     await seedChargingStations();
     await updateOwnerStationCounts();
     
-    logger.info('🎉 Sample data seeding completed successfully!');
+    logger.info('🎉 Tamil Nadu sample data seeding completed successfully!');
     
     // Show summary
     const ownerCount = sampleOwners.length;
-    const userCount = sampleUsers.length;
     const stationCount = sampleStations.length;
     
     logger.info(`📊 Summary:`);
     logger.info(`   - Station Owners: ${ownerCount}`);
-    logger.info(`   - Test Users: ${userCount}`);
     logger.info(`   - Charging Stations: ${stationCount}`);
-    logger.info(`   - Cities Covered: Chennai, Bangalore, Coimbatore, Mumbai, Delhi`);
+    logger.info(`   - Cities Covered: Chennai, Coimbatore, Madurai, Trichy, Salem, Tirunelveli`);
     
-    // Test user information
-    logger.info(`\n🧪 Test User WhatsApp IDs:`);
-    sampleUsers.forEach(user => {
-      logger.info(`   - ${user.name}: ${user.whatsappId} (${user.evModel}, ${user.connectorType})`);
-    });
-    
-    logger.info(`\n📍 Test Locations:`);
-    logger.info(`   - Anna Nagar, Chennai - Multiple stations nearby`);
-    logger.info(`   - Brigade Road, Bangalore - Fast charging available`);
-    logger.info(`   - RS Puram, Coimbatore - Smaller city testing`);
-    logger.info(`   - Andheri East, Mumbai - Metropolitan area`);
-    logger.info(`   - Connaught Place, Delhi - Central location`);
+    // Location information
+    logger.info(`\n📍 Tamil Nadu Test Locations:`);
+    logger.info(`   - Chennai: 4 stations (Anna Nagar, T.Nagar, Velachery, OMR)`);
+    logger.info(`   - Coimbatore: 3 stations (RS Puram, Brookefields, Peelamedu)`);
+    logger.info(`   - Madurai: 2 stations (KK Nagar, Meenakshi Temple)`);
+    logger.info(`   - Trichy: 2 stations (BHEL Township, Central Bus Stand)`);
+    logger.info(`   - Salem: 1 station (City Center)`);
+    logger.info(`   - Tirunelveli: 1 station (Railway Station Road)`);
 
   } catch (error) {
     logger.error('💥 Sample data seeding failed:', error);
@@ -639,7 +535,7 @@ async function seedSampleData() {
 if (require.main === module) {
   seedSampleData()
     .then(() => {
-      logger.info('👍 Seeding completed successfully');
+      logger.info('👍 Tamil Nadu seeding completed successfully');
       process.exit(0);
     })
     .catch((error) => {
@@ -648,4 +544,4 @@ if (require.main === module) {
     });
 }
 
-export { seedSampleData, sampleOwners, sampleUsers, sampleStations };
+export { seedSampleData, sampleOwners, sampleStations };

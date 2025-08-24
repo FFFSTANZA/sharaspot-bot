@@ -101,29 +101,46 @@ export class UserService {
    * Create new user with optional profile data
    */
   async createUser(userData: NewUser): Promise<User> {
-    try {
-      if (!validateWhatsAppId(userData.whatsappId)) {
-        throw new Error('Invalid WhatsApp ID format');
-      }
-
-      // Use getOrCreateUser which handles race conditions
-      const user = await this.getOrCreateUser(userData.whatsappId);
-      
-      // Build update object only with non-null/undefined values
-      const updates: Partial<User> = {};
-      if (typeof userData.name === 'string') updates.name = userData.name;
-      if (typeof userData.phoneNumber === 'string') updates.phoneNumber = userData.phoneNumber;
-      
-      if (Object.keys(updates).length > 0) {
-        return await this.updateUserProfile(userData.whatsappId, updates);
-      }
-      
-      return user;
-    } catch (error: any) {
-      logger.error('Failed to create user', { userData, error });
-      throw error;
+  try {
+    if (!validateWhatsAppId(userData.whatsappId)) {
+      throw new Error('Invalid WhatsApp ID format');
     }
+
+    // Use getOrCreateUser which handles race conditions and always returns User
+    const user = await this.getOrCreateUser(userData.whatsappId);
+    
+    // Build update object only with non-null/undefined values
+    const updates: Partial<User> = {};
+    if (typeof userData.name === 'string' && userData.name.trim().length > 0) {
+      updates.name = userData.name.trim();
+    }
+    if (typeof userData.phoneNumber === 'string' && userData.phoneNumber.trim().length > 0) {
+      updates.phoneNumber = userData.phoneNumber.trim();
+    }
+    
+    // ✅ FIXED - Handle potential null return from updateUserProfile
+    if (Object.keys(updates).length > 0) {
+      const updatedUser = await this.updateUserProfile(userData.whatsappId, updates);
+      
+      // If update failed, return the original user (better than throwing error)
+      if (!updatedUser) {
+        logger.warn('Profile update failed during user creation, returning original user', { 
+          whatsappId: userData.whatsappId 
+        });
+        return user;
+      }
+      
+      return updatedUser;
+    }
+    
+    // No updates needed, return the created/existing user
+    return user;
+    
+  } catch (error: any) {
+    logger.error('Failed to create user', { userData, error });
+    throw error; // Re-throw to maintain error contract
   }
+}
 
   /**
    * Update user preferences
@@ -183,44 +200,75 @@ export class UserService {
    * Accepts null or string, but filters nulls out before DB update
    */
   async updateUserProfile(
-    whatsappId: string,
-    profileData: { name?: string | null; phoneNumber?: string | null }
-  ): Promise<User> {
-    try {
-      const currentUser = await this.getUserByWhatsAppId(whatsappId);
-      if (!currentUser) {
-        throw new Error('User not found');
-      }
+  whatsappId: string,
+  profileData: { name?: string | null; phoneNumber?: string | null }
+): Promise<User | null> {
+  try {
+    if (!validateWhatsAppId(whatsappId)) {
+      logger.warn('Invalid WhatsApp ID for profile update', { whatsappId });
+      return null;
+    }
 
-      // Only include defined (non-null) fields
-      const updateData: { name?: string; phoneNumber?: string } = {};
-      if (profileData.name != null) updateData.name = profileData.name;
-      if (profileData.phoneNumber != null) updateData.phoneNumber = profileData.phoneNumber;
+    // Get current user for audit trail
+    const currentUser = await this.getUserByWhatsAppId(whatsappId);
+    if (!currentUser) {
+      logger.warn('User not found for profile update', { whatsappId });
+      return null;
+    }
 
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.whatsappId, whatsappId))
-        .returning();
+    // Build update object, filtering out null values
+    const updates: Partial<User> = {};
+    
+    // Only include non-null/undefined values
+    if (typeof profileData.name === 'string' && profileData.name.trim().length > 0) {
+      updates.name = profileData.name.trim();
+    }
+    
+    if (typeof profileData.phoneNumber === 'string' && profileData.phoneNumber.trim().length > 0) {
+      updates.phoneNumber = profileData.phoneNumber.trim();
+    }
 
-      // Log the profile update
+    // If no valid updates, return current user
+    if (Object.keys(updates).length === 0) {
+      logger.info('No valid updates provided for profile', { whatsappId, profileData });
+      return currentUser;
+    }
+
+    // Add timestamp
+    updates.updatedAt = new Date();
+
+    // Perform update
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.whatsappId, whatsappId))
+      .returning();
+
+    if (updatedUser) {
+      // Log the profile update for audit trail
       await this.logUserAction(whatsappId, 'profile_updated', currentUser, updatedUser);
-
-      logger.info('✅ User profile updated', { 
-        whatsappId, 
-        profileData,
-        userId: updatedUser.id 
+      
+      logger.info('✅ User profile updated successfully', {
+        whatsappId,
+        userId: updatedUser.id,
+        updates: Object.keys(updates)
       });
 
       return updatedUser;
-    } catch (error: any) {
-      logger.error('Failed to update user profile', { whatsappId, profileData, error });
-      throw error;
     }
+
+    logger.error('❌ Profile update failed - no user returned', { whatsappId });
+    return null;
+
+  } catch (error) {
+    logger.error('❌ Failed to update user profile', { 
+      whatsappId, 
+      profileData, 
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return null;
   }
+}
 
   /**
    * Check if user has completed preferences setup

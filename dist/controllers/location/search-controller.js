@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocationSearchController = void 0;
 const station_search_1 = require("../../services/location/station-search");
-const user_1 = require("../../services/user");
+const user_1 = require("../../services/userService");
 const whatsapp_1 = require("../../services/whatsapp");
 const logger_1 = require("../../utils/logger");
 class LocationSearchController {

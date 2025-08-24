@@ -1,7 +1,7 @@
 import { whatsappService } from './whatsapp';
 import { userService } from './userService';
 import { logger } from '../utils/logger';
-
+import { type User } from '../db/schema';
 /**
  * Type for WhatsApp Business API profile response
  */
@@ -167,58 +167,36 @@ export class ProfileService {
   /**
    * Update user profile with new information
    */
-  async updateUserProfile(
-    whatsappId: string,
-    updates: { name?: string; phoneNumber?: string }
-  ): Promise<any> {
-    try {
-      const updatedUser = await userService.updateUserProfile(whatsappId, updates);
-
-      if (updatedUser) {
-        logger.info('Profile updated successfully', { whatsappId, updates });
-
-        let updateMessage = `✅ *Profile Updated!*\n\nYour profile has been successfully updated.\n\nUpdated information:\n`;
-        if (updates.name) updateMessage += `• Name: ${updates.name}\n`;
-        if (updates.phoneNumber) updateMessage += `• Phone: ${updates.phoneNumber}\n`;
-        updateMessage += `\nType "profile" anytime to view your complete profile.`;
-
-        await whatsappService.sendTextMessage(whatsappId, updateMessage);
-        return updatedUser;
-      }
-
-      throw new Error('Update failed: No user returned');
-    } catch (error) {
-      logger.error('Failed to update user profile', { whatsappId, updates, error });
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Failed to update your profile. Please try again later.'
-      );
-      return null;
+ async updateUserProfile(
+  whatsappId: string,
+  updates: { name?: string; phoneNumber?: string }
+): Promise<User | null> {
+  try {
+    // Call the userService (database layer)
+    const updatedUser = await userService.updateUserProfile(whatsappId, updates);
+    
+    if (updatedUser) {
+      logger.info('Profile updated successfully', { whatsappId, updates });
+      
+      let updateMessage = `✅ *Profile Updated!*\n\nYour profile has been successfully updated.\n\nUpdated information:\n`;
+      if (updates.name) updateMessage += `• Name: ${updates.name}\n`;
+      if (updates.phoneNumber) updateMessage += `• Phone: ${updates.phoneNumber}\n`;
+      updateMessage += `\nType "profile" anytime to view your complete profile.`;
+      
+      await whatsappService.sendTextMessage(whatsappId, updateMessage);
+      return updatedUser;
     }
+    
+    throw new Error('Update failed: No user returned');
+  } catch (error) {
+    logger.error('Failed to update user profile', { whatsappId, updates, error });
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '❌ Failed to update your profile. Please try again later.'
+    );
+    return null;
   }
-
-  /**
-   * Handle profile update requests
-   */
-  async handleProfileUpdate(whatsappId: string, updateType: string): Promise<void> {
-    switch (updateType) {
-      case 'update_preferences':
-        const { preferenceController } = await import('../controllers/preference');
-        await preferenceController.startPreferenceGathering(whatsappId, false);
-        break;
-
-      case 'update_profile':
-        await this.requestUserName(whatsappId);
-        break;
-
-      default:
-        await whatsappService.sendTextMessage(
-          whatsappId,
-          '❓ Unknown update option. Type "help" for available commands.'
-        );
-        break;
-    }
-  }
+}
 }
 
 export const profileService = new ProfileService();

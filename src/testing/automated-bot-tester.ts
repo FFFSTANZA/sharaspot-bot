@@ -1,6 +1,6 @@
 
 import { webhookController } from '../controllers/webhook';
-import { userService } from '../services/user';
+import { userService } from '../services/userService';
 import { logger } from '../utils/logger';
 
 export interface TestMessage {

@@ -1,5 +1,5 @@
 // src/testing/enhanced-comprehensive-tester.ts - ULTRA OPTIMIZED & ERROR-FREE TESTING SUITE
-import { userService } from '../services/user';
+import { userService } from '../services/userService';
 import { preferenceService } from '../services/preference';
 import { profileService } from '../services/profile';
 import { geocodingService } from '../services/location/geocoding';
