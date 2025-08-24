@@ -511,6 +511,52 @@ export class StationSearchService {
     }
   }
 
+
+   /**
+   * Get all nearby stations for list display
+   * Used when user wants to see all available stations
+   */
+  async getAllNearbyStations(options: StationSearchOptions): Promise<StationSearchResult> {
+    try {
+      logger.info('Getting all nearby stations', { 
+        userWhatsapp: options.userWhatsapp,
+        location: { lat: options.latitude, lng: options.longitude },
+        radius: options.radius || 25
+      });
+
+      // Use a larger limit for "show all" functionality
+      const expandedOptions: StationSearchOptions = {
+        ...options,
+        maxResults: options.maxResults || 20, // Show more stations in list view
+        offset: options.offset || 0,
+        availableOnly: false, // Show all stations, not just available ones
+        sortBy: options.sortBy || 'distance' // Default to distance sorting
+      };
+
+      // Use the existing searchStations method with expanded parameters
+      const result = await this.searchStations(expandedOptions);
+      
+      logger.info('All nearby stations retrieved', {
+        userWhatsapp: options.userWhatsapp,
+        stationsFound: result.stations.length,
+        totalCount: result.totalCount
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to get all nearby stations', { 
+        userWhatsapp: options.userWhatsapp,
+        coordinates: { latitude: options.latitude, longitude: options.longitude },
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      // Return empty result on error
+      return this.emptyResult(options);
+    }
+  }
+
+
   /**
    * Infer vehicle type from model name
    */
