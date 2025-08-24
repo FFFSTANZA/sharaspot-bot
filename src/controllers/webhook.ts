@@ -13,6 +13,7 @@ import { queueWebhookController } from './queue-webhook';
 import { WhatsAppWebhook, WhatsAppMessage } from '../types/whatsapp';
 import { parseButtonId, ButtonParseResult } from '../utils/button-parser';
 import { validateWhatsAppId } from '../utils/validation';
+import { ownerWebhookController } from '../controllers/owner-webhook';
 
 // ===============================================
 // PRODUCTION WEBHOOK CONTROLLER
@@ -435,13 +436,25 @@ export class WebhookController {
   }
 
   // ===============================================
-  // COMMAND HANDLING
+  // COMMAND HANDLING - FIXED WITH OWNER MODE
   // ===============================================
 
   /**
    * Handle text commands with fallback to address parsing
    */
   private async handleCommand(whatsappId: string, cleanText: string, originalText: string): Promise<void> {
+    // ===== OWNER MODE HANDLING =====
+    if (cleanText === 'owner') {
+      await ownerWebhookController.enterOwnerMode(whatsappId);
+      return;
+    }
+
+    if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+      await ownerWebhookController.handleOwnerMessage(whatsappId, 'text', originalText);
+      return;
+    }
+    // ===== END OWNER MODE =====
+
     // Core commands
     const commands: Record<string, () => Promise<void>> = {
       'hi': () => this.handleGreeting(whatsappId),
@@ -667,11 +680,21 @@ export class WebhookController {
    * Request profile update
    */
   private async requestProfileUpdate(whatsappId: string): Promise<void> {
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      '🔄 Profile update feature coming soon! Use "preferences" to update your charging preferences.'
-    );
-  }
+  // Set user in waiting state for name input
+  this.waitingUsers.set(whatsappId, 'name');
+  
+  await whatsappService.sendTextMessage(
+    whatsappId,
+    '✏️ *Update Your Name*\n\n' +
+    'What would you like me to call you?\n\n' +
+    '💡 Examples:\n' +
+    '• Ravi Kumar\n' +
+    '• Ashreya\n' +
+    '• Pooja\n\n' +
+    'Just type your preferred name:'
+  );
+}
+
 
   // ===============================================
   // INPUT PROCESSING METHODS
@@ -681,20 +704,44 @@ export class WebhookController {
    * Process name input
    */
   private async processNameInput(whatsappId: string, name: string): Promise<void> {
-    if (name.length === 0 || name.length > 50) {
-      await whatsappService.sendTextMessage(whatsappId, '❌ Please provide a valid name (1-50 characters).');
-      return;
-    }
-
-    try {
-      await userService.createUser({ whatsappId, name });
-      await whatsappService.sendTextMessage(whatsappId, `✅ Great! Nice to meet you, ${name}.`);
-    } catch (error) {
-      logger.error('Failed to save user name', { whatsappId, error });
-      await whatsappService.sendTextMessage(whatsappId, '❌ Failed to save name. Please try again.');
-    }
+  const cleanName = name.trim();
+  
+  // Validation
+  if (cleanName.length < 2 || cleanName.length > 50) {
+    await whatsappService.sendTextMessage(
+      whatsappId, 
+      '❌ Please provide a valid name (2-50 characters).\n\nTry again:'
+    );
+    // Keep user in waiting state
+    this.waitingUsers.set(whatsappId, 'name');
+    return;
   }
 
+  try {
+    // Use profileService to update name (better than userService.createUser)
+    const success = await profileService.updateUserName(whatsappId, cleanName);
+    
+    if (success) {
+      // Success message already sent by profileService
+      logger.info('✅ User name updated successfully', { whatsappId, newName: cleanName });
+    } else {
+      await whatsappService.sendTextMessage(
+        whatsappId, 
+        '❌ Failed to update name. Please try again.\n\nType your name:'
+      );
+      // Keep user in waiting state
+      this.waitingUsers.set(whatsappId, 'name');
+    }
+  } catch (error) {
+    logger.error('Failed to update user name', { whatsappId, name: cleanName, error });
+    await whatsappService.sendTextMessage(
+      whatsappId, 
+      '❌ Something went wrong. Please try again.\n\nType your name:'
+    );
+    // Keep user in waiting state
+    this.waitingUsers.set(whatsappId, 'name');
+  }
+}
   /**
    * Process address input
    */
