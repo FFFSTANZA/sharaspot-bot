@@ -1,7 +1,6 @@
-// src/services/queue.ts - FIXED VERSION
+// src/services/queue.ts - FINAL CONSTRAINT-SAFE VERSION
 import { db } from '../db/connection';
-import { queues, chargingStations } from '../db/schema';
-import { eq, and, desc, asc, sql, lt, gte } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { logger } from '../utils/logger';
 import { notificationService } from '../services/notification';
 
@@ -29,112 +28,213 @@ export interface QueueStats {
 
 class QueueService {
   /**
-   * Add user to queue at a charging station
+   * FINAL FIX - Handles unique constraint properly by using UPDATE instead of INSERT
    */
   async joinQueue(userWhatsapp: string, stationId: number): Promise<QueuePosition | null> {
     try {
-      // Check if user is already in queue for this station
-      const existingQueue = await db.select()
-        .from(queues)
-        .where(and(
-          eq(queues.userWhatsapp, userWhatsapp),
-          eq(queues.stationId, stationId),
-          sql`status NOT IN ('completed', 'cancelled')`
-        ))
-        .limit(1);
+      logger.info('Attempting to join queue - constraint-safe version', { userWhatsapp, stationId });
 
-      if (existingQueue.length > 0) {
-        logger.info('User already in queue', { userWhatsapp, stationId });
-        return this.formatQueuePosition(existingQueue[0]);
-      }
+      // Step 1: Check if an entry already exists (even if completed/cancelled)
+      const existingEntry = await db.execute(sql`
+        SELECT id, status, position
+        FROM queues 
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId}
+        ORDER BY created_at DESC
+        LIMIT 1
+      `);
 
-      // Get station details
-      const station = await db.select()
-        .from(chargingStations)
-        .where(eq(chargingStations.id, stationId))
-        .limit(1);
+      // Step 2: Get station details first
+      const stationResult = await db.execute(sql`
+        SELECT id, name, address, is_active, is_open, max_queue_length, average_session_minutes
+        FROM charging_stations 
+        WHERE id = ${stationId}
+        LIMIT 1
+      `);
 
-      if (!station.length || !station[0].isActive || !station[0].isOpen) {
-        logger.warn('Station not available for booking', { stationId, station: station[0] });
+      if (!stationResult.rows.length) {
+        logger.warn('Station not found', { stationId });
         return null;
       }
 
-      // Check if queue is full
-      const currentQueueCount = await this.getQueueLength(stationId);
-      if (currentQueueCount >= (station[0].maxQueueLength || 5)) {
-        logger.warn('Queue is full', { stationId, currentQueueCount, maxLength: station[0].maxQueueLength });
+      const station = stationResult.rows[0] as any;
+      
+      if (!station.is_active || !station.is_open) {
+        logger.warn('Station not available', { 
+          stationId, 
+          isActive: station.is_active, 
+          isOpen: station.is_open 
+        });
         return null;
       }
 
-      // Get next position in queue
-      const nextPosition = await this.getNextPosition(stationId);
-      const estimatedWaitTime = this.calculateWaitTime(nextPosition, station[0].averageSessionMinutes || 45);
+      // Step 3: Check current queue length
+      const queueCountResult = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM queues 
+        WHERE station_id = ${stationId} 
+        AND status IN ('waiting', 'reserved')
+      `);
 
-      // Add to queue
-      const newQueueEntry = await db.insert(queues).values({
-        userWhatsapp,
-        stationId,
-        position: nextPosition,
-        estimatedWaitMinutes: estimatedWaitTime,
-        status: 'waiting',
-      }).returning();
+      const currentQueueCount = Number((queueCountResult.rows[0] as any).count);
+      const maxQueueLength = station.max_queue_length || 5;
+      
+      if (currentQueueCount >= maxQueueLength) {
+        logger.warn('Queue is full', { 
+          stationId, 
+          currentQueueCount, 
+          maxLength: maxQueueLength 
+        });
+        return null;
+      }
 
-      // Update station queue count
+      // Step 4: Get next position
+      const positionResult = await db.execute(sql`
+        SELECT COALESCE(MAX(position), 0) + 1 as next_position
+        FROM queues 
+        WHERE station_id = ${stationId} 
+        AND status IN ('waiting', 'reserved', 'charging')
+      `);
+
+      const nextPosition = Number((positionResult.rows[0] as any).next_position);
+      const estimatedWaitTime = this.calculateWaitTime(nextPosition, station.average_session_minutes || 45);
+
+      let queueEntry: any;
+
+      // Step 5: CONSTRAINT-SAFE APPROACH - Update existing or insert new
+      if (existingEntry.rows.length > 0) {
+        const existing = existingEntry.rows[0] as any;
+        
+        // Update existing entry instead of creating new one (avoids constraint violation)
+        const updateResult = await db.execute(sql`
+          UPDATE queues 
+          SET 
+            position = ${nextPosition},
+            status = 'waiting',
+            estimated_wait_minutes = ${estimatedWaitTime},
+            updated_at = NOW(),
+            joined_at = NOW()
+          WHERE id = ${existing.id}
+          RETURNING id, station_id, user_whatsapp, position, status, estimated_wait_minutes, created_at
+        `);
+
+        if (updateResult.rows.length > 0) {
+          queueEntry = updateResult.rows[0];
+          logger.info('Updated existing queue entry successfully', { 
+            queueId: queueEntry.id,
+            userWhatsapp, 
+            stationId,
+            position: nextPosition
+          });
+        }
+      } else {
+        // No existing entry - safe to insert new
+        const insertResult = await db.execute(sql`
+          INSERT INTO queues (station_id, user_whatsapp, position, status, estimated_wait_minutes, joined_at)
+          VALUES (${stationId}, ${userWhatsapp}, ${nextPosition}, 'waiting', ${estimatedWaitTime}, NOW())
+          RETURNING id, station_id, user_whatsapp, position, status, estimated_wait_minutes, created_at
+        `);
+
+        if (insertResult.rows.length > 0) {
+          queueEntry = insertResult.rows[0];
+          logger.info('Inserted new queue entry successfully', { 
+            queueId: queueEntry.id,
+            userWhatsapp, 
+            stationId,
+            position: nextPosition
+          });
+        }
+      }
+
+      if (!queueEntry) {
+        logger.error('Failed to create or update queue entry');
+        return null;
+      }
+
+      // Step 6: Update station queue count
       await this.updateStationQueueCount(stationId);
 
-      const queuePosition = this.formatQueuePosition(newQueueEntry[0], station[0]);
+      // Step 7: Format response
+      const queuePosition: QueuePosition = {
+        id: queueEntry.id,
+        userWhatsapp: queueEntry.user_whatsapp,
+        stationId: queueEntry.station_id,
+        position: queueEntry.position,
+        estimatedWaitMinutes: queueEntry.estimated_wait_minutes,
+        status: queueEntry.status,
+        isReserved: queueEntry.status === 'reserved',
+        reservationExpiry: queueEntry.reservation_expiry || undefined,
+        createdAt: queueEntry.created_at,
+        stationName: station.name,
+        stationAddress: station.address
+      };
 
-      // Send notifications
-      await notificationService.sendQueueJoinedNotification(userWhatsapp, queuePosition);
-      await notificationService.notifyStationOwner(stationId, 'queue_joined', { userWhatsapp, position: nextPosition });
+      // Step 8: Send notifications (non-blocking)
+      this.sendNotifications(userWhatsapp, queuePosition, stationId, nextPosition);
 
-      logger.info('User joined queue successfully', { userWhatsapp, stationId, position: nextPosition });
       return queuePosition;
 
     } catch (error) {
-      logger.error('Failed to join queue', { userWhatsapp, stationId, error });
+      logger.error('Failed to join queue', { 
+        userWhatsapp, 
+        stationId, 
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        } : error
+      });
       return null;
     }
   }
 
   /**
-   * Remove user from queue
+   * Remove user from queue - Status update approach
    */
   async leaveQueue(userWhatsapp: string, stationId: number, reason: 'user_cancelled' | 'expired' | 'completed' = 'user_cancelled'): Promise<boolean> {
     try {
-      const result = await db.update(queues)
-        .set({ 
-          status: reason === 'completed' ? 'completed' : 'cancelled',
-          updatedAt: new Date()
-        })
-        .where(and(
-          eq(queues.userWhatsapp, userWhatsapp),
-          eq(queues.stationId, stationId),
-          sql`status NOT IN ('completed', 'cancelled')`
-        ))
-        .returning();
+      const status = reason === 'completed' ? 'completed' : 'cancelled';
+      
+      // Get the queue entry before updating it
+      const queueResult = await db.execute(sql`
+        SELECT id, position 
+        FROM queues 
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId} 
+        AND status NOT IN ('completed', 'cancelled')
+        LIMIT 1
+      `);
 
-      if (result.length === 0) {
+      if (!queueResult.rows.length) {
         logger.warn('No active queue entry found to cancel', { userWhatsapp, stationId });
         return false;
       }
 
-      const queueEntry = result[0];
+      const queueEntry = queueResult.rows[0] as any;
 
-      // Reposition remaining queue
+      // Update status instead of deleting (preserves history, avoids constraint issues)
+      await db.execute(sql`
+        UPDATE queues 
+        SET status = ${status}, updated_at = NOW()
+        WHERE id = ${queueEntry.id}
+      `);
+
+      // Reorder remaining queue
       await this.reorderQueue(stationId, queueEntry.position);
 
       // Update station queue count
       await this.updateStationQueueCount(stationId);
 
-      // Send notifications
-      await notificationService.sendQueueLeftNotification(userWhatsapp, stationId, reason);
-      await notificationService.notifyStationOwner(stationId, 'queue_left', { userWhatsapp, reason, position: queueEntry.position });
-
-      // Notify users that moved up in queue
+      // Notify queue progress
       await this.notifyQueueProgress(stationId);
 
-      logger.info('User left queue', { userWhatsapp, stationId, reason, oldPosition: queueEntry.position });
+      logger.info('User left queue', { 
+        userWhatsapp, 
+        stationId, 
+        reason, 
+        oldPosition: queueEntry.position 
+      });
+
       return true;
 
     } catch (error) {
@@ -144,49 +244,117 @@ class QueueService {
   }
 
   /**
+   * Force join queue - Emergency method that bypasses all constraints
+   */
+  async forceJoinQueue(userWhatsapp: string, stationId: number): Promise<QueuePosition | null> {
+    try {
+      logger.info('Force joining queue - emergency method', { userWhatsapp, stationId });
+
+      // First, force update any existing entries to cancelled
+      await db.execute(sql`
+        UPDATE queues 
+        SET status = 'cancelled', updated_at = NOW()
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId}
+        AND status NOT IN ('completed', 'cancelled')
+      `);
+
+      // Wait a moment for database consistency
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Now try the normal join
+      return await this.joinQueue(userWhatsapp, stationId);
+
+    } catch (error) {
+      logger.error('Force join queue failed', { userWhatsapp, stationId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Get user's current queue status - Only active queues
+   */
+  async getUserQueueStatus(userWhatsapp: string): Promise<QueuePosition[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          q.id,
+          q.user_whatsapp,
+          q.station_id,
+          q.position,
+          q.estimated_wait_minutes,
+          q.status,
+          q.reservation_expiry,
+          q.created_at,
+          s.name as station_name,
+          s.address as station_address
+        FROM queues q
+        LEFT JOIN charging_stations s ON q.station_id = s.id
+        WHERE q.user_whatsapp = ${userWhatsapp}
+        AND q.status NOT IN ('completed', 'cancelled')
+        ORDER BY q.created_at DESC
+      `);
+
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        userWhatsapp: row.user_whatsapp,
+        stationId: row.station_id,
+        position: row.position,
+        estimatedWaitMinutes: row.estimated_wait_minutes,
+        status: row.status,
+        isReserved: row.status === 'reserved',
+        reservationExpiry: row.reservation_expiry || undefined,
+        createdAt: row.created_at,
+        stationName: row.station_name,
+        stationAddress: row.station_address,
+      }));
+
+    } catch (error) {
+      logger.error('Failed to get user queue status', { userWhatsapp, error });
+      return [];
+    }
+  }
+
+  /**
    * Reserve charging slot for user
-   * FIXED: Removed isReserved field as it's not in the schema
    */
   async reserveSlot(userWhatsapp: string, stationId: number, reservationMinutes: number = 15): Promise<boolean> {
     try {
       // Check if user is first in queue
-      const queueEntry = await db.select()
-        .from(queues)
-        .where(and(
-          eq(queues.userWhatsapp, userWhatsapp),
-          eq(queues.stationId, stationId),
-          eq(queues.position, 1),
-          eq(queues.status, 'waiting')
-        ))
-        .limit(1);
+      const queueResult = await db.execute(sql`
+        SELECT id 
+        FROM queues 
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId} 
+        AND position = 1 
+        AND status = 'waiting'
+        LIMIT 1
+      `);
 
-      if (!queueEntry.length) {
+      if (!queueResult.rows.length) {
         logger.warn('User not eligible for reservation', { userWhatsapp, stationId });
         return false;
       }
 
+      const queueEntry = queueResult.rows[0] as any;
       const expiryTime = new Date(Date.now() + (reservationMinutes * 60 * 1000));
 
-      // FIXED: Using only fields that exist in the schema
-      const result = await db.update(queues)
-        .set({
-          status: 'reserved',
-          reservationExpiry: expiryTime,
-          updatedAt: new Date()
-        })
-        .where(eq(queues.id, queueEntry[0].id))
-        .returning();
-
-      if (result.length === 0) {
-        return false;
+      // Check if reservation_expiry column exists
+      const columnExists = await this.checkColumnExists('queues', 'reservation_expiry');
+      
+      if (columnExists) {
+        await db.execute(sql`
+          UPDATE queues 
+          SET status = 'reserved', reservation_expiry = ${expiryTime}, updated_at = NOW()
+          WHERE id = ${queueEntry.id}
+        `);
+      } else {
+        await db.execute(sql`
+          UPDATE queues 
+          SET status = 'reserved', updated_at = NOW()
+          WHERE id = ${queueEntry.id}
+        `);
       }
-
-      // Schedule expiry notification
-      await notificationService.scheduleReservationExpiry(userWhatsapp, stationId, expiryTime);
-
-      // Send immediate notification
-      await notificationService.sendReservationConfirmation(userWhatsapp, stationId, reservationMinutes);
-      await notificationService.notifyStationOwner(stationId, 'slot_reserved', { userWhatsapp, expiryTime });
 
       logger.info('Slot reserved successfully', { userWhatsapp, stationId, expiryTime });
       return true;
@@ -202,28 +370,21 @@ class QueueService {
    */
   async startCharging(userWhatsapp: string, stationId: number): Promise<boolean> {
     try {
-      const result = await db.update(queues)
-        .set({
-          status: 'charging',
-          updatedAt: new Date()
-        })
-        .where(and(
-          eq(queues.userWhatsapp, userWhatsapp),
-          eq(queues.stationId, stationId),
-          eq(queues.status, 'reserved')
-        ))
-        .returning();
+      const result = await db.execute(sql`
+        UPDATE queues 
+        SET status = 'charging', updated_at = NOW()
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId} 
+        AND status = 'reserved'
+        RETURNING id
+      `);
 
-      if (result.length === 0) {
+      if (!result.rows.length) {
         logger.warn('No valid reservation found to start charging', { userWhatsapp, stationId });
         return false;
       }
 
-      // Send notifications
-      await notificationService.sendChargingStartedNotification(userWhatsapp, stationId);
-      await notificationService.notifyStationOwner(stationId, 'charging_started', { userWhatsapp });
-
-      // Promote next user in queue if any
+      // Promote next user in queue
       await this.promoteNextInQueue(stationId);
 
       logger.info('Charging session started', { userWhatsapp, stationId });
@@ -240,32 +401,25 @@ class QueueService {
    */
   async completeCharging(userWhatsapp: string, stationId: number): Promise<boolean> {
     try {
-      const result = await db.update(queues)
-        .set({
-          status: 'completed',
-          updatedAt: new Date()
-        })
-        .where(and(
-          eq(queues.userWhatsapp, userWhatsapp),
-          eq(queues.stationId, stationId),
-          eq(queues.status, 'charging')
-        ))
-        .returning();
+      const result = await db.execute(sql`
+        UPDATE queues 
+        SET status = 'completed', updated_at = NOW()
+        WHERE user_whatsapp = ${userWhatsapp} 
+        AND station_id = ${stationId} 
+        AND status = 'charging'
+        RETURNING id
+      `);
 
-      if (result.length === 0) {
+      if (!result.rows.length) {
         logger.warn('No active charging session found', { userWhatsapp, stationId });
         return false;
       }
 
-      // Update station queue count
-      await this.updateStationQueueCount(stationId);
-
-      // Send notifications
-      await notificationService.sendChargingCompletedNotification(userWhatsapp, stationId);
-      await notificationService.notifyStationOwner(stationId, 'charging_completed', { userWhatsapp });
-
-      // Promote next user in queue
-      await this.promoteNextInQueue(stationId);
+      // Update station and promote next user
+      await Promise.all([
+        this.updateStationQueueCount(stationId),
+        this.promoteNextInQueue(stationId)
+      ]);
 
       logger.info('Charging session completed', { userWhatsapp, stationId });
       return true;
@@ -276,326 +430,253 @@ class QueueService {
     }
   }
 
+  // ==============================================
+  // PRIVATE HELPER METHODS
+  // ==============================================
+
   /**
-   * Get user's current queue status
+   * Check if a column exists in a table
    */
-  async getUserQueueStatus(userWhatsapp: string): Promise<QueuePosition[]> {
+  private async checkColumnExists(tableName: string, columnName: string): Promise<boolean> {
     try {
-      const userQueues = await db.select({
-        id: queues.id,
-        userWhatsapp: queues.userWhatsapp,
-        stationId: queues.stationId,
-        position: queues.position,
-        estimatedWaitMinutes: queues.estimatedWaitMinutes,
-        status: queues.status,
-        reservationExpiry: queues.reservationExpiry,
-        createdAt: queues.createdAt,
-        stationName: chargingStations.name,
-        stationAddress: chargingStations.address,
-      })
-      .from(queues)
-      .leftJoin(chargingStations, eq(queues.stationId, chargingStations.id))
-      .where(and(
-        eq(queues.userWhatsapp, userWhatsapp),
-        sql`status NOT IN ('completed', 'cancelled')`
-      ))
-      .orderBy(desc(queues.createdAt));
+      const result = await db.execute(sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = ${tableName} 
+        AND column_name = ${columnName} 
+        AND table_schema = 'public'
+      `);
 
-      return userQueues.map(q => this.formatQueuePosition(q));
-
+      return result.rows.length > 0;
     } catch (error) {
-      logger.error('Failed to get user queue status', { userWhatsapp, error });
-      return [];
+      logger.error('Failed to check column existence', { tableName, columnName, error });
+      return false;
     }
   }
 
   /**
-   * Get queue statistics for a station
+   * Get current queue length for a station
    */
-  async getQueueStats(stationId: number): Promise<QueueStats> {
-    try {
-      const queueCount = await this.getQueueLength(stationId);
-      const avgWaitTime = await this.getAverageWaitTime(stationId);
-      const peakHours = await this.getPeakHours(stationId);
-
-      return {
-        totalInQueue: queueCount,
-        averageWaitTime: avgWaitTime,
-        peakHours
-      };
-
-    } catch (error) {
-      logger.error('Failed to get queue stats', { stationId, error });
-      return {
-        totalInQueue: 0,
-        averageWaitTime: 0,
-        peakHours: []
-      };
-    }
-  }
-
-  /**
-   * Clean up expired reservations
-   */
-  async cleanupExpiredReservations(): Promise<void> {
-    try {
-      const expiredReservations = await db.select()
-        .from(queues)
-        .where(and(
-          eq(queues.status, 'reserved'),
-          lt(queues.reservationExpiry, new Date())
-        ));
-
-      for (const reservation of expiredReservations) {
-        await this.leaveQueue(reservation.userWhatsapp, reservation.stationId, 'expired');
-        logger.info('Expired reservation cleaned up', { 
-          userWhatsapp: reservation.userWhatsapp, 
-          stationId: reservation.stationId 
-        });
-      }
-
-    } catch (error) {
-      logger.error('Failed to cleanup expired reservations', { error });
-    }
-  }
-
-  // Private helper methods
-
   private async getQueueLength(stationId: number): Promise<number> {
-    const result = await db.select({ count: sql`count(*)` })
-      .from(queues)
-      .where(and(
-        eq(queues.stationId, stationId),
-        sql`status IN ('waiting', 'reserved')`
-      ));
+    try {
+      const result = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM queues 
+        WHERE station_id = ${stationId} 
+        AND status IN ('waiting', 'reserved')
+      `);
 
-    return Number(result[0]?.count || 0);
+      return Number((result.rows[0] as any).count || 0);
+    } catch (error) {
+      logger.error('Failed to get queue length', { stationId, error });
+      return 0;
+    }
   }
 
-  private async getNextPosition(stationId: number): Promise<number> {
-    const result = await db.select({ maxPosition: sql`coalesce(max(position), 0)` })
-      .from(queues)
-      .where(and(
-        eq(queues.stationId, stationId),
-        sql`status IN ('waiting', 'reserved', 'charging')`
-      ));
-
-    return Number(result[0]?.maxPosition || 0) + 1;
-  }
-
+  /**
+   * Calculate estimated wait time
+   */
   private calculateWaitTime(position: number, avgSessionMinutes: number): number {
-    // Position 1 = minimal wait (station setup time ~5 min)
-    // Position 2+ = (position-1) * avgSessionMinutes + setup time
     if (position === 1) return 5;
     return ((position - 1) * avgSessionMinutes) + 5;
   }
 
+  /**
+   * Reorder queue after a position is removed
+   */
   private async reorderQueue(stationId: number, removedPosition: number): Promise<void> {
-    await db.update(queues)
-      .set({ 
-        position: sql`position - 1`,
-        updatedAt: new Date()
-      })
-      .where(and(
-        eq(queues.stationId, stationId),
-        sql`position > ${removedPosition}`,
-        sql`status IN ('waiting', 'reserved')`
-      ));
-  }
-
-  private async updateStationQueueCount(stationId: number): Promise<void> {
-    const queueLength = await this.getQueueLength(stationId);
-    
-    await db.update(chargingStations)
-      .set({ 
-        currentQueueLength: queueLength,
-        updatedAt: new Date()
-      })
-      .where(eq(chargingStations.id, stationId));
-  }
-
-  private async promoteNextInQueue(stationId: number): Promise<void> {
-    // Find next person in queue (position 2, since position 1 just left)
-    const nextInQueue = await db.select()
-      .from(queues)
-      .where(and(
-        eq(queues.stationId, stationId),
-        eq(queues.position, 2),
-        eq(queues.status, 'waiting')
-      ))
-      .limit(1);
-
-    if (nextInQueue.length > 0) {
-      // Auto-reserve for 15 minutes
-      await this.reserveSlot(nextInQueue[0].userWhatsapp, stationId, 15);
-      
-      // Reorder remaining queue
-      await this.reorderQueue(stationId, 1);
+    try {
+      await db.execute(sql`
+        UPDATE queues 
+        SET position = position - 1, updated_at = NOW()
+        WHERE station_id = ${stationId} 
+        AND position > ${removedPosition} 
+        AND status IN ('waiting', 'reserved')
+      `);
+        
+      logger.debug('Queue reordered successfully', { stationId, removedPosition });
+    } catch (error) {
+      logger.error('Failed to reorder queue', { stationId, removedPosition, error });
     }
-  }
-
-  private async notifyQueueProgress(stationId: number): Promise<void> {
-    const waitingUsers = await db.select()
-      .from(queues)
-      .where(and(
-        eq(queues.stationId, stationId),
-        eq(queues.status, 'waiting')
-      ))
-      .orderBy(asc(queues.position));
-
-    for (const user of waitingUsers) {
-      const newWaitTime = this.calculateWaitTime(user.position, 45);
-      
-      // Update estimated wait time
-      await db.update(queues)
-        .set({ 
-          estimatedWaitMinutes: newWaitTime,
-          updatedAt: new Date()
-        })
-        .where(eq(queues.id, user.id));
-
-      // Send progress notification
-      await notificationService.sendQueueProgressNotification(
-        user.userWhatsapp, 
-        stationId, 
-        user.position, 
-        newWaitTime
-      );
-    }
-  }
-
-  private async getAverageWaitTime(stationId: number): Promise<number> {
-    const result = await db.select({ 
-      avgWait: sql`avg(estimated_wait_minutes)` 
-    })
-    .from(queues)
-    .where(and(
-      eq(queues.stationId, stationId),
-      sql`status = 'completed'`,
-      gte(queues.createdAt, sql`now() - interval '7 days'`)
-    ));
-
-    return Number(result[0]?.avgWait || 45);
-  }
-   
-
-  async getStationQueueInfo(stationId: number): Promise<{
-  stationId: number;
-  totalInQueue: number;
-  availablePorts: number;
-  totalPorts: number;
-  averageWaitTime: number;
-  turnoverRate?: string;
-}> {
-  try {
-    const [queueCount, station] = await Promise.all([
-      this.getQueueLength(stationId),
-      db.select()
-        .from(chargingStations)
-        .where(eq(chargingStations.id, stationId))
-        .limit(1)
-    ]);
-
-    if (!station.length) {
-      throw new Error(`Station ${stationId} not found`);
-    }
-
-    const stationData = station[0];
-    const avgWaitTime = await this.getAverageWaitTime(stationId);
-
-    return {
-      stationId,
-      totalInQueue: queueCount,
-      availablePorts: stationData.availablePorts || 0,
-      totalPorts: stationData.totalPorts || 1,
-      averageWaitTime: avgWaitTime,
-      turnoverRate: `${Math.round(60 / (avgWaitTime || 45))} sessions/hour`
-    };
-  } catch (error) {
-    logger.error('Failed to get station queue info', { stationId, error });
-    return {
-      stationId,
-      totalInQueue: 0,
-      availablePorts: 0,
-      totalPorts: 1,
-      averageWaitTime: 45
-    };
-  }
-}
-
-/**
- * Get user's queue position at a specific station
- */
-async getUserQueueAtStation(userWhatsapp: string, stationId: number): Promise<QueuePosition | null> {
-  try {
-    const userQueue = await db.select({
-      id: queues.id,
-      userWhatsapp: queues.userWhatsapp,
-      stationId: queues.stationId,
-      position: queues.position,
-      estimatedWaitMinutes: queues.estimatedWaitMinutes,
-      status: queues.status,
-      reservationExpiry: queues.reservationExpiry,
-      createdAt: queues.createdAt,
-      stationName: chargingStations.name,
-      stationAddress: chargingStations.address,
-    })
-    .from(queues)
-    .leftJoin(chargingStations, eq(queues.stationId, chargingStations.id))
-    .where(and(
-      eq(queues.userWhatsapp, userWhatsapp),
-      eq(queues.stationId, stationId),
-      sql`status NOT IN ('completed', 'cancelled')`
-    ))
-    .limit(1);
-
-    if (!userQueue.length) {
-      return null;
-    }
-
-    return this.formatQueuePosition(userQueue[0]);
-  } catch (error) {
-    logger.error('Failed to get user queue at station', { userWhatsapp, stationId, error });
-    return null;
-  }
-}
-
-  private async getPeakHours(stationId: number): Promise<string[]> {
-    const result = await db.select({ 
-      hour: sql`extract(hour from created_at)`,
-      count: sql`count(*)`
-    })
-    .from(queues)
-    .where(and(
-      eq(queues.stationId, stationId),
-      gte(queues.createdAt, sql`now() - interval '30 days'`)
-    ))
-    .groupBy(sql`extract(hour from created_at)`)
-    .orderBy(sql`count(*) desc`)
-    .limit(3);
-
-    return result.map(r => `${r.hour}:00-${Number(r.hour) + 1}:00`);
   }
 
   /**
-   * Format queue position data with safe handling of isReserved
-   * FIXED: Derive isReserved from status rather than expecting it from the DB
+   * Update station's current queue count
    */
-  private formatQueuePosition(queueData: any, stationData?: any): QueuePosition {
+  private async updateStationQueueCount(stationId: number): Promise<void> {
+    try {
+      const queueLength = await this.getQueueLength(stationId);
+      
+      await db.execute(sql`
+        UPDATE charging_stations 
+        SET current_queue_length = ${queueLength}, updated_at = NOW()
+        WHERE id = ${stationId}
+      `);
+        
+      logger.debug('Station queue count updated', { stationId, queueLength });
+    } catch (error) {
+      logger.error('Failed to update station queue count', { stationId, error });
+    }
+  }
+
+  /**
+   * Promote next user in queue
+   */
+  private async promoteNextInQueue(stationId: number): Promise<void> {
+    try {
+      // Find next person in queue (position 2, since position 1 just left)
+      const nextResult = await db.execute(sql`
+        SELECT user_whatsapp 
+        FROM queues 
+        WHERE station_id = ${stationId} 
+        AND position = 2 
+        AND status = 'waiting'
+        LIMIT 1
+      `);
+
+      if (nextResult.rows.length > 0) {
+        const nextInQueue = nextResult.rows[0] as any;
+        
+        // Auto-reserve for 15 minutes
+        await this.reserveSlot(nextInQueue.user_whatsapp, stationId, 15);
+        
+        // Reorder remaining queue
+        await this.reorderQueue(stationId, 1);
+      }
+    } catch (error) {
+      logger.error('Failed to promote next in queue', { stationId, error });
+    }
+  }
+
+  /**
+   * Notify queue progress to waiting users
+   */
+  private async notifyQueueProgress(stationId: number): Promise<void> {
+    try {
+      const waitingResult = await db.execute(sql`
+        SELECT id, user_whatsapp, position 
+        FROM queues 
+        WHERE station_id = ${stationId} 
+        AND status = 'waiting'
+        ORDER BY position
+      `);
+
+      for (const user of waitingResult.rows) {
+        const userQueue = user as any;
+        const newWaitTime = this.calculateWaitTime(userQueue.position, 45);
+        
+        // Update estimated wait time
+        await db.execute(sql`
+          UPDATE queues 
+          SET estimated_wait_minutes = ${newWaitTime}, updated_at = NOW()
+          WHERE id = ${userQueue.id}
+        `);
+
+        // Send progress notification (non-blocking)
+        this.sendProgressNotification(userQueue.user_whatsapp, stationId, userQueue.position, newWaitTime);
+      }
+    } catch (error) {
+      logger.error('Failed to notify queue progress', { stationId, error });
+    }
+  }
+
+  /**
+ * Get queue statistics for a station
+ */
+async getQueueStats(stationId: number): Promise<QueueStats> {
+  try {
+    // Get current queue length
+    const queueLength = await this.getQueueLength(stationId);
+    
+    // Get average wait time from completed queues in last 7 days
+    const avgWaitResult = await db.execute(sql`
+      SELECT AVG(estimated_wait_minutes) as avg_wait
+      FROM queues 
+      WHERE station_id = ${stationId} 
+      AND status = 'completed'
+      AND created_at >= NOW() - INTERVAL '7 days'
+    `);
+    
+    const avgWaitTime = Number((avgWaitResult.rows[0] as any)?.avg_wait || 45);
+
+    // Get peak hours from last 30 days
+    const peakHoursResult = await db.execute(sql`
+      SELECT 
+        EXTRACT(HOUR FROM created_at) as hour,
+        COUNT(*) as count
+      FROM queues 
+      WHERE station_id = ${stationId}
+      AND created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY EXTRACT(HOUR FROM created_at)
+      ORDER BY count DESC
+      LIMIT 3
+    `);
+
+    const peakHours = peakHoursResult.rows.map((row: any) => 
+      `${row.hour}:00-${Number(row.hour) + 1}:00`
+    );
+
     return {
-      id: queueData.id,
-      userWhatsapp: queueData.userWhatsapp,
-      stationId: queueData.stationId,
-      position: queueData.position,
-      estimatedWaitMinutes: queueData.estimatedWaitMinutes,
-      status: queueData.status,
-      // FIXED: Derive isReserved from status instead of using a field that doesn't exist
-      isReserved: queueData.status === 'reserved',
-      reservationExpiry: queueData.reservationExpiry,
-      createdAt: queueData.createdAt,
-      stationName: queueData.stationName || stationData?.name,
-      stationAddress: queueData.stationAddress || stationData?.address,
+      totalInQueue: queueLength,
+      averageWaitTime: avgWaitTime,
+      peakHours: peakHours
     };
+
+  } catch (error) {
+    logger.error('Failed to get queue stats', { stationId, error });
+    return {
+      totalInQueue: 0,
+      averageWaitTime: 0,
+      peakHours: []
+    };
+  }
+}
+
+  // ==============================================
+  // NOTIFICATION HELPERS (NON-BLOCKING)
+  // ==============================================
+
+  /**
+   * Send join queue notifications (non-blocking)
+   */
+  private sendNotifications(userWhatsapp: string, queuePosition: QueuePosition, stationId: number, position: number): void {
+    setImmediate(async () => {
+      try {
+        await notificationService.sendQueueJoinedNotification(userWhatsapp, queuePosition);
+        await notificationService.notifyStationOwner(stationId, 'queue_joined', { 
+          userWhatsapp, 
+          position 
+        });
+      } catch (error) {
+        logger.warn('Failed to send join queue notifications', { 
+          userWhatsapp, 
+          stationId, 
+          error 
+        });
+      }
+    });
+  }
+
+  /**
+   * Send progress notification (non-blocking)
+   */
+  private sendProgressNotification(userWhatsapp: string, stationId: number, position: number, waitTime: number): void {
+    setImmediate(async () => {
+      try {
+        await notificationService.sendQueueProgressNotification(
+          userWhatsapp, 
+          stationId, 
+          position, 
+          waitTime
+        );
+      } catch (error) {
+        logger.warn('Failed to send progress notification', { 
+          userWhatsapp, 
+          stationId, 
+          error 
+        });
+      }
+    });
   }
 }
 

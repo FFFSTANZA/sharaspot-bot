@@ -333,44 +333,73 @@ export class BookingController {
   /**
    * Handle session stop - NEW METHOD
    */
-  async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
-    if (!this.validateInput(whatsappId, stationId)) return;
+/**
+ * Handle session stop request from user
+ */
+async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
+  // Validate input parameters
+  if (!this.validateInput(whatsappId, stationId)) {
+    logger.warn('Invalid input for session stop', { whatsappId, stationId });
+    return;
+  }
 
-    try {
-      logger.info('Processing session stop', { whatsappId, stationId });
+  try {
+    logger.info('Processing session stop request', { whatsappId, stationId });
 
-      const success = await sessionService.stopSession(whatsappId, stationId);
-      
-      if (!success) {
-        await this.sendError(whatsappId, 'No active session found to stop.');
-        return;
-      }
-
-      // Complete charging in queue
-      await queueService.completeCharging(whatsappId, stationId);
-
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '🛑 *Charging Session Stopped*\n\n' +
-        'Your charging session has been terminated.\n' +
-        'You\'ll receive a detailed summary shortly.\n\n' +
-        '📊 Thank you for using SharaSpot!'
-      );
-
-    } catch (error) {
-      await this.handleError(error, 'session stop', { whatsappId, stationId });
+    // Attempt to stop the session
+    const success = await sessionService.stopSession(whatsappId, stationId);
+    
+    if (!success) {
+      await this.sendError(whatsappId, 'No active session found to stop.');
+      return;
     }
-  }
 
-  /**
-   * Process queue join (alias for handleJoinQueue for backward compatibility)
-   */
-  async processQueueJoin(whatsappId: string, stationId: number): Promise<void> {
-    return this.handleJoinQueue(whatsappId, stationId);
-  }
+    // Complete charging in queue service for consistency
+    try {
+      await queueService.completeCharging(whatsappId, stationId);
+    } catch (queueError) {
+      logger.warn('Queue service completion failed (non-critical)', { 
+        whatsappId, 
+        stationId, 
+        error: queueError 
+      });
+      // Don't fail the main flow if queue completion fails
+    }
 
+    // Send confirmation message to user
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '🛑 *Charging Session Stopped*\n\n' +
+      'Your charging session has been terminated.\n' +
+      'You\'ll receive a detailed summary shortly.\n\n' +
+      '📊 Thank you for using SharaSpot!'
+    );
+
+    logger.info('Session stop processed successfully', { whatsappId, stationId });
+
+  } catch (error) {
+    await this.handleError(error, 'session stop', { whatsappId, stationId });
+  }
+}
+
+/**
+ * Process queue join (alias for handleJoinQueue for backward compatibility)
+ */
+async processQueueJoin(whatsappId: string, stationId: number): Promise<void> {
+  try {
+    logger.info('Processing queue join via alias', { whatsappId, stationId });
+    return await this.handleJoinQueue(whatsappId, stationId);
+  } catch (error) {
+    logger.error('Failed to process queue join via alias', { 
+      whatsappId, 
+      stationId, 
+      error 
+    });
+    throw error; // Re-throw to maintain error propagation
+  }
+}
   /**
-   * Handle session extension - NEW METHOD
+   * Handle session extension 
    */
   async handleSessionExtend(whatsappId: string, stationId: number, minutes: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
