@@ -1,4 +1,3 @@
-// src/owner/services/owner-station-service.ts - CLEAN & OPTIMIZED
 import { db } from '../config/database';
 import { chargingStations, stationOwners, queues, chargingSessions } from '../db/schema';
 import { eq, and, gte, count, desc } from 'drizzle-orm';
@@ -20,6 +19,8 @@ export interface OwnerStation {
   pricePerKwh: string;
   queueLength: number;
   todayRevenue: number;
+  connectorTypes: any;
+  operatingHours: any;
 }
 
 export interface StationAnalytics {
@@ -28,35 +29,39 @@ export interface StationAnalytics {
   todayRevenue: number;
   todayEnergy: number;
   utilizationRate: number;
+  averageSessionDuration: number;
 }
 
 // ===============================================
-// OWNER STATION SERVICE
+// OWNER STATION SERVICE - FIXED
 // ===============================================
 
 export class OwnerStationService {
   
   /**
-   * Get all stations for owner
+   * Get all stations for owner - FIXED: Assumes ownerWhatsappId stores WhatsApp ID directly
    */
   async getOwnerStations(whatsappId: string): Promise<OwnerStation[]> {
     if (!validateWhatsAppId(whatsappId)) return [];
 
     try {
-      // Get owner ID first
-      const [owner] = await db
-        .select({ id: stationOwners.id })
-        .from(stationOwners)
-        .where(eq(stationOwners.whatsappId, whatsappId))
-        .limit(1);
-
-      if (!owner) return [];
-
-      // Get stations with basic info
+      // FIXED: Direct query assuming ownerWhatsappId contains the WhatsApp ID
       const stations = await db
-        .select()
+        .select({
+          id: chargingStations.id,
+          name: chargingStations.name,
+          address: chargingStations.address,
+          isActive: chargingStations.isActive,
+          isOpen: chargingStations.isOpen,
+          totalSlots: chargingStations.totalSlots,
+          availableSlots: chargingStations.availableSlots,
+          pricePerKwh: chargingStations.pricePerKwh,
+          connectorTypes: chargingStations.connectorTypes,
+          operatingHours: chargingStations.operatingHours,
+          currentQueueLength: chargingStations.currentQueueLength,
+        })
         .from(chargingStations)
-        .where(eq(chargingStations.ownerWhatsappId, owner.id.toString()))
+        .where(eq(chargingStations.ownerWhatsappId, whatsappId)) // FIXED: Direct WhatsApp ID match
         .orderBy(desc(chargingStations.createdAt));
 
       // Enhance with real-time data
@@ -73,15 +78,18 @@ export class OwnerStationService {
             address: station.address,
             isActive: station.isActive || false,
             isOpen: station.isOpen || false,
-            totalSlots: station.totalSlots || 0,
-            availableSlots: station.availableSlots || 0,
-            pricePerKwh: station.pricePerKwh?.toString() || '0',
+            totalSlots: station.totalSlots || 4,
+            availableSlots: station.availableSlots || 4,
+            pricePerKwh: station.pricePerKwh?.toString() || '12.50',
+            connectorTypes: station.connectorTypes,
+            operatingHours: station.operatingHours,
             queueLength: queueCount,
             todayRevenue
           };
         })
       );
 
+      logger.info('Retrieved owner stations', { whatsappId, count: enhancedStations.length });
       return enhancedStations;
 
     } catch (error) {
@@ -91,21 +99,21 @@ export class OwnerStationService {
   }
 
   /**
-   * Toggle station status (active/inactive)
+   * Toggle station status - FIXED: Direct ownership verification
    */
   async toggleStationStatus(stationId: number, ownerWhatsappId: string): Promise<boolean> {
     try {
-      // Verify ownership and get current status
+      // FIXED: Direct ownership verification using WhatsApp ID
       const [station] = await db
         .select({ 
-          isActive: chargingStations.isActive 
+          isActive: chargingStations.isActive,
+          ownerWhatsappId: chargingStations.ownerWhatsappId
         })
         .from(chargingStations)
-        .innerJoin(stationOwners, eq(chargingStations.ownerWhatsappId, stationOwners.id))
         .where(
           and(
             eq(chargingStations.id, stationId),
-            eq(stationOwners.whatsappId, ownerWhatsappId)
+            eq(chargingStations.ownerWhatsappId, ownerWhatsappId) // Direct WhatsApp ID check
           )
         )
         .limit(1);
@@ -116,18 +124,21 @@ export class OwnerStationService {
       }
 
       // Toggle status
+      const newStatus = !station.isActive;
+      
       await db
         .update(chargingStations)
         .set({
-          isActive: !station.isActive,
+          isActive: newStatus,
           updatedAt: new Date()
         })
         .where(eq(chargingStations.id, stationId));
 
       logger.info('Station status toggled', { 
         stationId, 
-        newStatus: !station.isActive, 
-        ownerWhatsappId 
+        ownerWhatsappId,
+        oldStatus: station.isActive,
+        newStatus
       });
 
       return true;
@@ -139,7 +150,41 @@ export class OwnerStationService {
   }
 
   /**
-   * Get comprehensive station analytics
+   * Get station details for owner
+   */
+  async getStationDetails(stationId: number, ownerWhatsappId: string): Promise<any | null> {
+    try {
+      const [station] = await db
+        .select()
+        .from(chargingStations)
+        .where(
+          and(
+            eq(chargingStations.id, stationId),
+            eq(chargingStations.ownerWhatsappId, ownerWhatsappId)
+          )
+        )
+        .limit(1);
+
+      if (!station) {
+        return null;
+      }
+
+      // Get analytics
+      const analytics = await this.getStationAnalytics(stationId);
+
+      return {
+        ...station,
+        ...analytics
+      };
+
+    } catch (error) {
+      logger.error('Failed to get station details', { stationId, ownerWhatsappId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Get comprehensive station analytics - ENHANCED
    */
   async getStationAnalytics(stationId: number): Promise<StationAnalytics> {
     try {
@@ -152,13 +197,15 @@ export class OwnerStationService {
         todaySessions,
         todayRevenue,
         todayEnergy,
-        totalSlots
+        totalSlots,
+        averageSessionDuration
       ] = await Promise.all([
         this.getQueueLength(stationId),
         this.getTodaySessionsCount(stationId),
         this.getTodayRevenue(stationId),
         this.getTodayEnergy(stationId),
-        this.getStationSlots(stationId)
+        this.getStationSlots(stationId),
+        this.getAverageSessionDuration(stationId)
       ]);
 
       // Calculate utilization (active sessions / total slots * 100)
@@ -171,7 +218,8 @@ export class OwnerStationService {
         todaySessions,
         todayRevenue,
         todayEnergy,
-        utilizationRate
+        utilizationRate,
+        averageSessionDuration
       };
 
     } catch (error) {
@@ -181,42 +229,61 @@ export class OwnerStationService {
         todaySessions: 0,
         todayRevenue: 0,
         todayEnergy: 0,
-        utilizationRate: 0
+        utilizationRate: 0,
+        averageSessionDuration: 0
       };
     }
   }
 
   /**
-   * Get current queue for station
+   * Get owner quick stats for dashboard
    */
-  async getStationQueue(stationId: number, ownerWhatsappId: string): Promise<any[]> {
+  async getOwnerQuickStats(whatsappId: string): Promise<{
+    totalStations: number;
+    activeStations: number;
+    todayRevenue: number;
+    activeSessions: number;
+    todayEnergy: number;
+  }> {
     try {
-      // Verify ownership
-      const hasAccess = await this.verifyStationOwnership(stationId, ownerWhatsappId);
-      if (!hasAccess) return [];
+      const stations = await this.getOwnerStations(whatsappId);
+      
+      const totalStations = stations.length;
+      const activeStations = stations.filter(s => s.isActive).length;
+      const todayRevenue = stations.reduce((sum, s) => sum + s.todayRevenue, 0);
+      
+      // Calculate total active sessions across all stations
+      const activeSessionsPromises = stations.map(s => this.getActiveSessionsCount(s.id));
+      const activeSessionsCounts = await Promise.all(activeSessionsPromises);
+      const activeSessions = activeSessionsCounts.reduce((sum, count) => sum + count, 0);
 
-      const queueEntries = await db
-        .select({
-          position: queues.position,
-          userWhatsapp: queues.userWhatsapp,
-          status: queues.status,
-          joinedAt: queues.joinedAt,
-          estimatedWait: queues.estimatedWaitMinutes
-        })
-        .from(queues)
-        .where(eq(queues.stationId, stationId))
-        .orderBy(queues.position);
+      // Calculate today's total energy across all stations
+      const todayEnergyPromises = stations.map(s => this.getTodayEnergy(s.id));
+      const todayEnergyCounts = await Promise.all(todayEnergyPromises);
+      const todayEnergy = todayEnergyCounts.reduce((sum, energy) => sum + energy, 0);
 
-      return queueEntries;
+      return {
+        totalStations,
+        activeStations,
+        todayRevenue,
+        activeSessions,
+        todayEnergy: Math.round(todayEnergy * 100) / 100 // Round to 2 decimals
+      };
 
     } catch (error) {
-      logger.error('Failed to get station queue', { stationId, ownerWhatsappId, error });
-      return [];
+      logger.error('Failed to get owner quick stats', { whatsappId, error });
+      return {
+        totalStations: 0,
+        activeStations: 0,
+        todayRevenue: 0,
+        activeSessions: 0,
+        todayEnergy: 0
+      };
     }
   }
 
   // ===============================================
-  // HELPER METHODS
+  // HELPER METHODS - ENHANCED ERROR HANDLING
   // ===============================================
 
   /**
@@ -236,6 +303,7 @@ export class OwnerStationService {
 
       return result?.count || 0;
     } catch (error) {
+      logger.error('Failed to get queue length', { stationId, error });
       return 0;
     }
   }
@@ -254,7 +322,8 @@ export class OwnerStationService {
         .where(
           and(
             eq(chargingSessions.stationId, stationId),
-            gte(chargingSessions.startTime, today)
+            gte(chargingSessions.startTime, today),
+            eq(chargingSessions.status, 'completed') // Only count completed sessions
           )
         );
 
@@ -264,6 +333,7 @@ export class OwnerStationService {
 
       return Math.round(revenue);
     } catch (error) {
+      logger.error('Failed to get today revenue', { stationId, error });
       return 0;
     }
   }
@@ -288,6 +358,7 @@ export class OwnerStationService {
 
       return result?.count || 0;
     } catch (error) {
+      logger.error('Failed to get today sessions count', { stationId, error });
       return 0;
     }
   }
@@ -306,7 +377,8 @@ export class OwnerStationService {
         .where(
           and(
             eq(chargingSessions.stationId, stationId),
-            gte(chargingSessions.startTime, today)
+            gte(chargingSessions.startTime, today),
+            eq(chargingSessions.status, 'completed')
           )
         );
 
@@ -314,8 +386,9 @@ export class OwnerStationService {
         sum + parseFloat(session.energyDelivered?.toString() || '0'), 0
       );
 
-      return Math.round(energy * 100) / 100; // Round to 2 decimal places
+      return energy;
     } catch (error) {
+      logger.error('Failed to get today energy', { stationId, error });
       return 0;
     }
   }
@@ -331,8 +404,9 @@ export class OwnerStationService {
         .where(eq(chargingStations.id, stationId))
         .limit(1);
 
-      return station?.totalSlots || 4; // Default to 4 slots
+      return station?.totalSlots || 4;
     } catch (error) {
+      logger.error('Failed to get station slots', { stationId, error });
       return 4;
     }
   }
@@ -354,7 +428,44 @@ export class OwnerStationService {
 
       return result?.count || 0;
     } catch (error) {
+      logger.error('Failed to get active sessions count', { stationId, error });
       return 0;
+    }
+  }
+
+  /**
+   * Get average session duration in minutes
+   */
+  private async getAverageSessionDuration(stationId: number): Promise<number> {
+    try {
+      const sessions = await db
+        .select({ 
+          startTime: chargingSessions.startTime,
+          endTime: chargingSessions.endTime
+        })
+        .from(chargingSessions)
+        .where(
+          and(
+            eq(chargingSessions.stationId, stationId),
+            eq(chargingSessions.status, 'completed')
+          )
+        )
+        .limit(100); // Last 100 sessions for average
+
+      if (sessions.length === 0) return 0;
+
+      const totalDuration = sessions.reduce((sum, session) => {
+        if (session.startTime && session.endTime) {
+          const duration = session.endTime.getTime() - session.startTime.getTime();
+          return sum + (duration / (1000 * 60)); // Convert to minutes
+        }
+        return sum;
+      }, 0);
+
+      return Math.round(totalDuration / sessions.length);
+    } catch (error) {
+      logger.error('Failed to get average session duration', { stationId, error });
+      return 30; // Default 30 minutes
     }
   }
 
@@ -366,23 +477,21 @@ export class OwnerStationService {
       const [result] = await db
         .select({ id: chargingStations.id })
         .from(chargingStations)
-        .innerJoin(stationOwners, eq(chargingStations.ownerWhatsappId, stationOwners.id))
         .where(
           and(
             eq(chargingStations.id, stationId),
-            eq(stationOwners.whatsappId, ownerWhatsappId)
+            eq(chargingStations.ownerWhatsappId, ownerWhatsappId)
           )
         )
         .limit(1);
 
       return !!result;
     } catch (error) {
+      logger.error('Failed to verify station ownership', { stationId, ownerWhatsappId, error });
       return false;
     }
   }
 }
 
-// ===============================================
-// EXPORT SINGLETON
-// ===============================================
+// Export singleton
 export const ownerStationService = new OwnerStationService();

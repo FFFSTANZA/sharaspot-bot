@@ -1,4 +1,4 @@
-// src/controllers/webhook.ts - PRODUCTION READY & OPTIMIZED
+// src/controllers/webhook.ts - PRODUCTION READY & OPTIMIZED - FIXED
 import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
@@ -187,44 +187,74 @@ export class WebhookController {
     const { whatsappId } = user;
     const cleanText = text.toLowerCase().trim();
 
-    // Priority 1: Preference flow
+    // Priority 1: Check if user is in owner mode - MUST come first
+    if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+      await ownerWebhookController.handleOwnerMessage(whatsappId, 'text', text);
+      return;
+    }
+
+    // Priority 2: Owner mode entry
+    if (cleanText === 'owner') {
+      await ownerWebhookController.enterOwnerMode(whatsappId);
+      return;
+    }
+
+    // Priority 3: Preference flow
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'text', text);
       return;
     }
 
-    // Priority 2: Waiting for specific input
+    // Priority 4: Waiting for specific input
     const waitingType = this.waitingUsers.get(whatsappId);
     if (waitingType) {
       await this.handleWaitingInput(whatsappId, text, waitingType);
       return;
     }
 
-    // Priority 3: Commands
+    // Priority 5: Commands
     await this.handleCommand(whatsappId, cleanText, text);
   }
 
   /**
    * Handle button interactions with unified parsing
    */
-  private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: boolean): Promise<void> {
-    const { whatsappId } = user;
-    const { id: buttonId, title } = button;
+  /**
+ * Handle button interactions with unified parsing
+ */
+private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: boolean): Promise<void> {
+  const { whatsappId } = user;
+  const { id: buttonId, title } = button;
 
-    logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
+  logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
 
-    // Parse button ID once
-    const parsed = parseButtonId(buttonId);
-    
-    // Priority 1: Preference flow
-    if (isInPreferenceFlow) {
-      await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
+  // Priority 1: Check if user is in owner mode - MUST come first
+  if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+    await ownerWebhookController.handleOwnerMessage(whatsappId, 'button', button);
+    return;
+  }
+
+  // Priority 2: Handle session stop buttons first (before other routing)
+  if (buttonId.startsWith('session_stop_')) {
+    const stationId = parseInt(buttonId.split('_')[2]);
+    if (!isNaN(stationId)) {
+      await bookingController.handleSessionStop(whatsappId, stationId);
       return;
     }
-
-    // Priority 2: Route based on button category
-    await this.routeButtonAction(whatsappId, buttonId, parsed, title);
   }
+
+  // Parse button ID once
+  const parsed = parseButtonId(buttonId);
+  
+  // Priority 3: Preference flow
+  if (isInPreferenceFlow) {
+    await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
+    return;
+  }
+
+  // Priority 4: Route based on button category
+  await this.routeButtonAction(whatsappId, buttonId, parsed, title);
+}
 
   /**
    * Handle list selections with unified parsing
@@ -235,16 +265,22 @@ export class WebhookController {
 
     logger.info('📋 List selected', { whatsappId, listId, title });
 
+    // Priority 1: Check if user is in owner mode - MUST come first
+    if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+      await ownerWebhookController.handleOwnerMessage(whatsappId, 'list', list);
+      return;
+    }
+
     // Parse list ID once
     const parsed = parseButtonId(listId);
 
-    // Priority 1: Preference flow
+    // Priority 2: Preference flow
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'text', listId);
       return;
     }
 
-    // Priority 2: Route based on list category
+    // Priority 3: Route based on list category
     await this.routeListAction(whatsappId, listId, parsed, title);
   }
 
@@ -252,22 +288,46 @@ export class WebhookController {
    * Handle location sharing
    */
   private async handleLocationMessage(user: any, location: any): Promise<void> {
-    const { whatsappId } = user;
+  const { whatsappId } = user;
 
-    if (!location?.latitude || !location?.longitude) {
-      await whatsappService.sendTextMessage(whatsappId, '❌ Invalid location data. Please try again.');
-      return;
-    }
+  // Check if user is in owner mode first
+  if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+    await whatsappService.sendTextMessage(whatsappId, 'Location sharing not supported in owner mode. Please use buttons or type commands.');
+    return;
+  }
 
+  // FIXED: Validate location data properly
+  if (!location?.latitude || !location?.longitude || 
+      typeof location.latitude !== 'number' || typeof location.longitude !== 'number') {
+    await whatsappService.sendTextMessage(whatsappId, '❌ Invalid location data. Please try sharing your location again.');
+    return;
+  }
+
+  logger.info('📍 GPS location received', { 
+    whatsappId, 
+    latitude: location.latitude, 
+    longitude: location.longitude,
+    name: location.name,
+    address: location.address 
+  });
+
+  // FIXED: Handle GPS location properly
+  try {
     await locationController.handleGPSLocation(
       whatsappId,
       location.latitude,
       location.longitude,
-      location.name,
-      location.address
+      location.name || null,
+      location.address || null
+    );
+  } catch (error) {
+    logger.error('Location handling failed', { whatsappId, error });
+    await whatsappService.sendTextMessage(
+      whatsappId, 
+      '❌ Failed to process your location. Please try again or type your address instead.'
     );
   }
-
+}
   // ===============================================
   // BUTTON & LIST ROUTING LOGIC
   // ===============================================
@@ -287,6 +347,8 @@ export class WebhookController {
       await this.handleStationButton(whatsappId, parsed.action, parsed.stationId);
       return;
     }
+
+  
 
     // Location buttons
     if (this.isLocationButton(buttonId)) {
@@ -436,25 +498,13 @@ export class WebhookController {
   }
 
   // ===============================================
-  // COMMAND HANDLING - FIXED WITH OWNER MODE
+  // COMMAND HANDLING - FIXED
   // ===============================================
 
   /**
    * Handle text commands with fallback to address parsing
    */
   private async handleCommand(whatsappId: string, cleanText: string, originalText: string): Promise<void> {
-    // ===== OWNER MODE HANDLING =====
-    if (cleanText === 'owner') {
-      await ownerWebhookController.enterOwnerMode(whatsappId);
-      return;
-    }
-
-    if (ownerWebhookController.isInOwnerMode(whatsappId)) {
-      await ownerWebhookController.handleOwnerMessage(whatsappId, 'text', originalText);
-      return;
-    }
-    // ===== END OWNER MODE =====
-
     // Core commands
     const commands: Record<string, () => Promise<void>> = {
       'hi': () => this.handleGreeting(whatsappId),
@@ -592,7 +642,8 @@ export class WebhookController {
       `• "find" or "book" - Find stations\n` +
       `• "profile" - View your profile\n` +
       `• "preferences" - Update settings\n` +
-      `• "help" - Show this help\n\n` +
+      `• "help" - Show this help\n` +
+      `• "owner" - Access owner portal\n\n` +
       `*How to Find Stations:*\n` +
       `1️⃣ Say "find" or tap "Find Stations"\n` +
       `2️⃣ Share location or type address\n` +
@@ -680,21 +731,20 @@ export class WebhookController {
    * Request profile update
    */
   private async requestProfileUpdate(whatsappId: string): Promise<void> {
-  // Set user in waiting state for name input
-  this.waitingUsers.set(whatsappId, 'name');
-  
-  await whatsappService.sendTextMessage(
-    whatsappId,
-    '✏️ *Update Your Name*\n\n' +
-    'What would you like me to call you?\n\n' +
-    '💡 Examples:\n' +
-    '• Ravi Kumar\n' +
-    '• Ashreya\n' +
-    '• Pooja\n\n' +
-    'Just type your preferred name:'
-  );
-}
-
+    // Set user in waiting state for name input
+    this.waitingUsers.set(whatsappId, 'name');
+    
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '✏️ *Update Your Name*\n\n' +
+      'What would you like me to call you?\n\n' +
+      '💡 Examples:\n' +
+      '• Ravi Kumar\n' +
+      '• Ashreya\n' +
+      '• Pooja\n\n' +
+      'Just type your preferred name:'
+    );
+  }
 
   // ===============================================
   // INPUT PROCESSING METHODS
@@ -704,44 +754,45 @@ export class WebhookController {
    * Process name input
    */
   private async processNameInput(whatsappId: string, name: string): Promise<void> {
-  const cleanName = name.trim();
-  
-  // Validation
-  if (cleanName.length < 2 || cleanName.length > 50) {
-    await whatsappService.sendTextMessage(
-      whatsappId, 
-      '❌ Please provide a valid name (2-50 characters).\n\nTry again:'
-    );
-    // Keep user in waiting state
-    this.waitingUsers.set(whatsappId, 'name');
-    return;
-  }
-
-  try {
-    // Use profileService to update name (better than userService.createUser)
-    const success = await profileService.updateUserName(whatsappId, cleanName);
+    const cleanName = name.trim();
     
-    if (success) {
-      // Success message already sent by profileService
-      logger.info('✅ User name updated successfully', { whatsappId, newName: cleanName });
-    } else {
+    // Validation
+    if (cleanName.length < 2 || cleanName.length > 50) {
       await whatsappService.sendTextMessage(
         whatsappId, 
-        '❌ Failed to update name. Please try again.\n\nType your name:'
+        '❌ Please provide a valid name (2-50 characters).\n\nTry again:'
+      );
+      // Keep user in waiting state
+      this.waitingUsers.set(whatsappId, 'name');
+      return;
+    }
+
+    try {
+      // Use profileService to update name (better than userService.createUser)
+      const success = await profileService.updateUserName(whatsappId, cleanName);
+      
+      if (success) {
+        // Success message already sent by profileService
+        logger.info('✅ User name updated successfully', { whatsappId, newName: cleanName });
+      } else {
+        await whatsappService.sendTextMessage(
+          whatsappId, 
+          '❌ Failed to update name. Please try again.\n\nType your name:'
+        );
+        // Keep user in waiting state
+        this.waitingUsers.set(whatsappId, 'name');
+      }
+    } catch (error) {
+      logger.error('Failed to update user name', { whatsappId, name: cleanName, error });
+      await whatsappService.sendTextMessage(
+        whatsappId, 
+        '❌ Something went wrong. Please try again.\n\nType your name:'
       );
       // Keep user in waiting state
       this.waitingUsers.set(whatsappId, 'name');
     }
-  } catch (error) {
-    logger.error('Failed to update user name', { whatsappId, name: cleanName, error });
-    await whatsappService.sendTextMessage(
-      whatsappId, 
-      '❌ Something went wrong. Please try again.\n\nType your name:'
-    );
-    // Keep user in waiting state
-    this.waitingUsers.set(whatsappId, 'name');
   }
-}
+
   /**
    * Process address input
    */

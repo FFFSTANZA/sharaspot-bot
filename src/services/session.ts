@@ -340,6 +340,11 @@ async completeSession(userWhatsapp: string, stationId: number): Promise<SessionS
 /**
  * Stop session manually by user
  */
+// ONLY ADD THIS METHOD TO SessionService class in src/services/session.ts
+
+/**
+ * Simple stop session - mirrors start session approach  
+ */
 async stopSession(userWhatsapp: string, stationId: number): Promise<boolean> {
   try {
     const session = await this.getActiveSession(userWhatsapp, stationId);
@@ -348,18 +353,45 @@ async stopSession(userWhatsapp: string, stationId: number): Promise<boolean> {
       return false;
     }
 
+    // Simple status update
     session.status = 'stopped';
-    await this.completeSession(userWhatsapp, stationId);
+    session.endTime = new Date();
+    
+    // Calculate totals
+    const durationMinutes = Math.floor(
+      (session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60)
+    );
+    
+    session.energyDelivered = Math.floor(durationMinutes * 0.5);
+    session.totalCost = session.energyDelivered * 12.5;
 
-    logger.info('🛑 Session stopped by user', { sessionId: session.id, userWhatsapp, stationId });
+    // Update database
+    await this.updateSessionInDatabase(session, true);
+    
+    // Clean up memory
+    this.activeSessions.delete(session.id);
+    
+    // Stop monitoring
+    const monitor = this.sessionMonitors.get(session.id);
+    if (monitor) {
+      clearInterval(monitor);
+      this.sessionMonitors.delete(session.id);
+    }
+
+    logger.info('Session stopped', { 
+      sessionId: session.id, 
+      userWhatsapp, 
+      stationId,
+      duration: durationMinutes
+    });
+
     return true;
 
   } catch (error) {
-    logger.error('❌ Failed to stop session', { userWhatsapp, stationId, error });
+    logger.error('Failed to stop session', { userWhatsapp, stationId, error });
     return false;
   }
 }
-
 /**
  * Force stop session for reliability or system-level intervention
  */

@@ -143,29 +143,33 @@ export class QueueWebhookController {
   /**
    * Handle session category actions
    */
-  private async handleSessionCategory(whatsappId: string, action: string, stationId: number, parsed: ButtonParseResult): Promise<void> {
-    switch (action) {
-      case 'start':
-        await this.handleSessionStart(whatsappId, stationId);
-        break;
+  // In src/controllers/queue-webhook.ts
+// UPDATE the handleSessionCategory method:
 
-      case 'status':
-        await this.handleSessionStatus(whatsappId, stationId);
-        break;
+private async handleSessionCategory(whatsappId: string, action: string, stationId: number, parsed: ButtonParseResult): Promise<void> {
+  switch (action) {
+    case 'start':
+      await this.handleSessionStart(whatsappId, stationId);
+      break;
 
-      case 'stop':
-        await this.handleSessionStop(whatsappId, stationId);
-        break;
+    case 'status':
+      await this.handleSessionStatus(whatsappId, stationId);
+      break;
 
-      case 'extend':
-        const minutes = parsed.additionalData || 30;
-        await this.handleSessionExtend(whatsappId, stationId, minutes);
-        break;
+    case 'stop':
+      // FIXED: Delegate to booking controller like other session operations
+      await bookingController.handleSessionStop(whatsappId, stationId);
+      break;
 
-      default:
-        await this.handleUnknownAction(whatsappId, `${action}_${stationId}`);
-    }
+    case 'extend':
+      const minutes = parsed.additionalData || 30;
+      await this.handleSessionExtend(whatsappId, stationId, minutes);
+      break;
+
+    default:
+      await this.handleUnknownAction(whatsappId, `${action}_${stationId}`);
   }
+}
 
   /**
    * Handle station category actions (delegate to booking controller)

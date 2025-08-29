@@ -1,10 +1,8 @@
-// src/owner/services/owner-auth-service.ts
 import { db } from '../config/database';
 import { stationOwners } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger';
 import { validateWhatsAppId } from '../utils/validation';
-import { ownerService } from './owner-service';
 
 // Session storage (in production, use Redis or database)
 interface AuthSession {
@@ -20,7 +18,7 @@ export class OwnerAuthService {
   private readonly SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
   /**
-   * Check if owner is authenticated
+   * Check if owner is authenticated - FIXED: Direct DB query, no circular import
    */
   async isAuthenticated(whatsappId: string): Promise<boolean> {
     try {
@@ -28,9 +26,17 @@ export class OwnerAuthService {
         return false;
       }
 
-      // Check if owner exists and is active
-      const owner = await ownerService.getOwnerProfile(whatsappId);
-      return !!(owner?.isActive);
+      // Direct database query - no dependency on owner-service
+      const [owner] = await db
+        .select({ 
+          isActive: stationOwners.isActive,
+          isVerified: stationOwners.isVerified
+        })
+        .from(stationOwners)
+        .where(eq(stationOwners.whatsappId, whatsappId))
+        .limit(1);
+
+      return !!(owner?.isActive && owner?.isVerified);
     } catch (error) {
       logger.error('Authentication check failed', { whatsappId, error });
       return false;
@@ -38,26 +44,49 @@ export class OwnerAuthService {
   }
 
   /**
-   * Authenticate owner by business name
+   * Authenticate owner by business name - FIXED: Direct DB query
    */
   async authenticateByBusinessName(whatsappId: string, businessName: string): Promise<boolean> {
     try {
-      const owner = await ownerService.getOwnerByBusinessName(businessName);
-      
+      if (!validateWhatsAppId(whatsappId) || !businessName?.trim()) {
+        return false;
+      }
+
+      // Direct database query - no circular dependency
+      const [owner] = await db
+        .select({
+          whatsappId: stationOwners.whatsappId,
+          businessName: stationOwners.businessName,
+          isActive: stationOwners.isActive,
+          isVerified: stationOwners.isVerified
+        })
+        .from(stationOwners)
+        .where(eq(stationOwners.businessName, businessName.trim()))
+        .limit(1);
+
       if (!owner) {
         logger.warn('Owner not found by business name', { businessName });
         return false;
       }
 
-      // For security, check if the WhatsApp ID matches
+      // Security check: WhatsApp ID must match
       if (owner.whatsappId !== whatsappId) {
-        logger.warn('WhatsApp ID mismatch for business name', { businessName, whatsappId });
+        logger.warn('WhatsApp ID mismatch for business name', { 
+          businessName, 
+          expectedWhatsappId: whatsappId,
+          actualWhatsappId: owner.whatsappId
+        });
         return false;
       }
 
-      // Check if owner is active
+      // Check if owner is active and verified
       if (!owner.isActive) {
         logger.warn('Owner account is not active', { whatsappId, businessName });
+        return false;
+      }
+
+      if (!owner.isVerified) {
+        logger.warn('Owner account is not verified', { whatsappId, businessName });
         return false;
       }
 
@@ -67,6 +96,28 @@ export class OwnerAuthService {
     } catch (error) {
       logger.error('Authentication by business name failed', { whatsappId, businessName, error });
       return false;
+    }
+  }
+
+  /**
+   * Get owner profile - FIXED: Direct query
+   */
+  async getOwnerProfile(whatsappId: string): Promise<any | null> {
+    try {
+      if (!validateWhatsAppId(whatsappId)) {
+        return null;
+      }
+
+      const [owner] = await db
+        .select()
+        .from(stationOwners)
+        .where(eq(stationOwners.whatsappId, whatsappId))
+        .limit(1);
+
+      return owner || null;
+    } catch (error) {
+      logger.error('Failed to get owner profile', { whatsappId, error });
+      return null;
     }
   }
 
@@ -116,18 +167,8 @@ export class OwnerAuthService {
     try {
       const session = this.activeSessions.get(token);
       
-      if (!session) {
-        return false;
-      }
-
-      // Check if session is expired
-      if (session.expiresAt < new Date()) {
-        this.activeSessions.delete(token);
-        return false;
-      }
-
-      // Check if session is still active
-      if (!session.isActive) {
+      if (!session || !session.isActive || session.expiresAt < new Date()) {
+        if (session) this.activeSessions.delete(token);
         return false;
       }
 
@@ -136,7 +177,6 @@ export class OwnerAuthService {
       this.activeSessions.set(token, session);
 
       return true;
-
     } catch (error) {
       logger.error('Session validation failed', { token, error });
       return false;
@@ -155,7 +195,6 @@ export class OwnerAuthService {
       }
 
       return session.whatsappId;
-
     } catch (error) {
       logger.error('Failed to get WhatsApp ID from token', { token, error });
       return null;
@@ -167,18 +206,11 @@ export class OwnerAuthService {
    */
   async invalidateSession(token: string): Promise<boolean> {
     try {
-      const session = this.activeSessions.get(token);
-      
-      if (session) {
-        session.isActive = false;
-        this.activeSessions.set(token, session);
-        this.activeSessions.delete(token);
+      const deleted = this.activeSessions.delete(token);
+      if (deleted) {
         logger.info('Session invalidated', { token });
-        return true;
       }
-
-      return false;
-
+      return deleted;
     } catch (error) {
       logger.error('Failed to invalidate session', { token, error });
       return false;
@@ -194,15 +226,15 @@ export class OwnerAuthService {
       
       for (const [token, session] of this.activeSessions.entries()) {
         if (session.whatsappId === whatsappId) {
-          session.isActive = false;
           this.activeSessions.delete(token);
           count++;
         }
       }
 
-      logger.info('All sessions invalidated for owner', { whatsappId, count });
+      if (count > 0) {
+        logger.info('All sessions invalidated for owner', { whatsappId, count });
+      }
       return count > 0;
-
     } catch (error) {
       logger.error('Failed to invalidate all sessions', { whatsappId, error });
       return false;
@@ -243,30 +275,9 @@ export class OwnerAuthService {
     const random = Math.random().toString(36).substring(2, 15);
     return `owner_${whatsappId}_${timestamp}_${random}`;
   }
-
-  /**
-   * Verify owner credentials (for future email/password auth)
-   */
-  async verifyCredentials(whatsappId: string, password: string): Promise<boolean> {
-    // Placeholder for future credential-based authentication
-    // This would typically involve hashing and comparing passwords
-    logger.warn('Password authentication not implemented yet', { whatsappId });
-    return false;
-  }
-
-  /**
-   * Request password reset
-   */
-  async requestPasswordReset(whatsappId: string): Promise<boolean> {
-    // Placeholder for future password reset functionality
-    logger.warn('Password reset not implemented yet', { whatsappId });
-    return false;
-  }
 }
 
-// ===============================================
-// EXPORT SINGLETON
-// ===============================================
+// Export singleton
 export const ownerAuthService = new OwnerAuthService();
 
 // Regular cleanup of expired sessions
