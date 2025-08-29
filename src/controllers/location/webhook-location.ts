@@ -6,6 +6,9 @@ import { queueService } from '../../services/queue';
 import { userService } from '../../services/userService';
 import { stationSearchService } from '../../services/location/station-search';
 import { logger } from '../../utils/logger';
+import { db } from '../../config/database';
+import { eq } from 'drizzle-orm';
+
 
 // Standardized button ID patterns - Same as queue webhook for consistency
 const BUTTON_ID_PATTERNS = {

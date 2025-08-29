@@ -33,33 +33,98 @@ export class LocationMainController {
    * Handle GPS location sharing
    */
   async handleGPSLocation(whatsappId: string, latitude: number, longitude: number, name?: string, address?: string): Promise<void> {
-    try {
-      logger.info('GPS location received', { whatsappId, latitude, longitude, name, address });
+  try {
+    logger.info('🎯 Processing GPS location', { 
+      whatsappId, 
+      latitude, 
+      longitude, 
+      name, 
+      address,
+      contextExists: this.contextManager.hasLocationContext(whatsappId)
+    });
 
-      // Store location context
-      this.contextManager.setLocationContext(whatsappId, {
-        latitude,
-        longitude,
-        address: address || name || `${latitude}, ${longitude}`,
-      });
+    // ENHANCED: Clear any existing context first
+    this.contextManager.clearLocationContext(whatsappId);
 
-      // Acknowledge location
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        `📍 *Location Received!*\n\n${name || address || 'Your location'}\n\nSearching for nearby charging stations... ⚡`
-      );
+    // Store location context with validation
+    const locationContext = {
+      latitude,
+      longitude,
+      address: address || name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+      timestamp: new Date()
+    };
 
-      // Search for stations
-      await this.searchController.searchAndShowStations(whatsappId, latitude, longitude, address);
-
-    } catch (error) {
-      logger.error('Failed to handle GPS location', { whatsappId, error });
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❌ Failed to process your location. Please try again.'
-      );
+    this.contextManager.setLocationContext(whatsappId, locationContext);
+    
+    // ENHANCED: Verify context was set correctly
+    const verifyContext = this.contextManager.getLocationContext(whatsappId);
+    if (!verifyContext) {
+      throw new Error('Failed to set location context');
     }
+
+    logger.info('✅ Location context set successfully', { 
+      whatsappId, 
+      contextSet: !!verifyContext,
+      storedLocation: verifyContext.currentLocation
+    });
+
+    // Acknowledge location with better formatting
+    const locationName = name || address || `Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      `📍 *Location Received!*\n\n${locationName}\n\n🔍 Searching for nearby charging stations...`
+    );
+
+    // ENHANCED: Search for stations with comprehensive error handling
+    try {
+      await this.searchController.searchAndShowStations(whatsappId, latitude, longitude, address);
+      logger.info('✅ Station search completed successfully', { whatsappId });
+      
+    } catch (searchError) {
+      logger.error('❌ Station search failed', { 
+        whatsappId, 
+        searchError: searchError instanceof Error ? searchError.message : String(searchError)
+      });
+      
+      // Provide fallback options
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❌ Failed to search for stations at this location.\n\n' +
+        'Please try:\n' +
+        '• Sharing your location again\n' +
+        '• Typing a nearby address\n' +
+        '• Searching in a different area'
+      );
+      
+      // Show search options
+      setTimeout(async () => {
+        await whatsappService.sendButtonMessage(
+          whatsappId,
+          'What would you like to try?',
+          [
+            { id: 'share_gps_location', title: '📱 Share Location Again' },
+            { id: 'type_address', title: '⌨️ Type Address' },
+            { id: 'help', title: '❓ Get Help' }
+          ],
+          '🔧 Troubleshoot'
+        );
+      }, 1000);
+    }
+
+  } catch (error) {
+    logger.error('❌ GPS location handling completely failed', { 
+      whatsappId, 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '❌ Failed to process your location. Please try again.\n\n' +
+      'If this keeps happening, please type your address instead.'
+    );
   }
+}
 
   /**
    * Handle text address input

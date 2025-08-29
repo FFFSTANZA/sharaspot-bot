@@ -608,21 +608,22 @@ class NotificationService {
     }
   }
 
-  async sendSessionCompletedNotification(userWhatsapp: string, session: any, summary: any): Promise<void> {
+    async sendSessionCompletedNotification(userWhatsapp: string, session: any, summary: any): Promise<void> {
     try {
-      const message = `🎉 *CHARGING SESSION COMPLETE!*\n\n` +
-        `📍 *${session.stationName}*\n` +
-        `⏱️ *Duration:* ${summary.duration}\n` +
-        `⚡ *Energy:* ${summary.energyDelivered} kWh\n` +
-        `💰 *Total Cost:* ₹${summary.totalCost}\n` +
-        `🔋 *Final Battery:* ${summary.finalBatteryLevel}%\n\n` +
-        `✨ *Session saved to your history*\n` +
-        `📊 *Rate your experience to help others*`;
+      const summaryText = `🔋 *Charging Complete!*\n\n` +
+        `⚡ *${session.stationName || 'Station'}*\n` +
+        `📅 Duration: ${summary.duration}\n` +
+        `🔋 Energy: ${summary.energyDelivered} kWh\n` +
+        `🔋 Final Level: ${summary.finalBatteryLevel}%\n` +
+        `💰 Total Cost: ₹${summary.totalCost}\n` +
+        `📊 Efficiency: ${summary.efficiency}%\n\n` +
+        `Thank you for using our service! 🚗⚡`;
 
-      await whatsappService.sendTextMessage(userWhatsapp, message);
-
+      await whatsappService.sendTextMessage(userWhatsapp, summaryText);
+      
+      logger.info('Session completion notification sent', { userWhatsapp, sessionId: session.id });
     } catch (error) {
-      logger.error('Failed to send session completed notification', { userWhatsapp, session, summary, error });
+      logger.error('Failed to send session completion notification', { userWhatsapp, error });
     }
   }
 

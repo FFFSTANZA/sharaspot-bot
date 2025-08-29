@@ -346,6 +346,9 @@ async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
   try {
     logger.info('Processing session stop request', { whatsappId, stationId });
 
+    // GET SESSION DATA BEFORE STOPPING (since stopSession deletes it from memory)
+    const activeSession = await sessionService.getActiveSession(whatsappId, stationId);
+    
     // Attempt to stop the session
     const success = await sessionService.stopSession(whatsappId, stationId);
     
@@ -353,6 +356,32 @@ async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
       await this.sendError(whatsappId, 'No active session found to stop.');
       return;
     }
+
+    // ========== ADD THESE 3 LINES FOR SUMMARY ==========
+    if (activeSession) {
+      // The stopSession method already calculated endTime, energyDelivered, totalCost
+      // Now we just need to create the summary and send notification
+      const durationMs = new Date().getTime() - activeSession.startTime.getTime();
+      const durationMinutes = Math.floor(durationMs / (1000 * 60));
+      const durationFormatted = `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`;
+
+      const summary = {
+        sessionId: activeSession.id,
+        duration: durationFormatted,
+        energyDelivered: Math.floor(durationMinutes * 0.5), // Same calculation as stopSession
+        finalBatteryLevel: activeSession.currentBatteryLevel || 80,
+        totalCost: Math.floor(durationMinutes * 0.5) * 12.5, // Same calculation as stopSession
+        efficiency: activeSession.efficiency || 95,
+        stationName: activeSession.stationName || 'Charging Station',
+        startTime: activeSession.startTime,
+        endTime: new Date()
+      };
+
+      // Send the summary notification
+      await notificationService.sendSessionCompletedNotification(whatsappId, activeSession, summary);
+      logger.info('Session summary sent', { whatsappId, sessionId: activeSession.id });
+    }
+    // ========== END 3 LINE FIX ==========
 
     // Complete charging in queue service for consistency
     try {
@@ -381,7 +410,6 @@ async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
     await this.handleError(error, 'session stop', { whatsappId, stationId });
   }
 }
-
 /**
  * Process queue join (alias for handleJoinQueue for backward compatibility)
  */
@@ -464,6 +492,8 @@ async processQueueJoin(whatsappId: string, stationId: number): Promise<void> {
       await this.handleQueueBooking(whatsappId, station, user);
     }
   }
+
+  
 
   /**
    * Handle queue-based booking

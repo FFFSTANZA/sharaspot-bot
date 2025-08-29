@@ -1,4 +1,4 @@
-// src/controllers/webhook.ts - PRODUCTION READY & OPTIMIZED - FIXED
+// src/controllers/webhook.ts - PRODUCTION READY & OPTIMIZED - COMPLETE FIXED VERSION
 import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
@@ -10,13 +10,16 @@ import { profileService } from '../services/profile';
 import { locationController } from './location';
 import { bookingController } from './booking';
 import { queueWebhookController } from './queue-webhook';
+import { webhookLocationController } from './location/webhook-location'; 
 import { WhatsAppWebhook, WhatsAppMessage } from '../types/whatsapp';
 import { parseButtonId, ButtonParseResult } from '../utils/button-parser';
 import { validateWhatsAppId } from '../utils/validation';
 import { ownerWebhookController } from '../controllers/owner-webhook';
-
+import { db } from '../config/database';
+import { chargingStations } from '../db/schema'; 
+import { eq } from 'drizzle-orm';
 // ===============================================
-// PRODUCTION WEBHOOK CONTROLLER
+// PRODUCTION WEBHOOK CONTROLLER - COMPLETE & FIXED
 // ===============================================
 
 export class WebhookController {
@@ -47,7 +50,9 @@ export class WebhookController {
       res.sendStatus(500);
     }
   }
+  
 
+  
   /**
    * Handle incoming webhook messages
    */
@@ -219,42 +224,39 @@ export class WebhookController {
   /**
    * Handle button interactions with unified parsing
    */
-  /**
- * Handle button interactions with unified parsing
- */
-private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: boolean): Promise<void> {
-  const { whatsappId } = user;
-  const { id: buttonId, title } = button;
+  private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: boolean): Promise<void> {
+    const { whatsappId } = user;
+    const { id: buttonId, title } = button;
 
-  logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
+    logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
 
-  // Priority 1: Check if user is in owner mode - MUST come first
-  if (ownerWebhookController.isInOwnerMode(whatsappId)) {
-    await ownerWebhookController.handleOwnerMessage(whatsappId, 'button', button);
-    return;
-  }
-
-  // Priority 2: Handle session stop buttons first (before other routing)
-  if (buttonId.startsWith('session_stop_')) {
-    const stationId = parseInt(buttonId.split('_')[2]);
-    if (!isNaN(stationId)) {
-      await bookingController.handleSessionStop(whatsappId, stationId);
+    // Priority 1: Check if user is in owner mode - MUST come first
+    if (ownerWebhookController.isInOwnerMode(whatsappId)) {
+      await ownerWebhookController.handleOwnerMessage(whatsappId, 'button', button);
       return;
     }
-  }
 
-  // Parse button ID once
-  const parsed = parseButtonId(buttonId);
-  
-  // Priority 3: Preference flow
-  if (isInPreferenceFlow) {
-    await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
-    return;
-  }
+    // Priority 2: Handle session stop buttons first (before other routing)
+    if (buttonId.startsWith('session_stop_')) {
+      const stationId = parseInt(buttonId.split('_')[2]);
+      if (!isNaN(stationId)) {
+        await bookingController.handleSessionStop(whatsappId, stationId);
+        return;
+      }
+    }
 
-  // Priority 4: Route based on button category
-  await this.routeButtonAction(whatsappId, buttonId, parsed, title);
-}
+    // Parse button ID once
+    const parsed = parseButtonId(buttonId);
+    
+    // Priority 3: Preference flow
+    if (isInPreferenceFlow) {
+      await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
+      return;
+    }
+
+    // Priority 4: Route based on button category
+    await this.routeButtonAction(whatsappId, buttonId, parsed, title);
+  }
 
   /**
    * Handle list selections with unified parsing
@@ -285,7 +287,7 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   /**
-   * Handle location sharing
+   * Handle location sharing - FIXED & COMPLETE
    */
   private async handleLocationMessage(user: any, location: any): Promise<void> {
   const { whatsappId } = user;
@@ -296,98 +298,164 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
     return;
   }
 
-  // FIXED: Validate location data properly
-  if (!location?.latitude || !location?.longitude || 
-      typeof location.latitude !== 'number' || typeof location.longitude !== 'number') {
-    await whatsappService.sendTextMessage(whatsappId, '❌ Invalid location data. Please try sharing your location again.');
+  // ENHANCED: Log the raw location data for debugging
+  logger.info('📍 Raw location data received', { 
+    whatsappId, 
+    rawLocation: location,
+    hasLatitude: !!location?.latitude,
+    hasLongitude: !!location?.longitude,
+    latType: typeof location?.latitude,
+    lngType: typeof location?.longitude
+  });
+
+  // ENHANCED: More flexible location validation
+  let lat: number, lng: number;
+  
+  try {
+    // Handle different data types WhatsApp might send
+    if (typeof location?.latitude === 'string') {
+      lat = parseFloat(location.latitude);
+    } else if (typeof location?.latitude === 'number') {
+      lat = location.latitude;
+    } else {
+      throw new Error('No valid latitude found');
+    }
+
+    if (typeof location?.longitude === 'string') {
+      lng = parseFloat(location.longitude);
+    } else if (typeof location?.longitude === 'number') {
+      lng = location.longitude;
+    } else {
+      throw new Error('No valid longitude found');
+    }
+
+    // Validate coordinate ranges
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw new Error('Invalid coordinate values');
+    }
+
+  } catch (error) {
+    logger.error('❌ Location validation failed', { 
+      whatsappId, 
+      location,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    
+    await whatsappService.sendTextMessage(
+      whatsappId, 
+      '❌ Invalid location data received. Please try sharing your location again:\n\n' +
+      '1️⃣ Tap 📎 attachment icon\n' +
+      '2️⃣ Select "Location"\n' +
+      '3️⃣ Choose "Send your current location"\n' +
+      '4️⃣ Tap "Send"'
+    );
     return;
   }
 
-  logger.info('📍 GPS location received', { 
+  logger.info('✅ GPS location validated', { 
     whatsappId, 
-    latitude: location.latitude, 
-    longitude: location.longitude,
+    latitude: lat, 
+    longitude: lng,
     name: location.name,
     address: location.address 
   });
 
-  // FIXED: Handle GPS location properly
+  // ENHANCED: Handle GPS location with better error handling
   try {
     await locationController.handleGPSLocation(
       whatsappId,
-      location.latitude,
-      location.longitude,
+      lat,
+      lng,
       location.name || null,
       location.address || null
     );
+    
+    logger.info('✅ Location successfully processed by locationController', { whatsappId });
+    
   } catch (error) {
-    logger.error('Location handling failed', { whatsappId, error });
+    logger.error('❌ Location controller processing failed', { 
+      whatsappId, 
+      coordinates: { lat, lng },
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     await whatsappService.sendTextMessage(
       whatsappId, 
-      '❌ Failed to process your location. Please try again or type your address instead.'
+      '❌ Failed to process your location. Please try again or type your address instead.\n\n' +
+      'If the problem persists, try typing your address like:\n' +
+      '• "Anna Nagar, Chennai"\n' +
+      '• "Brigade Road, Bangalore"'
     );
   }
 }
+
   // ===============================================
-  // BUTTON & LIST ROUTING LOGIC
+  // BUTTON & LIST ROUTING LOGIC - FIXED
   // ===============================================
 
   /**
    * Route button actions to appropriate controllers
    */
   private async routeButtonAction(whatsappId: string, buttonId: string, parsed: ButtonParseResult, title: string): Promise<void> {
-    // Queue/booking system buttons (Phase 4)
-    if (this.isQueueButton(buttonId)) {
-      await queueWebhookController.handleQueueButton(whatsappId, buttonId, title);
-      return;
-    }
+  logger.info('🎯 Routing button action', { whatsappId, buttonId, parsed });
 
-    // Station-specific buttons
-    if (parsed.category === 'station' && parsed.stationId > 0) {
-      await this.handleStationButton(whatsappId, parsed.action, parsed.stationId);
-      return;
-    }
-
-  
-
-    // Location buttons
-    if (this.isLocationButton(buttonId)) {
-      await this.handleLocationButton(whatsappId, buttonId);
-      return;
-    }
-
-    // Core system buttons
-    await this.handleCoreButton(whatsappId, buttonId);
+  // Priority 1: Queue/booking system buttons (Phase 4)
+  if (this.isQueueButton(buttonId)) {
+    logger.info('📋 Routing to queue controller', { whatsappId, buttonId });
+    await queueWebhookController.handleQueueButton(whatsappId, buttonId, title);
+    return;
   }
 
+  // Priority 2: Location buttons - FIXED: Check this BEFORE station buttons
+  if (this.isLocationButton(buttonId)) {
+    logger.info('📍 Routing to location controller', { whatsappId, buttonId });
+    await this.handleLocationButton(whatsappId, buttonId);
+    return;
+  }
+
+  // Priority 3: Station-specific buttons (only if not location-related)
+  if (parsed.category === 'station' && parsed.stationId > 0) {
+    logger.info('🏭 Routing to station handler', { whatsappId, buttonId, stationId: parsed.stationId });
+    await this.handleStationButton(whatsappId, parsed.action, parsed.stationId);
+    return;
+  }
+
+  // Priority 4: Core system buttons
+  logger.info('⚙️ Routing to core button handler', { whatsappId, buttonId });
+  await this.handleCoreButton(whatsappId, buttonId);
+}
   /**
    * Route list actions to appropriate controllers
    */
   private async routeListAction(whatsappId: string, listId: string, parsed: ButtonParseResult, title: string): Promise<void> {
-    // Queue/booking lists
-    if (this.isQueueButton(listId)) {
-      await queueWebhookController.handleQueueList(whatsappId, listId, title);
-      return;
-    }
+  logger.info('📋 Routing list action', { whatsappId, listId, parsed });
 
-    // Station selection lists
-    if (parsed.category === 'station' && parsed.stationId > 0) {
-      await bookingController.handleStationSelection(whatsappId, parsed.stationId);
-      return;
-    }
-
-    // Location-specific lists
-    if (this.isLocationList(listId)) {
-      await this.handleLocationList(whatsappId, listId, parsed);
-      return;
-    }
-
-    // Unknown list
-    await whatsappService.sendTextMessage(whatsappId, '❓ Unknown selection. Please try again.');
+  // Priority 1: Queue/booking lists
+  if (this.isQueueButton(listId)) {
+    await queueWebhookController.handleQueueList(whatsappId, listId, title);
+    return;
   }
 
+  // Priority 2: Location-specific lists - FIXED: Check location lists properly
+  if (this.isLocationList(listId)) {
+    logger.info('📍 Routing to location list handler', { whatsappId, listId });
+    await this.handleLocationList(whatsappId, listId, parsed);
+    return;
+  }
+
+  // Priority 3: Station selection lists
+  if (parsed.category === 'station' && parsed.stationId > 0) {
+    await bookingController.handleStationSelection(whatsappId, parsed.stationId);
+    return;
+  }
+
+  // Unknown list
+  await whatsappService.sendTextMessage(whatsappId, 'Unknown selection. Please try again.');
+}
+
   // ===============================================
-  // SPECIFIC BUTTON HANDLERS
+  // SPECIFIC BUTTON HANDLERS - ENHANCED
   // ===============================================
 
   /**
@@ -405,7 +473,7 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
         break;
         
       case 'directions':
-        await this.handleDirections(whatsappId, stationId);
+        await this.handleGetDirections(whatsappId, stationId);
         break;
         
       default:
@@ -415,56 +483,50 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   /**
-   * Handle location-related buttons
+   * Handle location-related buttons - 🔧 FIXED: Complete implementation
    */
   private async handleLocationButton(whatsappId: string, buttonId: string): Promise<void> {
+  logger.info('🎯 Routing location button', { whatsappId, buttonId });
+  
+  try {
+    // Route to the webhook location controller with proper error handling
+    await webhookLocationController.handleLocationButton(whatsappId, buttonId, '');
+    
+    logger.info('✅ Location button handled successfully', { whatsappId, buttonId });
+    
+  } catch (error) {
+    logger.error('❌ Location button handling failed', { 
+      whatsappId, 
+      buttonId, 
+      error: error instanceof Error ? error.message : String(error)
+    });
+    
+    // Fallback handling for common buttons
     switch (buttonId) {
       case 'share_gps_location':
         await this.requestGPSLocation(whatsappId);
         break;
         
       case 'type_address':
-      case 'try_different_address':
         await this.requestAddressInput(whatsappId);
-        break;
-        
-      case 'recent_searches':
-        await locationController.showRecentSearches(whatsappId);
-        break;
-        
-      case 'next_station':
-        await locationController.handleNextStation(whatsappId);
-        break;
-        
-      case 'load_more_stations':
-        await locationController.loadMoreStations(whatsappId);
-        break;
-        
-      case 'show_all_nearby':
-      case 'show_all_results':
-        await locationController.showAllNearbyStations(whatsappId);
-        break;
-        
-      case 'expand_search':
-        await locationController.expandSearchRadius(whatsappId);
-        break;
-        
-      case 'remove_filters':
-        await locationController.removeFilters(whatsappId);
-        break;
-        
-      case 'new_search':
-        await locationController.startNewSearch(whatsappId);
         break;
         
       case 'location_help':
         await this.showLocationHelp(whatsappId);
         break;
         
+      case 'new_search':
+        await this.startBooking(whatsappId);
+        break;
+        
       default:
-        await whatsappService.sendTextMessage(whatsappId, '❓ Unknown location action.');
+        await whatsappService.sendTextMessage(
+          whatsappId, 
+          'There was an issue with that button. Please try "find" to search for stations.'
+        );
     }
   }
+}
 
   /**
    * Handle core system buttons
@@ -498,7 +560,7 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   // ===============================================
-  // COMMAND HANDLING - FIXED
+  // COMMAND HANDLING - COMPLETE WITH LOCATION COMMANDS
   // ===============================================
 
   /**
@@ -507,13 +569,35 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   private async handleCommand(whatsappId: string, cleanText: string, originalText: string): Promise<void> {
     // Core commands
     const commands: Record<string, () => Promise<void>> = {
+      // Basic commands
       'hi': () => this.handleGreeting(whatsappId),
       'hello': () => this.handleGreeting(whatsappId),
+      'hey': () => this.handleGreeting(whatsappId),
       'start': () => this.handleGreeting(whatsappId),
       'help': () => this.showHelp(whatsappId),
+      
+      // Station finding
       'book': () => this.startBooking(whatsappId),
       'find': () => this.startBooking(whatsappId),
       'search': () => this.startBooking(whatsappId),
+      'station': () => this.startBooking(whatsappId),
+      'stations': () => this.startBooking(whatsappId),
+      
+      // 🔧 ADDED: Location & GPS commands
+      'gps': () => this.requestGPSLocation(whatsappId),
+      'location': () => this.requestGPSLocation(whatsappId),
+      'share': () => this.requestGPSLocation(whatsappId),
+      'nearby': () => this.handleNearbyRequest(whatsappId),
+      'near': () => this.handleNearbyRequest(whatsappId),
+      'around': () => this.handleNearbyRequest(whatsappId),
+      
+      // 🔧 ADDED: Directions commands  
+      'directions': () => this.handleGetDirections(whatsappId),
+      'navigate': () => this.handleGetDirections(whatsappId),
+      'maps': () => this.handleGetDirections(whatsappId),
+      'route': () => this.handleGetDirections(whatsappId),
+      
+      // Profile & preferences
       'profile': () => profileService.showProfileSummary(whatsappId),
       'preferences': () => preferenceController.startPreferenceGathering(whatsappId),
       'settings': () => preferenceController.startPreferenceGathering(whatsappId)
@@ -545,7 +629,7 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   // ===============================================
-  // LOCATION & ADDRESS HANDLING
+  // LOCATION & ADDRESS HANDLING - ENHANCED
   // ===============================================
 
   /**
@@ -589,6 +673,96 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
            text.length < 100 && 
            /[a-zA-Z]/.test(text) &&
            addressIndicators.some(indicator => lowerText.includes(indicator));
+  }
+
+  // ===============================================
+  // NEW LOCATION METHODS - 🔧 ADDED MISSING IMPLEMENTATIONS
+  // ===============================================
+
+  /**
+   * Handle get directions request - 🔧 ADDED MISSING METHOD
+   */
+  private async handleGetDirections(whatsappId: string, stationId?: number): Promise<void> {
+  if (stationId) {
+    try {
+      // Get station from database - FIXED table name
+      const [station] = await db
+        .select({
+          id: chargingStations.id,
+          name: chargingStations.name,
+          address: chargingStations.address,
+          latitude: chargingStations.latitude,
+          longitude: chargingStations.longitude
+        })
+        .from(chargingStations)
+        .where(eq(chargingStations.id, stationId))
+        .limit(1);
+
+      if (!station) {
+        await whatsappService.sendTextMessage(whatsappId, 'Station not found.');
+        return;
+      }
+
+      // Convert decimal to number for location message
+      const lat = Number(station.latitude);
+      const lng = Number(station.longitude);
+
+      // Send actual WhatsApp location message
+      const locationSent = await whatsappService.sendLocationMessage(
+        whatsappId,
+        lat,
+        lng,
+        station.name,
+        station.address
+      );
+
+      if (locationSent) {
+        // Send helpful navigation message after location
+        setTimeout(async () => {
+          await whatsappService.sendTextMessage(
+            whatsappId,
+            `Location sent for ${station.name}\n\nTap the location above to open in your maps app for turn-by-turn navigation!`
+          );
+        }, 1000);
+      } else {
+        // Fallback if location message fails
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          `${station.name}\n${station.address}\n\nCopy this address to your maps app for navigation.`
+        );
+      }
+
+    } catch (error) {
+      logger.error('Failed to send station directions', { whatsappId, stationId, error });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        'Failed to get directions. Please try again.'
+      );
+    }
+  } else {
+    // No station ID - show general help
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      'Get Directions\n\nFirst select a charging station, then I can send you the exact location for navigation!'
+    );
+  }
+}
+
+  /**
+   * Handle nearby stations request - 🔧 ADDED MISSING METHOD
+   */
+  private async handleNearbyRequest(whatsappId: string): Promise<void> {
+    await whatsappService.sendButtonMessage(
+      whatsappId,
+      '📍 *Find Nearby Stations*\n\n' +
+      'Share your location to find charging stations around you:',
+      [
+        { id: 'share_gps_location', title: '📱 Share GPS Location' },
+        { id: 'type_address', title: '📝 Type Address' },
+        { id: 'recent_searches', title: '🕒 Recent Searches' }
+      ],
+      '🔍 Location Search'
+    );
   }
 
   // ===============================================
@@ -640,6 +814,9 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
     const helpText = `🔋 *SharaSpot Help*\n\n` +
       `*Quick Commands:*\n` +
       `• "find" or "book" - Find stations\n` +
+      `• "gps" or "location" - Share GPS\n` +
+      `• "nearby" - Find nearby stations\n` +
+      `• "directions" - Get navigation help\n` +
       `• "profile" - View your profile\n` +
       `• "preferences" - Update settings\n` +
       `• "help" - Show this help\n` +
@@ -649,10 +826,11 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
       `2️⃣ Share location or type address\n` +
       `3️⃣ Browse and select stations\n` +
       `4️⃣ Book your charging slot\n\n` +
-      `*Tips:*\n` +
+      `*Location Tips:*\n` +
       `📍 GPS location gives most accurate results\n` +
       `📝 You can type any address directly\n` +
-      `🕒 Recent searches are saved for quick access\n\n` +
+      `🕒 Recent searches are saved for quick access\n` +
+      `🗺️ Use "directions" for navigation help\n\n` +
       `Need more help? Just ask!`;
 
     await whatsappService.sendTextMessage(whatsappId, helpText);
@@ -673,6 +851,9 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
       `• "Anna Nagar, Chennai"\n` +
       `• "Brigade Road, Bangalore"\n` +
       `• "Sector 18, Noida"\n\n` +
+      `*Get Directions:*\n` +
+      `📱 Use WhatsApp live location sharing\n` +
+      `🗺️ Copy address to your maps app\n\n` +
       `*Tips:*\n` +
       `• GPS location is most accurate\n` +
       `• Include city name for better results\n` +
@@ -691,11 +872,11 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   // ===============================================
-  // INPUT REQUEST METHODS
+  // INPUT REQUEST METHODS - ENHANCED
   // ===============================================
 
   /**
-   * Request GPS location sharing
+   * Request GPS location sharing - 🔧 FIXED: Complete implementation
    */
   private async requestGPSLocation(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
@@ -705,7 +886,8 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
       '2️⃣ Select "Location"\n' +
       '3️⃣ Choose "Send your current location"\n' +
       '4️⃣ Tap "Send"\n\n' +
-      '🎯 This gives the most accurate results!'
+      '🎯 This gives the most accurate results!\n\n' +
+      '📝 Or type your address if you prefer'
     );
   }
 
@@ -747,7 +929,7 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
   }
 
   // ===============================================
-  // INPUT PROCESSING METHODS
+  // INPUT PROCESSING METHODS - COMPLETE
   // ===============================================
 
   /**
@@ -805,53 +987,89 @@ private async handleButtonMessage(user: any, button: any, isInPreferenceFlow: bo
     await locationController.handleAddressInput(whatsappId, address);
   }
 
-  /**
-   * Handle get directions request
-   */
-  private async handleDirections(whatsappId: string, stationId: number): Promise<void> {
-    // This could be enhanced to get actual station details
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `🗺️ *Navigation*\n\nDirections for station #${stationId} will be provided by the booking system.`
-    );
-  }
-
   // ===============================================
-  // UTILITY METHODS
+  // UTILITY METHODS - COMPLETE & ENHANCED
   // ===============================================
 
   /**
    * Check if button is queue/booking related
    */
   private isQueueButton(buttonId: string): boolean {
-    const queuePrefixes = [
-      'queue_', 'session_', 'join_', 'start_', 'extend_',
-      'live_', 'rate_', 'share_', 'cancel_', 'confirm_',
-      'nearby_', 'cheaper_', 'faster_', 'smart_', 'notify_'
-    ];
-    return queuePrefixes.some(prefix => buttonId.startsWith(prefix));
-  }
+  // Use specific queue button patterns instead of broad prefixes
+  const queueButtons = [
+    // Queue management
+    'join_queue_', 'queue_status_', 'cancel_queue_', 'confirm_cancel_',
+    
+    // Session management  
+    'start_session_', 'session_stop_', 'session_status_', 'extend_',
+    
+    // Smart suggestions
+    'nearby_alternatives_', 'cheaper_options_', 'faster_charging_',
+    'smart_recommendation_',
+    
+    // Notifications
+    'notify_when_ready_', 'live_updates_',
+    
+    // Rating (but NOT location sharing)
+    'rate_1_', 'rate_2_', 'rate_3_', 'rate_4_', 'rate_5_'
+  ];
+  
+  return queueButtons.some(pattern => buttonId.startsWith(pattern));
+}
 
   /**
-   * Check if button is location related
+   * Check if button is location related - 🔧 ENHANCED: Complete list
    */
   private isLocationButton(buttonId: string): boolean {
-    const locationButtons = [
-      'share_gps_location', 'type_address', 'try_different_address',
-      'location_help', 'recent_searches', 'next_station',
-      'load_more_stations', 'show_all_nearby', 'show_all_results',
-      'expand_search', 'remove_filters', 'new_search'
-    ];
-    return locationButtons.includes(buttonId);
+  // Core location buttons
+  const coreLocationButtons = [
+    'share_gps_location', 'type_address', 'try_different_address',
+    'location_help', 'recent_searches', 'new_search'
+  ];
+  
+  // Navigation buttons
+  const navigationButtons = [
+    'next_station', 'load_more_stations', 'show_all_nearby', 
+    'show_all_results', 'back_to_search', 'back_to_list',
+    'back_to_top_result', 'expand_search', 'remove_filters'
+  ];
+  
+  // Direction buttons  
+  const directionButtons = [
+    'get_directions', 'directions_help'
+  ];
+  
+  // Check exact matches first
+  if (coreLocationButtons.includes(buttonId) || 
+      navigationButtons.includes(buttonId) || 
+      directionButtons.includes(buttonId)) {
+    return true;
   }
+  
+  // Check prefixes
+  const locationPrefixes = [
+    'recent_search_', 'location_', 'search_', 'station_info_',
+    'select_station_', 'book_station_' // These are location context related
+  ];
+  
+  return locationPrefixes.some(prefix => buttonId.startsWith(prefix));
+}
 
   /**
    * Check if list is location related
    */
   private isLocationList(listId: string): boolean {
-    const locationPrefixes = ['recent_search_', 'location_', 'search_'];
-    return locationPrefixes.some(prefix => listId.startsWith(prefix));
-  }
+  const locationListPrefixes = [
+    'recent_search_', 'location_', 'search_', 'select_station_'
+  ];
+  
+  const exactLocationLists = [
+    'recent_searches', 'location_options', 'search_results'
+  ];
+  
+  return exactLocationLists.includes(listId) || 
+         locationListPrefixes.some(prefix => listId.startsWith(prefix));
+}
 
   /**
    * Send standardized error message

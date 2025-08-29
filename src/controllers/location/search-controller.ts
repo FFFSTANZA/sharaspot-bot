@@ -19,50 +19,121 @@ export class LocationSearchController {
    * Search and display stations
    */
   async searchAndShowStations(whatsappId: string, latitude: number, longitude: number, address?: string): Promise<void> {
-    try {
-      // Get user preferences
-      const user = await userService.getUserByWhatsAppId(whatsappId);
-      if (!user) {
-        logger.error('User not found for station search', { whatsappId });
-        return;
-      }
+  try {
+    logger.info('🔍 Starting station search', { 
+      whatsappId, 
+      coordinates: { latitude, longitude }, 
+      address 
+    });
 
-      // Build search options
-      const searchOptions: StationSearchOptions = {
-        userWhatsapp: whatsappId,
-        latitude,
-        longitude,
-        radius: 25, // 25km radius
-        maxResults: 5, // Show top 5 initially
-        offset: 0,
-        availableOnly: user.queuePreference === 'Free Now',
-        connectorTypes: user.connectorType ? [user.connectorType] : undefined,
-        sortBy: 'availability', // Priority: availability > distance > price
-      };
-
-      // Search for stations
-      const searchResult = await stationSearchService.searchStations(searchOptions);
-
-      // Store search context for pagination
-      this.contextManager.updateSearchResults(whatsappId, searchResult);
-
-      if (searchResult.stations.length === 0) {
-        await this.displayController.handleNoStationsFound(whatsappId, address);
-        return;
-      }
-
-      // Show stations
-      await this.displayController.displayStationResults(whatsappId, searchResult, 0);
-
-    } catch (error) {
-      logger.error('Failed to search stations', { whatsappId, error });
+    // ENHANCED: Get user with better error handling
+    const user = await userService.getUserByWhatsAppId(whatsappId);
+    if (!user) {
+      logger.error('❌ User not found for station search', { whatsappId });
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to search for stations. Please try again.'
+        '❌ User profile not found. Please restart with /start command.'
+      );
+      return;
+    }
+
+    logger.info('✅ User found for search', { 
+      whatsappId, 
+      userId: user.id, 
+      hasPrefs: user.preferencesCaptured 
+    });
+
+    // ENHANCED: Build search options with validation
+    const searchOptions = {
+      userWhatsapp: whatsappId,
+      latitude,
+      longitude,
+      radius: 25, // 25km radius
+      maxResults: 5, // Show top 5 initially
+      offset: 0,
+      availableOnly: user.queuePreference === 'Free Now',
+      connectorTypes: user.connectorType ? [user.connectorType] : undefined,
+      sortBy: 'availability' as const, // Priority: availability > distance > price
+    };
+
+    logger.info('🎯 Search options prepared', { whatsappId, searchOptions });
+
+    // ENHANCED: Search for stations with detailed logging
+    let searchResult;
+    try {
+      searchResult = await stationSearchService.searchStations(searchOptions);
+      
+      logger.info('✅ Station search service completed', { 
+        whatsappId, 
+        stationsFound: searchResult.stations?.length || 0,
+        totalCount: searchResult.totalCount,
+        hasMore: searchResult.hasMore
+      });
+      
+    } catch (searchServiceError) {
+      logger.error('❌ Station search service failed', { 
+        whatsappId,
+        searchOptions,
+        error: searchServiceError instanceof Error ? searchServiceError.message : String(searchServiceError)
+      });
+      throw new Error(`Search service failed: ${searchServiceError}`);
+    }
+
+    // ENHANCED: Store search context with validation
+    try {
+      this.contextManager.updateSearchResults(whatsappId, searchResult);
+      logger.info('✅ Search results stored in context', { whatsappId });
+    } catch (contextError) {
+      logger.warn('⚠️ Failed to store search context', { whatsappId, contextError });
+      // Continue anyway - not critical for immediate search
+    }
+
+    // ENHANCED: Handle no results
+    if (!searchResult.stations || searchResult.stations.length === 0) {
+      logger.info('📍 No stations found', { whatsappId, searchLocation: { latitude, longitude, address } });
+      await this.displayController.handleNoStationsFound(whatsappId, address);
+      return;
+    }
+
+    // ENHANCED: Display results with error handling
+    try {
+      await this.displayController.displayStationResults(whatsappId, searchResult, 0);
+      logger.info('✅ Station results displayed successfully', { 
+        whatsappId, 
+        stationsShown: searchResult.stations.length 
+      });
+      
+    } catch (displayError) {
+      logger.error('❌ Failed to display station results', { 
+        whatsappId,
+        error: displayError instanceof Error ? displayError.message : String(displayError)
+      });
+      
+      // Fallback: Send basic station info
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        `✅ Found ${searchResult.stations.length} charging stations nearby!\n\n` +
+        `Unfortunately, there was an issue displaying the results. Please try "find stations" again.`
       );
     }
-  }
 
+  } catch (error) {
+    logger.error('❌ Complete search process failed', { 
+      whatsappId, 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '❌ Failed to search for stations. Please try again.\n\n' +
+      'Troubleshooting tips:\n' +
+      '• Make sure GPS is enabled on your phone\n' +
+      '• Try typing your address instead\n' +
+      '• Check your internet connection'
+    );
+  }
+}
   /**
    * Handle next station request
    */

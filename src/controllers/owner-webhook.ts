@@ -224,8 +224,8 @@ export class OwnerWebhookController {
       '📝 *Owner Registration*\n\n' +
       'Registration is handled by our support team.\n\n' +
       '📞 Contact:\n' +
-      '• Email: onboarding@sharaspot.com\n' +
-      '• Phone: +91-XXXX-XXXX'
+      '• Email: partner@folonite.in\n' +
+      '• Phone: +91-9790294221'
     );
 
     setTimeout(async () => {
@@ -252,7 +252,7 @@ export class OwnerWebhookController {
       whatsappId,
       '🔑 *Owner Login*\n\n' +
       'Please provide your registered business name.\n\n' +
-      'Example: "SolarTech Charging Solutions"\n\n' +
+      'Example: "SharaSpot Parking Private Limited"\n\n' +
       'Type your business name:'
     );
   }
