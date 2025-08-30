@@ -1,0 +1,78 @@
+2025-08-30 15:36:43 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:43 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:43 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:43 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:43 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:46 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 8080,
+  "environment": "production",
+  "webhookUrl": "http://localhost:8080/webhook",
+  "healthUrl": "http://localhost:8080/health",
+  "processId": 28600,
+  "nodeVersion": "v24.5.0"
+}
+2025-08-30 15:36:49 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:49 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:49 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:49 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:50 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:50 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:50 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:50 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-08-30 15:36:50 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 8080,
+  "environment": "production",
+  "webhookUrl": "http://localhost:8080/webhook",
+  "healthUrl": "http://localhost:8080/health",
+  "processId": 28679,
+  "nodeVersion": "v24.5.0"
+}
+2025-08-30 15:36:50 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
