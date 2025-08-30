@@ -3,331 +3,128 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getServerMetrics = exports.getServerHealth = exports.serverManager = exports.app = void 0;
+exports.app = void 0;
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const helmet_1 = __importDefault(require("helmet"));
-const env_1 = require("./config/env");
-const logger_1 = require("./utils/logger");
-const webhook_1 = require("./controllers/webhook");
-const queue_scheduler_1 = require("./utils/queue-scheduler");
-const connection_1 = require("./db/connection");
-const getErrorMessage = (error) => {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    return 'Unknown error occurred';
-};
-const getErrorStack = (error) => {
-    if (error instanceof Error) {
-        return error.stack;
-    }
-    return undefined;
-};
 const app = (0, express_1.default)();
 exports.app = app;
-const port = env_1.env.PORT || 3000;
-app.use((0, helmet_1.default)({
-    contentSecurityPolicy: env_1.env.NODE_ENV === 'production' ? undefined : false,
-    crossOriginEmbedderPolicy: false,
-    hsts: env_1.env.NODE_ENV === 'production'
-}));
-app.use((0, cors_1.default)({
-    origin: env_1.env.NODE_ENV === 'production'
-        ? process.env.ALLOWED_ORIGINS?.split(',') || false
-        : true,
-    credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'sharaspot_verify_token';
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+console.log('🚀 SharaSpot Bot Starting...');
+console.log('🔑 WhatsApp Token:', WHATSAPP_TOKEN ? '✅ Present' : '❌ Missing');
+console.log('📞 Phone Number ID:', PHONE_NUMBER_ID ? '✅ Present' : '❌ Missing');
+console.log('🔐 Verify Token:', VERIFY_TOKEN);
+console.log('🌐 Port:', PORT);
 app.use(express_1.default.json({
-    limit: '5mb',
-    strict: true,
-    type: ['application/json', 'text/plain']
-}));
-app.use(express_1.default.urlencoded({
-    extended: true,
-    limit: '5mb',
-    parameterLimit: 50
-}));
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW = 60000;
-const RATE_LIMIT_MAX = env_1.env.NODE_ENV === 'production' ? 60 : 100;
-setInterval(() => {
-    const now = Date.now();
-    for (const [ip, data] of rateLimitMap.entries()) {
-        if (now > data.resetTime) {
-            rateLimitMap.delete(ip);
-        }
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
     }
-}, RATE_LIMIT_WINDOW);
+}));
 app.use((req, res, next) => {
-    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
-    const now = Date.now();
-    const limitData = rateLimitMap.get(clientIp) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
-    if (now > limitData.resetTime) {
-        limitData.count = 1;
-        limitData.resetTime = now + RATE_LIMIT_WINDOW;
-    }
-    else {
-        limitData.count++;
-    }
-    rateLimitMap.set(clientIp, limitData);
-    if (limitData.count > RATE_LIMIT_MAX) {
-        res.status(429).json({
-            error: 'Rate limit exceeded',
-            retryAfter: Math.ceil((limitData.resetTime - now) / 1000)
-        });
-        return;
-    }
-    res.set({
-        'X-RateLimit-Limit': RATE_LIMIT_MAX.toString(),
-        'X-RateLimit-Remaining': Math.max(0, RATE_LIMIT_MAX - limitData.count).toString(),
-        'X-RateLimit-Reset': Math.ceil(limitData.resetTime / 1000).toString()
+    const ip = req.headers['x-forwarded-for'] || req.ip || 'unknown';
+    console.log(`📥 ${req.method} ${req.path} | IP: ${ip}`);
+    next();
+});
+app.get('/', (req, res) => {
+    res.json({
+        status: 'alive',
+        message: 'SharaSpot WhatsApp Bot is running!',
+        endpoints: {
+            webhook: 'POST /webhook',
+            verify: 'GET /webhook?hub.mode=subscribe&hub.verify_token=YOUR_TOKEN&hub.challenge=123'
+        },
+        env: {
+            hasToken: !!WHATSAPP_TOKEN,
+            hasPhoneId: !!PHONE_NUMBER_ID
+        }
     });
-    next();
 });
-app.use((req, res, next) => {
-    const startTime = Date.now();
-    const shouldLog = env_1.env.NODE_ENV === 'development' ||
-        req.path.startsWith('/webhook') ||
-        req.path === '/health';
-    if (shouldLog) {
-        res.on('finish', () => {
-            const duration = Date.now() - startTime;
-            const logLevel = res.statusCode >= 400 ? 'warn' : 'info';
-            logger_1.logger[logLevel]('HTTP Request', {
-                method: req.method,
-                path: req.path,
-                status: res.statusCode,
-                duration: `${duration}ms`,
-                ip: req.ip,
-                userAgent: req.get('User-Agent')?.substring(0, 100)
-            });
-        });
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+app.get('/webhook', (req, res) => {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+        console.log('✅ Webhook verified!');
+        return res.send(challenge);
     }
-    next();
+    console.log('❌ Verification failed', { mode, token });
+    return res.status(403).send('Forbidden');
 });
-app.get('/health', async (req, res) => {
+app.post('/webhook', async (req, res) => {
     try {
-        const healthStatus = {
-            status: 'healthy',
-            timestamp: new Date().toISOString(),
-            service: 'sharaspot-bot',
-            version: process.env.npm_package_version || '1.0.0',
-            environment: env_1.env.NODE_ENV,
-            uptime: Math.floor(process.uptime()),
-            memory: {
-                used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-                total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+        const body = req.body;
+        console.log('📬 Webhook received:', JSON.stringify(body, null, 2));
+        if (body.entry?.length > 0) {
+            for (const entry of body.entry) {
+                for (const change of entry.changes || []) {
+                    if (change.field === 'messages' && change.value?.messages) {
+                        for (const msg of change.value.messages) {
+                            const from = msg.from;
+                            const text = msg.text?.body || '(no text)';
+                            const type = msg.type;
+                            console.log(`💬 Message from ${from}: [${type}] ${text}`);
+                            if (WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
+                                await sendReply(from, `🤖 Got your message: "${text}"`);
+                            }
+                        }
+                    }
+                }
             }
-        };
-        if (env_1.env.NODE_ENV === 'development') {
-            Object.assign(healthStatus, {
-                queue: queue_scheduler_1.queueScheduler?.getStatus?.() || { status: 'not_configured' },
-                database: 'connected',
-                activeConnections: rateLimitMap.size
-            });
         }
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.status(200).json(healthStatus);
+        res.status(200).send('EVENT_RECEIVED');
     }
     catch (error) {
-        const errorMessage = getErrorMessage(error);
-        logger_1.logger.error('Health check failed', { error: errorMessage });
-        res.status(503).json({
-            status: 'unhealthy',
-            timestamp: new Date().toISOString(),
-            error: env_1.env.NODE_ENV === 'development' ? errorMessage : 'Service unavailable'
-        });
+        console.error('💥 Webhook processing error:', error);
+        res.status(200).send('ERROR_HANDLED');
     }
 });
-app.get('/webhook', webhook_1.webhookController.verifyWebhook.bind(webhook_1.webhookController));
-app.post('/webhook', webhook_1.webhookController.handleWebhook.bind(webhook_1.webhookController));
-app.use('/api/v1', (req, res, next) => {
-    res.set('API-Version', 'v1');
-    next();
-}, (req, res) => {
-    res.status(501).json({
-        message: 'API endpoints coming soon',
-        version: 'v1',
-        timestamp: new Date().toISOString()
-    });
-});
-app.use('*', (req, res) => {
-    res.status(404).json({
-        error: 'Endpoint not found',
-        path: req.originalUrl,
-        method: req.method,
-        timestamp: new Date().toISOString(),
-        suggestion: req.originalUrl.includes('webhook') ? 'Check webhook configuration' : 'Verify endpoint URL'
-    });
-});
-app.use((err, req, res, next) => {
-    const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    const errorMessage = getErrorMessage(err);
-    const errorStack = getErrorStack(err);
-    const statusCode = err?.status || err?.statusCode || 500;
-    logger_1.logger.error('Unhandled application error', {
-        errorId,
-        message: errorMessage,
-        stack: env_1.env.NODE_ENV === 'development' ? errorStack : undefined,
-        url: req.url,
-        method: req.method,
-        ip: req.ip,
-        userAgent: req.get('User-Agent')?.substring(0, 100)
-    });
-    const errorResponse = {
-        error: 'Internal server error',
-        errorId,
-        timestamp: new Date().toISOString(),
-        ...(env_1.env.NODE_ENV === 'development' && {
-            message: errorMessage,
-            stack: errorStack
-        })
+async function sendReply(to, text) {
+    const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+    const payload = {
+        messaging_product: 'whatsapp',
+        to,
+        type: 'text',
+        text: { body: text }
     };
-    res.status(statusCode).json(errorResponse);
-});
-class ServerManager {
-    constructor() {
-        this.server = null;
-        this.isShuttingDown = false;
-    }
-    async start() {
-        try {
-            logger_1.logger.info('🚀 Starting SharaSpot Bot Server');
-            await this.initializeDatabaseWithTimeout();
-            this.server = app.listen(port, () => {
-                logger_1.logger.info('✅ SharaSpot Bot Server Ready', {
-                    port,
-                    environment: env_1.env.NODE_ENV,
-                    webhookUrl: `http://localhost:${port}/webhook`,
-                    healthUrl: `http://localhost:${port}/health`,
-                    processId: process.pid,
-                    nodeVersion: process.version
-                });
-            });
-            await this.startBackgroundServices();
-            this.setupGracefulShutdown();
-        }
-        catch (error) {
-            const errorMessage = getErrorMessage(error);
-            logger_1.logger.error('💥 Server startup failed', { error: errorMessage });
-            process.exit(1);
-        }
-    }
-    async initializeDatabaseWithTimeout() {
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Database connection timeout')), 10000));
-        try {
-            await Promise.race([(0, connection_1.initializeDatabase)(), timeout]);
-            logger_1.logger.info('✅ Database connected successfully');
-        }
-        catch (error) {
-            const errorMessage = getErrorMessage(error);
-            logger_1.logger.error('❌ Database connection failed', { error: errorMessage });
-            throw error;
-        }
-    }
-    async startBackgroundServices() {
-        const shouldStartScheduler = process.env.ENABLE_QUEUE_SCHEDULER !== 'false';
-        if (shouldStartScheduler && queue_scheduler_1.queueScheduler) {
-            try {
-                await queue_scheduler_1.queueScheduler.start();
-                logger_1.logger.info('🤖 Background queue scheduler started');
-            }
-            catch (error) {
-                const errorMessage = getErrorMessage(error);
-                logger_1.logger.warn('⚠️ Queue scheduler failed to start', { error: errorMessage });
-            }
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok && 'messages' in data) {
+            console.log('📤 Reply sent! Message ID:', data.messages[0].id);
+            return true;
         }
         else {
-            logger_1.logger.info('⏸️ Queue scheduler disabled or not available');
+            const errorMsg = data.error.message;
+            console.error('❌ WhatsApp API Error:', errorMsg);
+            return false;
         }
     }
-    setupGracefulShutdown() {
-        const handleShutdown = async (signal) => {
-            if (this.isShuttingDown)
-                return;
-            this.isShuttingDown = true;
-            logger_1.logger.info(`🛑 ${signal} received - starting graceful shutdown`);
-            const shutdownTimeout = setTimeout(() => {
-                logger_1.logger.error('💥 Forced shutdown due to timeout');
-                process.exit(1);
-            }, 30000);
-            try {
-                if (this.server) {
-                    await new Promise((resolve) => {
-                        this.server.close(resolve);
-                    });
-                    logger_1.logger.info('🛑 HTTP server stopped');
-                }
-                if (queue_scheduler_1.queueScheduler?.stop) {
-                    await queue_scheduler_1.queueScheduler.stop();
-                    logger_1.logger.info('🤖 Queue scheduler stopped');
-                }
-                rateLimitMap.clear();
-                clearTimeout(shutdownTimeout);
-                logger_1.logger.info('✅ Graceful shutdown completed');
-                process.exit(0);
-            }
-            catch (error) {
-                const errorMessage = getErrorMessage(error);
-                logger_1.logger.error('💥 Error during shutdown', { error: errorMessage });
-                clearTimeout(shutdownTimeout);
-                process.exit(1);
-            }
-        };
-        process.on('SIGTERM', () => handleShutdown('SIGTERM'));
-        process.on('SIGINT', () => handleShutdown('SIGINT'));
-        process.on('uncaughtException', (error) => {
-            logger_1.logger.error('💥 Uncaught Exception', {
-                error: error.message,
-                stack: error.stack
-            });
-            handleShutdown('uncaughtException');
-        });
-        process.on('unhandledRejection', (reason) => {
-            const errorMessage = getErrorMessage(reason);
-            logger_1.logger.error('💥 Unhandled Promise Rejection', { reason: errorMessage });
-            handleShutdown('unhandledRejection');
-        });
+    catch (err) {
+        console.error('📡 Network error sending reply:', err.message);
+        return false;
     }
 }
-const serverManager = new ServerManager();
-exports.serverManager = serverManager;
-if (require.main === module) {
-    serverManager.start().catch((error) => {
-        const errorMessage = getErrorMessage(error);
-        logger_1.logger.error('💥 Failed to start server', { error: errorMessage });
-        process.exit(1);
-    });
-}
-const getServerHealth = async () => {
-    try {
-        const health = {
-            uptime: process.uptime(),
-            memory: process.memoryUsage(),
-            timestamp: new Date().toISOString(),
-            environment: env_1.env.NODE_ENV,
-            activeConnections: rateLimitMap.size
-        };
-        return { status: 'healthy', ...health };
-    }
-    catch (error) {
-        const errorMessage = getErrorMessage(error);
-        return { status: 'unhealthy', error: errorMessage };
-    }
-};
-exports.getServerHealth = getServerHealth;
-const getServerMetrics = () => ({
-    activeRateLimitEntries: rateLimitMap.size,
-    uptime: process.uptime(),
-    memoryUsage: process.memoryUsage(),
-    environment: env_1.env.NODE_ENV,
-    version: process.env.npm_package_version || '1.0.0'
+app.use('*', (req, res) => {
+    console.log(`🚫 404: ${req.method} ${req.path}`);
+    res.status(404).json({ error: 'Not Found' });
 });
-exports.getServerMetrics = getServerMetrics;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('');
+    console.log('✅✅✅ SERVER IS LIVE AND READY! ✅✅✅');
+    console.log(`🔗 Webhook URL: https://your-app.up.railway.app/webhook`);
+    console.log(`🔐 Verify Token: ${VERIFY_TOKEN}`);
+    console.log(`📱 Send a message to your WhatsApp Business number to test!`);
+    console.log('');
+});
 //# sourceMappingURL=index.js.map
