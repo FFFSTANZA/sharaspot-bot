@@ -16,26 +16,31 @@ export const logger = winston.createLogger({
   format: logFormat,
   defaultMeta: { service: 'sharaspot-bot' },
   transports: [
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
+    // ALWAYS log to console (critical for cloud platforms like Render)
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
     }),
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
+    // File transports only in development (not useful in ephemeral containers)
+    ...(env.NODE_ENV !== 'production' ? [
+      new winston.transports.File({ 
+        filename: 'logs/error.log', 
+        level: 'error',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      }),
+      new winston.transports.File({ 
+        filename: 'logs/combined.log',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      })
+    ] : [])
   ],
 });
 
-// Add console transport for development
-if (env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
+// Production-specific configuration
+if (env.NODE_ENV === 'production') {
+  logger.info('🚀 Logger initialized for production (console output only)');
 }
