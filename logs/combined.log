@@ -1,0 +1,280 @@
+2025-10-09 23:18:04 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:04 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:04 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:18:05 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 3000,
+  "environment": "development",
+  "webhookUrl": "http://localhost:3000/webhook",
+  "healthUrl": "http://localhost:3000/health",
+  "processId": 11064,
+  "nodeVersion": "v24.5.0"
+}
+2025-10-09 23:18:24 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:20:39 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 3000,
+  "environment": "development",
+  "webhookUrl": "http://localhost:3000/webhook",
+  "healthUrl": "http://localhost:3000/health",
+  "processId": 11553,
+  "nodeVersion": "v24.5.0"
+}
+2025-10-09 23:21:08 [INFO]: ✅ Webhook verified successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:21:08 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "7ms",
+  "ip": "::1",
+  "userAgent": "facebookplatform/1.0 (+http://developers.facebook.com)"
+}
+2025-10-09 23:21:30 [INFO]: ✅ Webhook verified successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:21:30 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "GET",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookplatform/1.0 (+http://developers.facebook.com)"
+}
+2025-10-09 23:22:02 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:05 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQTVFRTNGM0M3MUVBNzY5NTNDQkU2RDY0QUU0QTQ0M0MA"
+}
+2025-10-09 23:22:05 [INFO]: 🔍 Looking for user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-10-09 23:22:05 [INFO]: ✅ Found existing user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "userId": 1
+}
+2025-10-09 23:22:05 [INFO]: 🔍 Looking for user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-10-09 23:22:06 [INFO]: ✅ Found existing user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "userId": 1
+}
+2025-10-09 23:22:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:07 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSRTNFOUMwQkU3QzQ1MjU5QUVDAA=="
+}
+2025-10-09 23:22:07 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2403ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:09 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:09 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:10 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:41 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: 🚀 Starting SharaSpot Bot Server {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: 🔄 Initializing database connection... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: ✅ Database connection successful {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: 🎉 Database initialized successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: ✅ Database connected successfully {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: 🚀 Starting Ultra Queue Scheduler... {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: ✅ Queue Scheduler operational with 7 processes {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: 🤖 Background queue scheduler started {
+  "service": "sharaspot-bot"
+}
+2025-10-09 23:22:42 [INFO]: ✅ SharaSpot Bot Server Ready {
+  "service": "sharaspot-bot",
+  "port": 3000,
+  "environment": "development",
+  "webhookUrl": "http://localhost:3000/webhook",
+  "healthUrl": "http://localhost:3000/health",
+  "processId": 12069,
+  "nodeVersion": "v24.5.0"
+}
+2025-10-09 23:22:48 [INFO]: 📨 Processing message {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "type": "text",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAEhggQTVEM0ZDMDU5QzQ5QTQ1NTNBRjZFQTE3MjRGNUQ5NTEA"
+}
+2025-10-09 23:22:48 [INFO]: 🔍 Looking for user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-10-09 23:22:48 [INFO]: ✅ Found existing user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "userId": 1
+}
+2025-10-09 23:22:48 [INFO]: 🔍 Looking for user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221"
+}
+2025-10-09 23:22:48 [INFO]: ✅ Found existing user {
+  "service": "sharaspot-bot",
+  "whatsappId": "919790294221",
+  "userId": 1
+}
+2025-10-09 23:22:49 [INFO]: ✅ Button message sent {
+  "service": "sharaspot-bot",
+  "to": "919790294221",
+  "messageId": "wamid.HBgMOTE5NzkwMjk0MjIxFQIAERgSNDk3OUU1MzRGM0UwNDYwM0U5AA=="
+}
+2025-10-09 23:22:49 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1777ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:51 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "2ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:22:51 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "1ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:23:06 [INFO]: HTTP Request {
+  "service": "sharaspot-bot",
+  "method": "POST",
+  "path": "/webhook",
+  "status": 200,
+  "duration": "3ms",
+  "ip": "::1",
+  "userAgent": "facebookexternalua"
+}
+2025-10-09 23:23:16 [INFO]: 🛑 Queue Scheduler stopped {
+  "service": "sharaspot-bot"
+}
