@@ -1,0 +1,66 @@
+export declare class BookingController {
+    handleStationSelection(whatsappId: string, stationId: number): Promise<void>;
+    handleStationBooking(whatsappId: string, stationId: number): Promise<void>;
+    showStationDetails(whatsappId: string, stationId: number): Promise<void>;
+    handleJoinQueue(whatsappId: string, stationId: number): Promise<void>;
+    handleQueueStatus(whatsappId: string, stationId?: number): Promise<void>;
+    handleQueueCancel(whatsappId: string, stationId: number): Promise<void>;
+    handleChargingStart(whatsappId: string, stationId: number): Promise<void>;
+    handleSessionStatus(whatsappId: string, stationId: number): Promise<void>;
+    handleSessionStop(whatsappId: string, stationId: number): Promise<void>;
+    processQueueJoin(whatsappId: string, stationId: number): Promise<void>;
+    handleSessionExtend(whatsappId: string, stationId: number, minutes: number): Promise<void>;
+    private handleInstantBooking;
+    private handleQueueBooking;
+    private handleExistingBooking;
+    private showInstantBookingSuccess;
+    private handleSuccessfulQueueJoin;
+    private handleSuccessfulSessionStart;
+    private handleSuccessfulCancellation;
+    private handleQueueJoinFailure;
+    private handleSessionStartFailure;
+    private handleNoValidReservation;
+    private displayQueueStatus;
+    private displaySessionStatus;
+    private displayBasicSessionInfo;
+    private showNoActiveQueues;
+    private showExistingQueueStatus;
+    private sendQueueManagementButtons;
+    handleGetDirections(whatsappId: string, stationId: number): Promise<void>;
+    handleFindAlternatives(whatsappId: string, stationId: number): Promise<void>;
+    handleStationRating(whatsappId: string, stationId: number, rating: number): Promise<void>;
+    private getStationDetails;
+    private processStationData;
+    private showStationOverview;
+    private formatStationDetails;
+    private showBookingOptions;
+    private sendStationActionButtons;
+    private getBookingButtons;
+    private handleUnavailableStation;
+    private validateInput;
+    private isStationBookable;
+    private formatConnectorTypes;
+    private formatOperatingHours;
+    private getStatusWithEmoji;
+    private capitalizeFirst;
+    private estimateCost;
+    private handleError;
+    private sendError;
+    private sendNotFound;
+    getHealthStatus(): {
+        status: 'healthy' | 'degraded';
+        activeOperations: number;
+        lastActivity: string;
+        integrations: {
+            queueService: boolean;
+            sessionService: boolean;
+            notificationService: boolean;
+        };
+    };
+    handleBulkOperation(whatsappId: string, operation: string, data: any[]): Promise<void>;
+    private cancelAllUserQueues;
+    private getAllUserStatuses;
+    private getUserActiveSessions;
+}
+export declare const bookingController: BookingController;
+//# sourceMappingURL=booking.d.ts.map
