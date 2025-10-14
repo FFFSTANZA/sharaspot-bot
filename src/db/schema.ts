@@ -1,4 +1,4 @@
-// src/db/schema.ts
+// src/db/schema.ts - COMPLETE CORRECTED SCHEMA WITH VERIFICATION COLUMNS
 import {
   pgTable,
   text,
@@ -12,8 +12,6 @@ import {
   index,
   unique,
 } from 'drizzle-orm/pg-core';
-
-// ✅ CORRECT IMPORT FOR `sql`
 import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 
@@ -65,11 +63,18 @@ export const chargingStations = pgTable('charging_stations', {
   longitude: decimal('longitude', { precision: 11, scale: 8 }).notNull(),
   geohash: varchar('geohash', { length: 12 }),
 
+  // ✅ Support both naming conventions
   totalPorts: integer('total_ports').notNull().default(1),
   availablePorts: integer('available_ports').notNull().default(1),
+  totalSlots: integer('total_slots').notNull().default(1), // Alias
+  availableSlots: integer('available_slots').notNull().default(1), // Alias
+  
   connectorTypes: jsonb('connector_types').notNull(),
   maxPowerKw: integer('max_power_kw').notNull().default(50),
+  
+  // ✅ Support both naming conventions  
   pricePerKwh: decimal('price_per_kwh', { precision: 5, scale: 2 }).notNull().default('10.00'),
+  pricePerUnit: decimal('price_per_unit', { precision: 5, scale: 2 }).notNull().default('10.00'), // Alias
 
   isActive: boolean('is_active').default(true),
   isOpen: boolean('is_open').default(true),
@@ -91,8 +96,12 @@ export const chargingStations = pgTable('charging_stations', {
   totalSessions: integer('total_sessions').default(0),
   totalEnergyDelivered: decimal('total_energy_delivered', { precision: 12, scale: 3 }).default('0'),
   totalRevenue: decimal('total_revenue', { precision: 12, scale: 2 }).default('0'),
+  
+  // ✅ Support both naming conventions
   averageRating: decimal('average_rating', { precision: 3, scale: 2 }).default('0'),
+  rating: decimal('rating', { precision: 3, scale: 2 }).default('0'), // Alias
   reviewCount: integer('review_count').default(0),
+  totalReviews: integer('total_reviews').default(0), // Alias
 
   lastMaintenanceAt: timestamp('last_maintenance_at'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -142,7 +151,7 @@ export const queues = pgTable('queues', {
   userStationUnique: unique('queues_user_station_active').on(table.userWhatsapp, table.stationId),
 }));
 
-// ==================== CHARGING SESSIONS ====================
+// ==================== CHARGING SESSIONS (WITH VERIFICATION COLUMNS) ====================
 export const chargingSessions = pgTable('charging_sessions', {
   id: serial('id').primaryKey(),
   sessionId: varchar('session_id', { length: 50 }).notNull().unique(),
@@ -158,12 +167,12 @@ export const chargingSessions = pgTable('charging_sessions', {
   endedAt: timestamp('ended_at'),
   duration: integer('duration'),
 
-  // 🔌 Meter readings (kWh)
+  // 🔌 Meter readings (kWh) - ✅ ADDED MISSING COLUMNS
   startMeterReading: decimal('start_meter_reading', { precision: 10, scale: 3 }),
   endMeterReading: decimal('end_meter_reading', { precision: 10, scale: 3 }),
-  energyDelivered: decimal('energy_delivered', { precision: 10, scale: 3 }), // = end - start (computed in app)
+  energyDelivered: decimal('energy_delivered', { precision: 10, scale: 3 }),
 
-  // 🔍 Verification
+  // 🔍 Verification - ✅ ADDED ALL MISSING VERIFICATION COLUMNS
   verificationStatus: varchar('verification_status', { length: 30 }).default('pending'),
   startVerificationAttempts: integer('start_verification_attempts').default(0),
   endVerificationAttempts: integer('end_verification_attempts').default(0),

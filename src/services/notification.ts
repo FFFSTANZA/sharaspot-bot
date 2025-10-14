@@ -14,6 +14,25 @@ interface NotificationSchedule {
   message?: string;
 }
 
+/**
+ * Calculate distance between two coordinates using Haversine formula
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in kilometers
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10; // Rounded to 1 decimal
+}
+
+function toRad(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
 class NotificationService {
   private scheduledNotifications = new Map<string, NodeJS.Timeout>();
 
@@ -23,13 +42,9 @@ class NotificationService {
   async sendQueueJoinedNotification(userWhatsapp: string, queuePosition: any): Promise<void> {
     try {
       const station = await this.getStationDetails(queuePosition.stationId);
-      
       const message = this.formatQueueJoinedMessage(queuePosition, station);
-      
-      // Send main notification
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send interactive list with queue options
       setTimeout(async () => {
         await whatsappService.sendListMessage(
           userWhatsapp,
@@ -55,20 +70,16 @@ class NotificationService {
           ]
         );
       }, 2000);
-
     } catch (error) {
       logger.error('Failed to send queue joined notification', { userWhatsapp, error });
     }
   }
 
-  /**
-   * Send reservation confirmation with countdown
-   */
   async sendReservationConfirmation(userWhatsapp: string, stationId: number, reservationMinutes: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      const expiryTime = new Date(Date.now() + (reservationMinutes * 60 * 1000));
-      
+      const expiryTime = new Date(Date.now() + reservationMinutes * 60 * 1000);
+
       const message = `🎉 *SLOT RESERVED!*\n\n` +
         `📍 *${station?.name || 'Charging Station'}*\n` +
         `📍 ${station?.address || 'Loading address...'}\n\n` +
@@ -82,7 +93,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send location if available
       if (station?.latitude && station?.longitude) {
         setTimeout(async () => {
           await whatsappService.sendLocationMessage(
@@ -95,7 +105,6 @@ class NotificationService {
         }, 1000);
       }
 
-      // Send action buttons
       setTimeout(async () => {
         await whatsappService.sendButtonMessage(
           userWhatsapp,
@@ -107,20 +116,16 @@ class NotificationService {
           ]
         );
       }, 3000);
-
     } catch (error) {
       logger.error('Failed to send reservation confirmation', { userWhatsapp, stationId, error });
     }
   }
 
-  /**
-   * Send charging started notification with session tracking
-   */
   async sendChargingStartedNotification(userWhatsapp: string, stationId: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
       const user = await userService.getUserByWhatsAppId(userWhatsapp);
-      
+
       const message = `⚡ *CHARGING STARTED!*\n\n` +
         `📍 *${station?.name || 'Charging Station'}*\n` +
         `🔋 *Vehicle:* ${user?.evModel || 'Your EV'}\n` +
@@ -135,7 +140,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send session management options
       setTimeout(async () => {
         await whatsappService.sendListMessage(
           userWhatsapp,
@@ -161,20 +165,16 @@ class NotificationService {
           ]
         );
       }, 2000);
-
     } catch (error) {
       logger.error('Failed to send charging started notification', { userWhatsapp, stationId, error });
     }
   }
 
-  /**
-   * Send charging completed notification with summary
-   */
   async sendChargingCompletedNotification(userWhatsapp: string, stationId: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
       const sessionSummary = await this.generateSessionSummary(userWhatsapp, stationId);
-      
+
       const message = `✅ *CHARGING COMPLETE!*\n\n` +
         `📍 *${station?.name || 'Charging Station'}*\n` +
         `🕐 *Completed:* ${new Date().toLocaleTimeString()}\n\n` +
@@ -189,7 +189,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send rating and next actions
       setTimeout(async () => {
         await whatsappService.sendButtonMessage(
           userWhatsapp,
@@ -202,7 +201,6 @@ class NotificationService {
         );
       }, 2000);
 
-      // Send next journey options
       setTimeout(async () => {
         await whatsappService.sendListMessage(
           userWhatsapp,
@@ -228,20 +226,16 @@ class NotificationService {
           ]
         );
       }, 4000);
-
     } catch (error) {
       logger.error('Failed to send charging completed notification', { userWhatsapp, stationId, error });
     }
   }
 
-  /**
-   * Send queue left notification
-   */
   async sendQueueLeftNotification(userWhatsapp: string, stationId: number, reason: string): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
       let message = '';
-      
+
       switch (reason) {
         case 'user_cancelled':
           message = `✅ *BOOKING CANCELLED*\n\n` +
@@ -251,7 +245,6 @@ class NotificationService {
             `Other users have been automatically promoted.\n\n` +
             `💡 *Need another station?* Let's find you alternatives!`;
           break;
-          
         case 'expired':
           message = `⏰ *RESERVATION EXPIRED*\n\n` +
             `📍 *${station?.name || 'Charging Station'}*\n` +
@@ -260,7 +253,6 @@ class NotificationService {
             `The slot has been released to the next user.\n\n` +
             `🔄 *Want to try again?* You can rejoin the queue!`;
           break;
-          
         default:
           message = `📝 *QUEUE STATUS UPDATED*\n\n` +
             `📍 *${station?.name || 'Charging Station'}*\n` +
@@ -270,7 +262,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send alternative actions
       setTimeout(async () => {
         await whatsappService.sendButtonMessage(
           userWhatsapp,
@@ -282,23 +273,18 @@ class NotificationService {
           ]
         );
       }, 2000);
-
     } catch (error) {
       logger.error('Failed to send queue left notification', { userWhatsapp, stationId, reason, error });
     }
   }
 
-  /**
-   * Send queue progress notification
-   */
   async sendQueueProgressNotification(userWhatsapp: string, stationId: number, position: number, waitTime: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      const expectedTime = new Date(Date.now() + (waitTime * 60 * 1000)).toLocaleTimeString();
-      
+      const expectedTime = new Date(Date.now() + waitTime * 60 * 1000).toLocaleTimeString();
+      let emoji = '📈';
       let message = '';
-      let emoji = '';
-      
+
       if (position === 1) {
         emoji = '🎯';
         message = `${emoji} *YOU'RE NEXT!*\n\n` +
@@ -316,7 +302,6 @@ class NotificationService {
           `🕐 *Expected:* ${expectedTime}\n\n` +
           `🎉 *You're next in line!* Stay nearby for quick notifications.`;
       } else {
-        emoji = '📈';
         message = `${emoji} *QUEUE PROGRESS UPDATE*\n\n` +
           `📍 *${station?.name || 'Charging Station'}*\n` +
           `📍 *Your Position:* #${position}\n` +
@@ -327,7 +312,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send management options for users in position 1-3
       if (position <= 3) {
         setTimeout(async () => {
           await whatsappService.sendButtonMessage(
@@ -341,68 +325,44 @@ class NotificationService {
           );
         }, 1500);
       }
-
     } catch (error) {
       logger.error('Failed to send queue progress notification', { userWhatsapp, stationId, position, waitTime, error });
     }
   }
 
-  /**
-   * Schedule reservation expiry notification
-   */
   async scheduleReservationExpiry(userWhatsapp: string, stationId: number, expiryTime: Date): Promise<void> {
     try {
       const notificationKey = `expiry_${userWhatsapp}_${stationId}`;
-      
-      // Clear existing notification if any
       const existing = this.scheduledNotifications.get(notificationKey);
-      if (existing) {
-        clearTimeout(existing);
-      }
+      if (existing) clearTimeout(existing);
 
-      // Schedule warning 5 minutes before expiry
-      const warningTime = new Date(expiryTime.getTime() - (5 * 60 * 1000));
+      const warningTime = new Date(expiryTime.getTime() - 5 * 60 * 1000);
       const warningDelay = warningTime.getTime() - Date.now();
-      
       if (warningDelay > 0) {
         const warningTimeout = setTimeout(async () => {
           await this.sendReservationWarning(userWhatsapp, stationId, 5);
         }, warningDelay);
-        
         this.scheduledNotifications.set(`warning_${notificationKey}`, warningTimeout);
       }
 
-      // Schedule final expiry notification
       const expiryDelay = expiryTime.getTime() - Date.now();
       if (expiryDelay > 0) {
         const expiryTimeout = setTimeout(async () => {
           await this.sendReservationExpired(userWhatsapp, stationId);
           this.scheduledNotifications.delete(notificationKey);
         }, expiryDelay);
-        
         this.scheduledNotifications.set(notificationKey, expiryTimeout);
       }
 
-      logger.info('Reservation expiry notifications scheduled', { 
-        userWhatsapp, 
-        stationId, 
-        expiryTime,
-        warningDelay,
-        expiryDelay
-      });
-
+      logger.info('Reservation expiry notifications scheduled', { userWhatsapp, stationId, expiryTime });
     } catch (error) {
       logger.error('Failed to schedule reservation expiry', { userWhatsapp, stationId, expiryTime, error });
     }
   }
 
-  /**
-   * Send reservation warning (5 minutes before expiry)
-   */
   private async sendReservationWarning(userWhatsapp: string, stationId: number, minutesLeft: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      
       const message = `⚠️ *RESERVATION EXPIRING SOON!*\n\n` +
         `📍 *${station?.name || 'Charging Station'}*\n` +
         `⏰ *${minutesLeft} minutes left* to arrive\n\n` +
@@ -411,7 +371,6 @@ class NotificationService {
 
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Send quick action buttons
       setTimeout(async () => {
         await whatsappService.sendButtonMessage(
           userWhatsapp,
@@ -424,7 +383,6 @@ class NotificationService {
         );
       }, 1000);
 
-      // Send location if available
       if (station?.latitude && station?.longitude) {
         setTimeout(async () => {
           await whatsappService.sendLocationMessage(
@@ -436,19 +394,14 @@ class NotificationService {
           );
         }, 2000);
       }
-
     } catch (error) {
       logger.error('Failed to send reservation warning', { userWhatsapp, stationId, minutesLeft, error });
     }
   }
 
-  /**
-   * Send reservation expired notification
-   */
   private async sendReservationExpired(userWhatsapp: string, stationId: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      
       const message = `💔 *RESERVATION EXPIRED*\n\n` +
         `📍 *${station?.name || 'Charging Station'}*\n` +
         `🕐 *Expired:* ${new Date().toLocaleTimeString()}\n\n` +
@@ -469,27 +422,21 @@ class NotificationService {
           ]
         );
       }, 2000);
-
     } catch (error) {
       logger.error('Failed to send reservation expired notification', { userWhatsapp, stationId, error });
     }
   }
 
-  /**
-   * Notify station owner about queue events
-   */
   async notifyStationOwner(stationId: number, eventType: string, data: any): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
       const ownerWhatsapp = station?.ownerWhatsappId;
-      
       if (!ownerWhatsapp) {
         logger.warn('No owner WhatsApp ID found for station', { stationId });
         return;
       }
 
       let message = '';
-      
       switch (eventType) {
         case 'queue_joined':
           message = `📈 *New Customer*\n\n` +
@@ -498,7 +445,6 @@ class NotificationService {
             `📍 Position: #${data.position}\n` +
             `🕐 ${new Date().toLocaleTimeString()}`;
           break;
-          
         case 'queue_left':
           message = `📉 *Customer Left*\n\n` +
             `🏢 *${station.name}*\n` +
@@ -506,21 +452,18 @@ class NotificationService {
             `📍 Was position: #${data.position}\n` +
             `📝 Reason: ${data.reason}`;
           break;
-          
         case 'slot_reserved':
           message = `🎯 *Slot Reserved*\n\n` +
             `🏢 *${station.name}*\n` +
             `👤 Customer reserved slot\n` +
             `⏰ Expires: ${data.expiryTime.toLocaleTimeString()}`;
           break;
-          
         case 'charging_started':
           message = `⚡ *Charging Started*\n\n` +
             `🏢 *${station.name}*\n` +
             `👤 Customer started charging\n` +
             `🕐 ${new Date().toLocaleTimeString()}`;
           break;
-          
         case 'charging_completed':
           message = `✅ *Session Complete*\n\n` +
             `🏢 *${station.name}*\n` +
@@ -533,15 +476,11 @@ class NotificationService {
         await whatsappService.sendTextMessage(ownerWhatsapp, message);
         logger.info('Station owner notified', { stationId, ownerWhatsapp, eventType });
       }
-
     } catch (error) {
       logger.error('Failed to notify station owner', { stationId, eventType, data, error });
     }
   }
 
-  /**
-   * Send session-related notifications
-   */
   async sendSessionStartNotification(userWhatsapp: string, session: any): Promise<void> {
     try {
       const message = `⚡ *SESSION MONITORING ACTIVE*\n\n` +
@@ -551,9 +490,7 @@ class NotificationService {
         `🔔 *Auto-notification when 80% charged*\n` +
         `⚡ *Auto-stop when target reached*\n\n` +
         `💡 *Tip:* Keep your phone nearby for important updates!`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session start notification', { userWhatsapp, session, error });
     }
@@ -567,9 +504,7 @@ class NotificationService {
         `⏰ *Your slot is reserved for 10 minutes*\n` +
         `🔄 *Charging will auto-resume if not manually stopped*\n\n` +
         `💡 *Resume anytime from your session controls*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session paused notification', { userWhatsapp, session, error });
     }
@@ -583,9 +518,7 @@ class NotificationService {
         `⚡ *Charging is now active again*\n` +
         `📊 *Live monitoring continues*\n` +
         `🔔 *You'll receive progress updates*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session resumed notification', { userWhatsapp, session, error });
     }
@@ -600,15 +533,13 @@ class NotificationService {
         `💰 *Cost so far:* ₹${progress.currentCost}\n` +
         `⏱️ *Est. completion:* ${progress.estimatedCompletion}\n\n` +
         `${progress.statusMessage}`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session progress notification', { userWhatsapp, session, progress, error });
     }
   }
 
-    async sendSessionCompletedNotification(userWhatsapp: string, session: any, summary: any): Promise<void> {
+  async sendSessionCompletedNotification(userWhatsapp: string, session: any, summary: any): Promise<void> {
     try {
       const summaryText = `🔋 *Charging Complete!*\n\n` +
         `⚡ *${session.stationName || 'Station'}*\n` +
@@ -618,9 +549,7 @@ class NotificationService {
         `💰 Total Cost: ₹${summary.totalCost}\n` +
         `📊 Efficiency: ${summary.efficiency}%\n\n` +
         `Thank you for using our service! 🚗⚡`;
-
       await whatsappService.sendTextMessage(userWhatsapp, summaryText);
-      
       logger.info('Session completion notification sent', { userWhatsapp, sessionId: session.id });
     } catch (error) {
       logger.error('Failed to send session completion notification', { userWhatsapp, error });
@@ -635,9 +564,7 @@ class NotificationService {
         `🔋 *Current:* ${session.currentBatteryLevel}%\n\n` +
         `⚡ *Charging will continue to your new target*\n` +
         `📊 *Updated estimates will be sent*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session extended notification', { userWhatsapp, session, newTarget, error });
     }
@@ -652,28 +579,21 @@ class NotificationService {
         `📈 *Expected:* ${session.chargingRate} kW\n\n` +
         `🔧 *Station team has been notified*\n` +
         `📞 *Contact support if issues persist*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send anomaly alert', { userWhatsapp, session, status, error });
     }
   }
 
-  /**
-   * Advanced notification methods
-   */
   async sendAvailabilityAlert(userWhatsapp: string, stationId: number, analytics: any): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      
       const message = `🚨 *STATION AVAILABLE!*\n\n` +
         `📍 *${station?.name}*\n` +
         `🟢 *Queue Length:* ${analytics.currentQueueLength} people\n` +
         `⏱️ *Wait Time:* ${analytics.estimatedWaitTime} minutes\n\n` +
         `⚡ *Perfect time to charge!*\n` +
         `🚀 *Book now for quick access*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
 
       setTimeout(async () => {
@@ -687,7 +607,6 @@ class NotificationService {
           ]
         );
       }, 1000);
-
     } catch (error) {
       logger.error('Failed to send availability alert', { userWhatsapp, stationId, analytics, error });
     }
@@ -696,17 +615,16 @@ class NotificationService {
   async sendPromotionNotification(userWhatsapp: string, stationId: number, newPosition: number): Promise<void> {
     try {
       const station = await this.getStationDetails(stationId);
-      
       const message = `📈 *QUEUE POSITION UPDATED!*\n\n` +
         `📍 *${station?.name}*\n` +
         `🎯 *New Position:* #${newPosition}\n` +
         `⏱️ *You moved up in the queue!*\n\n` +
-        `${newPosition === 1 ? '🎉 *You\'re next!* Get ready for your slot.' : 
-          newPosition === 2 ? '🔥 *Almost there!* You\'re second in line.' : 
-          '📊 *Progress!* You\'re getting closer.'}`;
-
+        (newPosition === 1
+          ? '🎉 *You\'re next!* Get ready for your slot.'
+          : newPosition === 2
+          ? '🔥 *Almost there!* You\'re second in line.'
+          : '📊 *Progress!* You\'re getting closer.');
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send promotion notification', { userWhatsapp, stationId, newPosition, error });
     }
@@ -719,17 +637,18 @@ class NotificationService {
         `⏱️ *Est. completion:* ${status.estimatedCompletion}\n\n` +
         `💡 *Your EV is almost ready!*\n` +
         `🚗 *Plan your departure accordingly*`;
-
       await whatsappService.sendTextMessage(userWhatsapp, message);
-
     } catch (error) {
       logger.error('Failed to send session reminder', { userWhatsapp, stationId, status, error });
     }
   }
 
-  // Helper methods
+  // ─── CORE HELPER: getStationDetails ────────────────────────────────────────
 
-  async getStationDetails(stationId: number): Promise<any> {
+  /**
+   * Fetch station details and optionally compute distance from user
+   */
+  async getStationDetails(stationId: number, userLat?: number, userLng?: number): Promise<any> {
     try {
       const station = await db
         .select({
@@ -742,7 +661,6 @@ class NotificationService {
           availableSlots: chargingStations.availableSlots,
           totalPorts: chargingStations.totalPorts,
           availablePorts: chargingStations.availablePorts,
-          pricePerUnit: chargingStations.pricePerUnit,
           pricePerKwh: chargingStations.pricePerKwh,
           connectorTypes: chargingStations.connectorTypes,
           amenities: chargingStations.amenities,
@@ -751,9 +669,9 @@ class NotificationService {
           averageRating: chargingStations.averageRating,
           totalReviews: chargingStations.totalReviews,
           reviewCount: chargingStations.reviewCount,
-          distance: chargingStations.distance,
           isActive: chargingStations.isActive,
-          lastUpdated: chargingStations.updatedAt
+          updatedAt: chargingStations.updatedAt,
+          ownerWhatsappId: chargingStations.ownerWhatsappId,
         })
         .from(chargingStations)
         .where(eq(chargingStations.id, stationId))
@@ -764,50 +682,49 @@ class NotificationService {
         return null;
       }
 
-      const stationData = station[0];
+      const data = station[0];
 
-      // Calculate additional metrics using available slots
-      const slots = stationData.availableSlots || stationData.availablePorts || 0;
-      const totalSlots = stationData.totalSlots || stationData.totalPorts || 1;
-      
-      const utilization = totalSlots > 0 
-        ? Math.round(((totalSlots - slots) / totalSlots) * 100)
-        : 0;
+      // Compute distance if user location is provided
+      let distance: number | null = null;
+      if (userLat != null && userLng != null && data.latitude && data.longitude) {
+        distance = calculateDistance(
+          userLat,
+          userLng,
+          Number(data.latitude),
+          Number(data.longitude)
+        );
+      }
 
-      const availability = slots > 0 ? 'Available' 
-        : totalSlots > 0 ? 'Full' 
-        : 'Offline';
-
-      // Use proper field names
-      const rating = stationData.rating || stationData.averageRating || 0;
-      const reviews = stationData.totalReviews || stationData.reviewCount || 0;
-      const price = stationData.pricePerUnit || stationData.pricePerKwh || 0;
+      // Normalize metrics
+      const total = data.totalSlots || data.totalPorts || 1;
+      const available = data.availableSlots || data.availablePorts || 0;
+      const utilization = total > 0 ? Math.round(((total - available) / total) * 100) : 0;
 
       return {
-        ...stationData,
+        ...data,
+        distance,
         utilization,
-        availability,
-        isAvailable: slots > 0,
+        availability: available > 0 ? 'Available' : total > 0 ? 'Queue Available' : 'Unavailable',
+        isAvailable: available > 0,
         isBusy: utilization > 80,
-        priceDisplay: `₹${price}/kWh`,
-        distanceDisplay: stationData.distance ? `${Number(stationData.distance).toFixed(1)} km` : 'Unknown',
-        ratingDisplay: rating ? `${Number(rating).toFixed(1)} ⭐` : 'No ratings',
-        slotsDisplay: `${slots}/${totalSlots} available`,
-        finalRating: rating,
-        finalReviews: reviews
+        priceDisplay: `₹${data.pricePerKwh || 0}/kWh`,
+        distanceDisplay: distance !== null ? `${distance} km` : 'Unknown',
+        ratingDisplay: data.rating || data.averageRating
+          ? `${Number(data.rating || data.averageRating).toFixed(1)} ⭐`
+          : 'No ratings',
+        slotsDisplay: `${available}/${total} available`,
+        finalRating: data.rating || data.averageRating || 0,
+        finalReviews: data.totalReviews || data.reviewCount || 0,
       };
-
     } catch (error) {
       logger.error('Failed to get station details', { stationId, error });
       return null;
     }
   }
 
-
   private formatQueueJoinedMessage(queuePosition: any, station: any): string {
     const waitTime = queuePosition.estimatedWaitMinutes;
-    const expectedTime = new Date(Date.now() + (waitTime * 60 * 1000)).toLocaleTimeString();
-    
+    const expectedTime = new Date(Date.now() + waitTime * 60 * 1000).toLocaleTimeString();
     return `🎉 *BOOKING CONFIRMED!*\n\n` +
       `📍 *${station?.name || 'Charging Station'}*\n` +
       `🎯 *Your Position:* #${queuePosition.position}\n` +
@@ -822,30 +739,22 @@ class NotificationService {
   }
 
   private async generateSessionSummary(userWhatsapp: string, stationId: number): Promise<any> {
-    // In real implementation, get from session service
+    // TODO: Replace with real session data
     return {
       energyDelivered: 25.5,
       duration: 45,
       totalCost: 306,
-      batteryLevel: 85
+      batteryLevel: 85,
     };
   }
 
   private getProgressTip(position: number, waitTime: number): string {
-    if (position <= 3) {
-      return 'Stay nearby for quick notifications!';
-    } else if (waitTime < 30) {
-      return 'Great time to grab a coffee nearby!';
-    } else if (waitTime < 60) {
-      return 'Perfect for a quick meal or errands!';
-    } else {
-      return 'Consider exploring nearby attractions!';
-    }
+    if (position <= 3) return 'Stay nearby for quick notifications!';
+    if (waitTime < 30) return 'Great time to grab a coffee nearby!';
+    if (waitTime < 60) return 'Perfect for a quick meal or errands!';
+    return 'Consider exploring nearby attractions!';
   }
 
-  /**
-   * Clear all scheduled notifications for a user
-   */
   clearUserNotifications(userWhatsapp: string): void {
     for (const [key, timeout] of this.scheduledNotifications.entries()) {
       if (key.includes(userWhatsapp)) {
@@ -853,17 +762,13 @@ class NotificationService {
         this.scheduledNotifications.delete(key);
       }
     }
-    
     logger.info('Cleared scheduled notifications for user', { userWhatsapp });
   }
 
-  /**
-   * Get notification statistics
-   */
   getNotificationStats(): any {
     return {
       scheduledNotifications: this.scheduledNotifications.size,
-      activeKeys: Array.from(this.scheduledNotifications.keys())
+      activeKeys: Array.from(this.scheduledNotifications.keys()),
     };
   }
 }
