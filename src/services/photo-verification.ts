@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger';
 import { whatsappService } from './whatsapp';
 import ocrProcessor from '../utils/ocr-processor';
+import { OCR_CONFIG } from '../config/ocr-config';
 
 /**
  * Photo Verification Service
@@ -38,10 +39,6 @@ interface ConsumptionValidation {
   warnings?: string[];
   error?: string;
 }
-
-const MAX_ATTEMPTS = 3;
-const MIN_CONFIDENCE = 40; // Minimum OCR confidence percentage
-const STATE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
 class PhotoVerificationService {
   private verificationStates = new Map<string, VerificationState>();
@@ -176,6 +173,7 @@ class PhotoVerificationService {
 
     const reading = parseFloat(input.trim());
     const validation = ocrProcessor.validateReading(reading);
+    
     if (!validation.valid) {
       await whatsappService.sendTextMessage(
         userWhatsapp,
@@ -199,7 +197,13 @@ class PhotoVerificationService {
     state.lastConfidence = 0;
     this.setVerificationState(userWhatsapp, state);
 
-    await this.sendReadingConfirmation(userWhatsapp, reading, type, MAX_ATTEMPTS);
+    await this.sendReadingConfirmation(
+      userWhatsapp,
+      reading,
+      type,
+      OCR_CONFIG.MAX_ATTEMPTS,
+      0
+    );
     return true;
   }
 
@@ -207,7 +211,7 @@ class PhotoVerificationService {
 
   getVerificationState(userWhatsapp: string): VerificationState | null {
     const state = this.verificationStates.get(userWhatsapp);
-    if (state && Date.now() - state.timestamp.getTime() > STATE_EXPIRY_MS) {
+    if (state && Date.now() - state.timestamp.getTime() > OCR_CONFIG.STATE_EXPIRY_MS) {
       this.clearVerificationState(userWhatsapp);
       return null;
     }
@@ -225,7 +229,7 @@ class PhotoVerificationService {
   cleanupExpiredStates(): void {
     const now = Date.now();
     for (const [whatsappId, state] of this.verificationStates.entries()) {
-      if (now - state.timestamp.getTime() > STATE_EXPIRY_MS) {
+      if (now - state.timestamp.getTime() > OCR_CONFIG.STATE_EXPIRY_MS) {
         this.verificationStates.delete(whatsappId);
         logger.info('Cleaned up expired verification state', { whatsappId });
       }
@@ -270,18 +274,23 @@ class PhotoVerificationService {
     });
 
     const ocrResult = await ocrProcessor.extractKwhReading(imageBuffer);
+    
     if (!ocrResult.success || ocrResult.reading === undefined) {
       return await this.handleOCRFailure(userWhatsapp, state, type, ocrResult.error);
     }
 
-    if (ocrResult.confidence !== undefined && ocrResult.confidence < MIN_CONFIDENCE) {
-      return await this.handleLowConfidence(userWhatsapp, state, type, ocrResult.confidence);
+    const confidence = ocrResult.confidence || 0;
+    
+    // Check if confidence is below minimum threshold
+    if (confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
+      return await this.handleLowConfidence(userWhatsapp, state, type, confidence);
     }
 
     state.lastReading = ocrResult.reading;
-    state.lastConfidence = ocrResult.confidence;
+    state.lastConfidence = confidence;
     this.setVerificationState(userWhatsapp, state);
 
+    // Additional validation for end readings
     if (type === 'end') {
       const validationResult = await this.validateConsumption(state.sessionId, ocrResult.reading);
       if (!validationResult.isValid) {
@@ -301,16 +310,23 @@ class PhotoVerificationService {
         ocrResult.reading,
         validationResult.consumption!,
         state.attemptCount,
+        confidence,
         validationResult.warnings
       );
     } else {
-      await this.sendReadingConfirmation(userWhatsapp, ocrResult.reading, type, state.attemptCount);
+      await this.sendReadingConfirmation(
+        userWhatsapp,
+        ocrResult.reading,
+        type,
+        state.attemptCount,
+        confidence
+      );
     }
 
     return {
       success: true,
       reading: ocrResult.reading,
-      confidence: ocrResult.confidence,
+      confidence,
       message: `${type} reading extracted. Awaiting confirmation.`,
     };
   }
@@ -385,6 +401,7 @@ class PhotoVerificationService {
     logger.info(`${type} reading confirmed`, {
       userWhatsapp,
       reading: state.lastReading,
+      confidence: state.lastConfidence,
       sessionId: state.sessionId,
     });
 
@@ -398,7 +415,7 @@ class PhotoVerificationService {
       return;
     }
 
-    if (state.attemptCount >= MAX_ATTEMPTS) {
+    if (state.attemptCount >= OCR_CONFIG.MAX_ATTEMPTS) {
       await this.fallbackToManualEntry(userWhatsapp, state, type);
       return;
     }
@@ -421,6 +438,7 @@ class PhotoVerificationService {
 
     const startReading = parseFloat(session.startMeterReading);
     const result = ocrProcessor.calculateConsumption(startReading, endReading);
+    
     if (!result.valid) {
       return { isValid: false, error: result.error };
     }
@@ -447,20 +465,18 @@ class PhotoVerificationService {
 
   private async sendStartPhotoRequest(userWhatsapp: string, attemptCount: number): Promise<void> {
     const base = '📸 *Please take a photo of your charging dashboard*\n\n';
-    const tips =
-      attemptCount === 0
-        ? '🎯 *Tips for best results:*\n• Ensure good lighting\n• Focus clearly on the kWh display\n• Avoid glare or reflections\n• Make sure numbers are visible\n\n📊 We need the *current kWh reading* to start your session.'
-        : `📸 *Let's try again!* (Attempt ${attemptCount + 1} of ${MAX_ATTEMPTS})\n\n💡 *Please ensure:*\n• Better lighting\n• Clear focus on kWh display\n• No glare or reflections\n• Numbers are sharp and readable`;
+    const tips = attemptCount === 0
+      ? `🎯 *Tips for best results:*\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.lighting}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.focus}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.visible}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.numbers}\n\n📊 We need the *current kWh reading* to start your session.`
+      : `📸 *Let's try again!* (Attempt ${attemptCount + 1} of ${OCR_CONFIG.MAX_ATTEMPTS})\n\n💡 *Please ensure:*\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.lighting}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.focus}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.steady}`;
 
     await whatsappService.sendTextMessage(userWhatsapp, base + tips);
   }
 
   private async sendEndPhotoRequest(userWhatsapp: string, attemptCount: number): Promise<void> {
     const base = '📸 *Please take a photo of your FINAL charging reading*\n\n';
-    const tips =
-      attemptCount === 0
-        ? '🎯 *Capture the final kWh display:*\n• Same dashboard as start photo\n• Clear, focused image\n• Good lighting\n• All numbers visible\n\n📊 This will calculate your actual consumption.'
-        : `📸 *Let's try again!* (Attempt ${attemptCount + 1} of ${MAX_ATTEMPTS})\n\n💡 *Please ensure:*\n• Clear focus on final kWh reading\n• Better lighting conditions\n• No blur or glare`;
+    const tips = attemptCount === 0
+      ? `🎯 *Capture the final kWh display:*\n• Same dashboard as start photo\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.focus}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.lighting}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.visible}\n\n📊 This will calculate your actual consumption.`
+      : `📸 *Let's try again!* (Attempt ${attemptCount + 1} of ${OCR_CONFIG.MAX_ATTEMPTS})\n\n💡 *Please ensure:*\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.focus}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.lighting}\n• ${OCR_CONFIG.MESSAGES.RETRY_TIPS.numbers}`;
 
     await whatsappService.sendTextMessage(userWhatsapp, base + tips);
   }
@@ -469,10 +485,15 @@ class PhotoVerificationService {
     userWhatsapp: string,
     reading: number,
     type: 'start' | 'end',
-    attemptCount: number
+    attemptCount: number,
+    confidence: number
   ): Promise<void> {
     const formatted = ocrProcessor.formatReading(reading);
-    const message = `✅ *Reading Detected!*\n\n📊 *${type === 'start' ? 'Start' : 'Final'} Reading:* ${formatted}\n\n❓ *Is this correct?*`;
+    const confidenceWarning = ocrProcessor.shouldWarnLowConfidence(confidence)
+      ? `\n⚠️ *Low confidence (${confidence.toFixed(0)}%)* - Please verify carefully\n`
+      : '';
+    
+    const message = `✅ *Reading Detected!*\n\n📊 *${type === 'start' ? 'Start' : 'Final'} Reading:* ${formatted}${confidenceWarning}\n❓ *Is this correct?*`;
 
     await whatsappService.sendButtonMessage(
       userWhatsapp,
@@ -490,12 +511,19 @@ class PhotoVerificationService {
     endReading: number,
     consumption: number,
     attemptCount: number,
+    confidence: number,
     warnings?: string[]
   ): Promise<void> {
-    let message = `✅ *Final Reading Detected!*\n\n📊 *Reading:* ${ocrProcessor.formatReading(endReading)}\n⚡ *Consumption:* ${consumption.toFixed(2)} kWh\n\n`;
+    const confidenceWarning = ocrProcessor.shouldWarnLowConfidence(confidence)
+      ? `⚠️ *Low confidence (${confidence.toFixed(0)}%)* - Please verify carefully\n\n`
+      : '';
+    
+    let message = `✅ *Final Reading Detected!*\n\n${confidenceWarning}📊 *Reading:* ${ocrProcessor.formatReading(endReading)}\n⚡ *Consumption:* ${consumption.toFixed(2)} kWh\n\n`;
+    
     if (warnings?.length) {
       message += `⚠️ *Notices:*\n${warnings.map(w => `• ${w}`).join('\n')}\n\n`;
     }
+    
     message += `❓ *Confirm to complete your session?*`;
 
     await whatsappService.sendButtonMessage(
@@ -517,10 +545,9 @@ class PhotoVerificationService {
     durationMinutes: number,
     warnings?: string[]
   ): Promise<void> {
-    const durationText =
-      durationMinutes >= 60
-        ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
-        : `${durationMinutes}m`;
+    const durationText = durationMinutes >= 60
+      ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
+      : `${durationMinutes}m`;
 
     let message = `🎉 *Charging Session Completed!*\n\n📊 *Start Reading:* ${ocrProcessor.formatReading(startReading)}\n📊 *End Reading:* ${ocrProcessor.formatReading(endReading)}\n⚡ *Energy Consumed:* ${consumption.toFixed(2)} kWh\n⏱️ *Duration:* ${durationText}\n\n💰 *Your bill is being calculated...*`;
 
@@ -539,13 +566,16 @@ class PhotoVerificationService {
     type: 'start' | 'end',
     error?: string
   ): Promise<PhotoVerificationResult> {
-    if (state.attemptCount >= MAX_ATTEMPTS) {
+    if (state.attemptCount >= OCR_CONFIG.MAX_ATTEMPTS) {
       await this.fallbackToManualEntry(userWhatsapp, state, type);
-      return { success: false, message: 'Max attempts reached. Falling back to manual entry.' };
+      return { 
+        success: false, 
+        message: 'Max attempts reached. Falling back to manual entry.' 
+      };
     }
 
     const suggestions = ocrProcessor.getRetrySuggestions();
-    const message = `❌ *Couldn't read the display*\n\n${error || 'Please retake the photo'}\n\n💡 *Tips:*\n${suggestions.join('\n')}\n\n📸 *Attempt ${state.attemptCount} of ${MAX_ATTEMPTS}*`;
+    const message = `❌ *Couldn't read the display*\n\n${error || 'Please retake the photo'}\n\n💡 *Tips:*\n${suggestions.join('\n')}\n\n📸 *Attempt ${state.attemptCount} of ${OCR_CONFIG.MAX_ATTEMPTS}*`;
 
     await whatsappService.sendTextMessage(userWhatsapp, message);
     return {
@@ -562,15 +592,23 @@ class PhotoVerificationService {
     type: 'start' | 'end',
     confidence: number
   ): Promise<PhotoVerificationResult> {
-    if (state.attemptCount >= MAX_ATTEMPTS) {
+    if (state.attemptCount >= OCR_CONFIG.MAX_ATTEMPTS) {
       await this.fallbackToManualEntry(userWhatsapp, state, type);
-      return { success: false, message: 'Max attempts reached. Falling back to manual entry.' };
+      return { 
+        success: false, 
+        message: 'Max attempts reached. Falling back to manual entry.' 
+      };
     }
 
-    const message = `⚠️ *Low Reading Confidence*\n\nWe detected a reading but confidence is low (${confidence}%)\n\n💡 *Please retake with:*\n📸 Better lighting\n🔍 Clearer focus\n📱 Steadier camera\n\n*Attempt ${state.attemptCount} of ${MAX_ATTEMPTS}*`;
+    const tips = OCR_CONFIG.MESSAGES.RETRY_TIPS;
+    const message = `⚠️ *Low Reading Confidence*\n\nWe detected a reading but confidence is low (${confidence.toFixed(0)}%)\n\n💡 *Please retake with:*\n• ${tips.lighting}\n• ${tips.focus}\n• ${tips.steady}\n\n*Attempt ${state.attemptCount} of ${OCR_CONFIG.MAX_ATTEMPTS}*`;
 
     await whatsappService.sendTextMessage(userWhatsapp, message);
-    return { success: false, message: `Low confidence: ${confidence}%`, shouldRetry: true };
+    return { 
+      success: false, 
+      message: `Low confidence: ${confidence.toFixed(0)}%`, 
+      shouldRetry: true 
+    };
   }
 
   private async fallbackToManualEntry(
@@ -587,12 +625,17 @@ class PhotoVerificationService {
       })
       .where(eq(chargingSessions.sessionId, state.sessionId));
 
-    const message = `📝 *Manual Entry Required*\n\nWe couldn't read the display after ${MAX_ATTEMPTS} attempts.\n\nPlease *type* the ${type === 'start' ? 'current' : 'final'} kWh reading from your dashboard.\n\n📊 *Example:* 1245.8\n\n💡 *Make sure to enter the exact reading shown.*`;
+    const message = `📝 *Manual Entry Required*\n\nWe couldn't read the display after ${OCR_CONFIG.MAX_ATTEMPTS} attempts.\n\nPlease *type* the ${type === 'start' ? 'current' : 'final'} kWh reading from your dashboard.\n\n📊 *Example:* 1245.8\n\n💡 *Make sure to enter the exact reading shown.*`;
 
     await whatsappService.sendTextMessage(userWhatsapp, message);
     state.waitingFor = null;
     this.setVerificationState(userWhatsapp, state);
-    logger.info('Fallback to manual entry', { userWhatsapp, type, sessionId: state.sessionId });
+    logger.info('Fallback to manual entry', { 
+      userWhatsapp, 
+      type, 
+      sessionId: state.sessionId,
+      attempts: state.attemptCount 
+    });
   }
 }
 

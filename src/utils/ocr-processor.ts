@@ -1,5 +1,6 @@
 import Tesseract from 'tesseract.js';
 import sharp from 'sharp';
+import { OCR_CONFIG } from '../config/ocr-config';
 
 /**
  * OCR Processor for extracting kWh readings from dashboard photos
@@ -25,7 +26,7 @@ interface PreprocessOptions {
  */
 export async function extractKwhReading(
   imageBuffer: Buffer,
-  options: PreprocessOptions = {}
+  options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
 ): Promise<OCRResult> {
   try {
     // Step 1: Preprocess image for better OCR accuracy
@@ -85,13 +86,13 @@ export async function extractKwhReading(
  */
 export async function preprocessImage(
   imageBuffer: Buffer,
-  options: PreprocessOptions = {}
+  options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
 ): Promise<Buffer> {
   try {
     const {
-      enhanceContrast = true,
-      denoise = true,
-      targetSize = { width: 1920, height: 1080 },
+      enhanceContrast = OCR_CONFIG.PREPROCESSING.enhanceContrast,
+      denoise = OCR_CONFIG.PREPROCESSING.denoise,
+      targetSize = OCR_CONFIG.PREPROCESSING.targetSize,
     } = options;
 
     let processor = sharp(imageBuffer);
@@ -145,7 +146,7 @@ async function performOCR(imageBuffer: Buffer): Promise<{
   error?: string;
 }> {
   try {
-    const worker = await Tesseract.createWorker('eng', 1, {
+    const worker = await Tesseract.createWorker(OCR_CONFIG.TESSERACT.language, 1, {
       logger: (m) => {
         if (m.status === 'recognizing text') {
           console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
@@ -155,7 +156,7 @@ async function performOCR(imageBuffer: Buffer): Promise<{
 
     // Configure Tesseract for number recognition
     await worker.setParameters({
-      tessedit_char_whitelist: '0123456789.kKwWhH ',
+      tessedit_char_whitelist: OCR_CONFIG.TESSERACT.whitelist,
       tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
     });
 
@@ -168,7 +169,7 @@ async function performOCR(imageBuffer: Buffer): Promise<{
     console.log('📝 OCR Raw Text:', text);
     console.log('📊 OCR Confidence:', confidence);
 
-    if (confidence < 30) {
+    if (confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
       return {
         success: false,
         error: 'Low confidence OCR result. Please retake photo with better lighting and focus.',
@@ -240,10 +241,10 @@ function extractReadingFromText(text: string): number | null {
   // Pattern 4: Extract all numbers and find the most likely candidate
   const allNumbers = cleanText.match(/\d+\.?\d*/g);
   if (allNumbers && allNumbers.length > 0) {
-    // Filter numbers that could be kWh readings (between 100 and 99999)
+    // Filter numbers that could be kWh readings
     const candidates = allNumbers
       .map(n => parseFloat(n))
-      .filter(n => !isNaN(n) && n >= 100 && n <= 99999);
+      .filter(n => !isNaN(n) && n >= OCR_CONFIG.VALID_RANGE.min && n <= OCR_CONFIG.VALID_RANGE.max);
     
     if (candidates.length === 1) {
       console.log('✅ Found reading (Pattern 4):', candidates[0]);
@@ -283,25 +284,24 @@ export function validateReading(reading: number): {
     };
   }
 
-  // Check reasonable range for meter readings (100 - 99,999 kWh)
-  // Most charging station meters start at 0 and go up to 99,999
-  if (reading < 100) {
+  // Check reasonable range for meter readings
+  if (reading < OCR_CONFIG.VALID_RANGE.min) {
     return {
       valid: false,
-      error: 'Reading too low: Meter readings are typically above 100 kWh',
+      error: `Reading too low: Meter readings are typically above ${OCR_CONFIG.VALID_RANGE.min} kWh`,
     };
   }
 
-  if (reading > 99999) {
+  if (reading > OCR_CONFIG.VALID_RANGE.max) {
     return {
       valid: false,
       error: 'Reading too high: Please verify the reading',
     };
   }
 
-  // Check decimal places (max 2)
+  // Check decimal places
   const decimalPlaces = (reading.toString().split('.')[1] || '').length;
-  if (decimalPlaces > 2) {
+  if (decimalPlaces > OCR_CONFIG.MAX_DECIMAL_PLACES) {
     return {
       valid: false,
       error: 'Invalid reading: Too many decimal places',
@@ -351,18 +351,18 @@ export function calculateConsumption(
 
   const consumption = endReading - startReading;
 
-  // Check 2: Reasonable consumption range (0.1 - 100 kWh per session)
-  if (consumption < 0.1) {
+  // Check 2: Reasonable consumption range
+  if (consumption < OCR_CONFIG.CONSUMPTION_RANGE.min) {
     return {
       valid: false,
-      error: 'Consumption too low: Minimum 0.1 kWh',
+      error: `Consumption too low: Minimum ${OCR_CONFIG.CONSUMPTION_RANGE.min} kWh`,
     };
   }
 
-  if (consumption > 100) {
+  if (consumption > OCR_CONFIG.CONSUMPTION_RANGE.max) {
     return {
       valid: false,
-      error: 'Consumption exceeds typical maximum (100 kWh). Please verify readings.',
+      error: `Consumption exceeds typical maximum (${OCR_CONFIG.CONSUMPTION_RANGE.max} kWh). Please verify readings.`,
     };
   }
 
@@ -436,24 +436,39 @@ export function formatReading(reading: number): string {
  */
 export function getRetrySuggestions(confidence?: number, rawText?: string): string[] {
   const suggestions: string[] = [];
+  const tips = OCR_CONFIG.MESSAGES.RETRY_TIPS;
 
-  if (!confidence || confidence < 50) {
-    suggestions.push('📸 Ensure better lighting - avoid shadows and glare');
-    suggestions.push('🔍 Focus clearly on the kWh display');
-    suggestions.push('📱 Hold camera steady and closer to the display');
+  if (!confidence || confidence < OCR_CONFIG.MESSAGES.LOW_CONFIDENCE_THRESHOLD) {
+    suggestions.push(tips.lighting);
+    suggestions.push(tips.focus);
+    suggestions.push(tips.steady);
   }
 
   if (rawText && rawText.length < 5) {
-    suggestions.push('🎯 Make sure the entire kWh reading is visible');
-    suggestions.push('🔢 Ensure numbers are clearly visible and not blurred');
+    suggestions.push(tips.visible);
+    suggestions.push(tips.numbers);
   }
 
   if (suggestions.length === 0) {
-    suggestions.push('📸 Retake photo with better angle and lighting');
-    suggestions.push('🔍 Ensure the display shows the kWh reading clearly');
+    suggestions.push(tips.lighting);
+    suggestions.push(tips.visible);
   }
 
   return suggestions;
+}
+
+/**
+ * Helper: Check if confidence should trigger a warning
+ */
+export function shouldWarnLowConfidence(confidence: number): boolean {
+  return confidence < OCR_CONFIG.MIN_DISPLAY_CONFIDENCE;
+}
+
+/**
+ * Helper: Check if confidence is good quality
+ */
+export function isGoodConfidence(confidence: number): boolean {
+  return confidence >= OCR_CONFIG.GOOD_CONFIDENCE;
 }
 
 export default {
@@ -464,4 +479,6 @@ export default {
   validateConsumptionWithContext,
   formatReading,
   getRetrySuggestions,
+  shouldWarnLowConfidence,
+  isGoodConfidence,
 };
