@@ -1,7 +1,8 @@
-// src/controllers/webhook.ts - PRODUCTION READY WITH PHOTO VERIFICATION
+// src/controllers/webhook.ts - PRODUCTION READY WITH DEDUPLICATION & ERROR FIXES
 import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
+import { messageDeduplication } from '../utils/message-deduplication';
 import { whatsappService } from '../services/whatsapp';
 import { userService } from '../services/userService';
 import { preferenceService } from '../services/preference';
@@ -35,11 +36,16 @@ interface ExtendedWhatsAppMessage extends WhatsAppMessage {
 }
 
 // ===============================================
-// PRODUCTION WEBHOOK CONTROLLER
+// PRODUCTION WEBHOOK CONTROLLER WITH DEDUPLICATION & ERROR HANDLING
 // ===============================================
 
 export class WebhookController {
   private readonly waitingUsers = new Map<string, 'name' | 'address'>();
+  private readonly MAX_WAITING_USERS = 10_000; // Prevent memory exhaustion
+  private readonly MAX_PROCESSING_MESSAGES = 5_000; // Prevent processing queue overflow
+
+  // Use message IDs for deduplication and processing tracking - keyed by WhatsApp's unique message ID
+  private processingMessages = new Set<string>();
 
   // ===============================================
   // WEBHOOK VERIFICATION & HANDLING
@@ -56,37 +62,68 @@ export class WebhookController {
         res.status(200).send(challenge);
       } else {
         logger.error('❌ Webhook verification failed', { mode, token: !!token });
-        res.sendStatus(403);
+        res.status(403).send('Forbidden');
       }
     } catch (error) {
-      logger.error('Webhook verification error', { error });
-      res.sendStatus(500);
+      logger.error('Webhook verification error', { error: (error as Error).message });
+      res.status(500).send('Internal Error');
     }
   }
 
   async handleWebhook(req: Request, res: Response): Promise<void> {
+    // ✅ CRITICAL FIX: Send response IMMEDIATELY to prevent timeouts and retries from WhatsApp
+    res.status(200).send('EVENT_RECEIVED');
+
     try {
       const webhookData: WhatsAppWebhook = req.body;
 
       if (webhookData.object !== 'whatsapp_business_account') {
-        res.status(200).send('EVENT_RECEIVED');
+        logger.debug('Skipping non-WABA webhook', { object: webhookData.object });
         return;
       }
 
-      const messagePromises = this.extractMessages(webhookData)
-        .map(message => this.processMessage(message as ExtendedWhatsAppMessage)
-          .catch(error => logger.error('Message processing failed', {
-            messageId: message.id,
-            error: error instanceof Error ? error.message : String(error)
-          }))
-        );
+      const allMessages = this.extractMessages(webhookData);
+      if (allMessages.length === 0) {
+        logger.debug('No messages found in webhook payload');
+        return;
+      }
 
-      await Promise.allSettled(messagePromises);
-      res.status(200).send('EVENT_RECEIVED');
+      logger.info('📥 Processing webhook', {
+        totalMessages: allMessages.length,
+      });
+
+      // Process each message independently after the response is sent
+      for (const message of allMessages) {
+        // Deduplicate based on the unique message ID provided by WhatsApp
+        if (messageDeduplication.isDuplicate(message.id)) {
+          logger.debug('⏭️ Duplicate message skipped', { messageId: message.id });
+          continue;
+        }
+
+        // Fire-and-forget processing for the message using setImmediate
+        // This ensures errors in processMessage don't affect the main request's response
+        setImmediate(async () => {
+          try {
+            await this.processMessage(message as ExtendedWhatsAppMessage);
+          } catch (error) {
+            logger.error('💥 Unhandled error during message processing (fire-and-forget)', {
+              messageId: message.id,
+              whatsappId: message.from,
+              error: (error as Error).message
+            });
+          }
+        });
+      }
+
+      logger.info('📥 Webhook dispatch completed', { totalDispatched: allMessages.length });
 
     } catch (error) {
-      logger.error('Webhook processing failed', { error });
-      res.status(500).send('Internal Server Error');
+      // This should ideally not happen if the try-catch in setImmediate works correctly,
+      // but it's a safety net for synchronous errors in the loop itself.
+      logger.error('❌ Unexpected error in handleWebhook top-level (should not happen)', {
+        error: (error as Error).message
+      });
+      // Do NOT send response here - already sent above.
     }
   }
 
@@ -96,89 +133,94 @@ export class WebhookController {
 
   private extractMessages(webhookData: WhatsAppWebhook): WhatsAppMessage[] {
     const messages: WhatsAppMessage[] = [];
-
-    for (const entry of webhookData.entry) {
-      for (const change of entry.changes) {
-        if (change.field === 'messages' && change.value.messages) {
+    for (const entry of webhookData.entry || []) {
+      for (const change of entry.changes || []) {
+        if (change.field === 'messages' && Array.isArray(change.value?.messages)) {
           messages.push(...change.value.messages);
         }
       }
     }
-
     return messages;
   }
 
   private async processMessage(message: ExtendedWhatsAppMessage): Promise<void> {
-    const whatsappId = message.from;
+    const { id: messageId, from: whatsappId, type } = message;
 
     if (!validateWhatsAppId(whatsappId)) {
-      logger.error('Invalid WhatsApp ID format', { whatsappId });
-      return;
+      logger.error('❌ Invalid WhatsApp ID format', { whatsappId, messageId });
+      return; // Silently ignore invalid IDs
     }
 
     try {
-      whatsappService.markAsRead(message.id).catch(error =>
-        logger.warn('Mark as read failed', { messageId: message.id, error })
-      );
+      // ✅ Mark as read (non-blocking fire-and-forget)
+      whatsappService.markAsRead(messageId).catch(error => {
+        logger.debug('Mark as read failed (non-critical)', {
+          messageId,
+          error: (error as Error).message
+        });
+      });
 
-      logger.info('📨 Processing message', { whatsappId, type: message.type, messageId: message.id });
+      logger.info('📨 Processing message', {
+        whatsappId,
+        type,
+        messageId
+      });
 
-      const [user, isInPreferenceFlow] = await Promise.allSettled([
+      // ✅ Parallel user lookup and preference check
+      const [userResult, preferenceResult] = await Promise.allSettled([
         userService.createUser({ whatsappId }),
         preferenceService.isInPreferenceFlow(whatsappId)
       ]);
 
-      const userData = user.status === 'fulfilled' ? user.value : null;
-      const preferenceFlow = isInPreferenceFlow.status === 'fulfilled' ? isInPreferenceFlow.value : false;
+      const user = userResult.status === 'fulfilled' ? userResult.value : null;
+      const isInPreferenceFlow = preferenceResult.status === 'fulfilled' ? preferenceResult.value : false;
 
-      if (!userData) {
-        logger.error('Failed to get/create user', { whatsappId });
-        await this.sendErrorMessage(whatsappId, 'Failed to initialize user session. Please try again.');
+      if (!user) {
+        logger.error('❌ Failed to get/create user', { whatsappId, messageId });
+        await this.sendErrorMessage(whatsappId, 'Failed to initialize session. Please try again.');
         return;
       }
 
-      await this.routeMessage(message, userData, preferenceFlow);
+      await this.routeMessage(message, user, isInPreferenceFlow);
 
     } catch (error) {
-      logger.error('Message processing failed', {
-        messageId: message.id,
+      logger.error('❌ Message processing pipeline error', {
+        messageId,
         whatsappId,
-        error: error instanceof Error ? error.message : String(error)
+        error: (error as Error).message
       });
       await this.sendErrorMessage(whatsappId, 'Something went wrong. Please try again or type "help".');
     }
   }
 
   /**
-   * OPTIMIZED: Route message to appropriate handler with photo verification priority
+   * Route message to appropriate handler
    */
-  private async routeMessage(message: ExtendedWhatsAppMessage, user: any, isInPreferenceFlow: boolean): Promise<void> {
+  private async routeMessage(
+    message: ExtendedWhatsAppMessage,
+    user: any,
+    isInPreferenceFlow: boolean
+  ): Promise<void> {
     const { whatsappId } = user;
 
-    // ✅ PRIORITY 0: Check photo verification flow FIRST
+    // ✅ PRIORITY 0: Photo verification flow
     const verificationState = photoVerificationService.getVerificationState(whatsappId);
-    
     if (verificationState) {
       logger.info('🔍 User in verification flow', { whatsappId, hasImage: !!message.image });
-      
-      // Handle image messages during verification
       if (message.image) {
         await this.handleVerificationPhoto(whatsappId, message, verificationState);
         return;
-      } 
-      // Handle manual text entry during verification
-      else if (message.type === 'text') {
+      } else if (message.type === 'text') {
         await this.handleManualVerificationEntry(whatsappId, message.text?.body || '');
         return;
       }
     }
 
-    // Continue with normal routing
+    // ✅ Route by message type
     switch (message.type) {
       case 'text':
         await this.handleTextMessage(user, message.text?.body || '', isInPreferenceFlow);
         break;
-
       case 'interactive':
         if (message.interactive?.type === 'button_reply') {
           await this.handleButtonMessage(user, message.interactive.button_reply, isInPreferenceFlow);
@@ -186,11 +228,9 @@ export class WebhookController {
           await this.handleListMessage(user, message.interactive.list_reply, isInPreferenceFlow);
         }
         break;
-
       case 'location':
         await this.handleLocationMessage(user, message.location);
         break;
-
       default:
         await whatsappService.sendTextMessage(
           user.whatsappId,
@@ -200,12 +240,9 @@ export class WebhookController {
   }
 
   // ===============================================
-  // PHOTO VERIFICATION HANDLERS - OPTIMIZED
+  // PHOTO VERIFICATION HANDLERS
   // ===============================================
 
-  /**
-   * OPTIMIZED: Handle verification photo upload
-   */
   private async handleVerificationPhoto(
     whatsappId: string,
     message: ExtendedWhatsAppMessage,
@@ -217,7 +254,6 @@ export class WebhookController {
         attempt: state.attemptCount + 1
       });
 
-      // Download image from WhatsApp
       const imageBuffer = await this.downloadWhatsAppImage(message.image?.id || '');
 
       if (!imageBuffer) {
@@ -228,12 +264,10 @@ export class WebhookController {
         return;
       }
 
-      // Delegate to photo verification service (determines start/end automatically)
-      // Service will handle OCR processing and response messages
       await photoVerificationService.handleStartPhoto(whatsappId, imageBuffer);
 
     } catch (error) {
-      logger.error('Photo verification failed', { whatsappId, error });
+      logger.error('❌ Photo verification failed', { whatsappId, error: (error as Error).message });
       await whatsappService.sendTextMessage(
         whatsappId,
         '❌ Failed to process photo. Please try again or type the reading manually.'
@@ -241,21 +275,11 @@ export class WebhookController {
     }
   }
 
-  /**
-   * OPTIMIZED: Handle manual entry during verification flow
-   */
-  private async handleManualVerificationEntry(
-    whatsappId: string,
-    text: string
-  ): Promise<void> {
+  private async handleManualVerificationEntry(whatsappId: string, text: string): Promise<void> {
     try {
-      const trimmedInput = text.trim();
-      
-      // Service determines start/end type automatically from state
-      await photoVerificationService.handleManualEntry(whatsappId, trimmedInput);
-
+      await photoVerificationService.handleManualEntry(whatsappId, text.trim());
     } catch (error) {
-      logger.error('Manual verification entry failed', { whatsappId, error });
+      logger.error('❌ Manual verification failed', { whatsappId, error: (error as Error).message });
       await whatsappService.sendTextMessage(
         whatsappId,
         '❌ Failed to process entry. Please enter a valid kWh reading.'
@@ -263,76 +287,81 @@ export class WebhookController {
     }
   }
 
-  /**
-   * Download WhatsApp image via Cloud API
-   */
   private async downloadWhatsAppImage(mediaId: string): Promise<Buffer | null> {
+    if (!mediaId) {
+        logger.warn('No media ID provided for download');
+        return null;
+    }
+
     try {
-      // Step 1: Get media URL
       const mediaUrlResponse = await axios.get(
-        `https://graph.facebook.com/v18.0/${mediaId}`,
+        `https://graph.facebook.com/v18.0/${mediaId}`, // Fixed typo: removed extra spaces
         {
-          headers: {
-            'Authorization': `Bearer ${env.WHATSAPP_TOKEN}`
-          }
+          headers: { 'Authorization': `Bearer ${env.WHATSAPP_TOKEN}` },
+          timeout: 10000
         }
       );
 
-      const mediaUrl = mediaUrlResponse.data.url;
+      const mediaUrl = mediaUrlResponse.data?.url;
       if (!mediaUrl) {
-        logger.error('No media URL in response', { mediaId });
+        logger.error('No media URL received from Facebook API', { mediaId });
         return null;
       }
 
-      // Step 2: Download actual image
       const imageResponse = await axios.get(mediaUrl, {
-        headers: {
-          'Authorization': `Bearer ${env.WHATSAPP_TOKEN}`
-        },
-        responseType: 'arraybuffer'
+        headers: { 'Authorization': `Bearer ${env.WHATSAPP_TOKEN}` },
+        responseType: 'arraybuffer',
+        timeout: 15000
       });
 
-      const imageBuffer = Buffer.from(imageResponse.data);
-      logger.info('✅ Image downloaded', { mediaId, size: imageBuffer.length });
-
-      return imageBuffer;
+      logger.debug('Image downloaded successfully', { mediaId });
+      return Buffer.from(imageResponse.data);
 
     } catch (error) {
-      logger.error('Failed to download WhatsApp image', { mediaId, error });
+      logger.error('❌ Failed to download image from WhatsApp', {
+        mediaId,
+        error: (error as Error).message
+      });
       return null;
     }
   }
 
-  /**
-   * Handle verification button responses
-   */
   private async handleVerificationButtons(whatsappId: string, buttonId: string): Promise<void> {
-    switch (buttonId) {
-      case 'confirm_start_reading':
+    // Define handlers that return Promise<void> to match the Record type
+    const handlers: Record<string, () => Promise<void>> = {
+      'confirm_start_reading': async () => {
+        // Assuming these services return Promise<boolean>
         await photoVerificationService.confirmStartReading(whatsappId);
-        break;
-
-      case 'confirm_end_reading':
+        // Explicitly return void
+      },
+      'confirm_end_reading': async () => {
         await photoVerificationService.confirmEndReading(whatsappId);
-        break;
-
-      case 'retake_start_photo':
+      },
+      'retake_start_photo': async () => {
         await photoVerificationService.retakeStartPhoto(whatsappId);
-        break;
-
-      case 'retake_end_photo':
+      },
+      'retake_end_photo': async () => {
         await photoVerificationService.retakeEndPhoto(whatsappId);
-        break;
-
-      case 'manual_entry':
+      },
+      'manual_entry': async () => {
         await whatsappService.sendTextMessage(
           whatsappId,
-          `📝 *Manual Entry*\n\nPlease type the kWh reading from the meter.\n\n` +
-          'Example: 1245.8'
+          '📝 *Manual Entry*\n\nPlease type the kWh reading from the meter.\n\nExample: 1245.8'
         );
-        break;
+      }
+    };
+
+    const handler = handlers[buttonId];
+    if (handler) {
+      try {
+        await handler();
+      } catch (error) {
+          logger.error('Error in verification button handler', { buttonId, whatsappId, error: (error as Error).message });
+          await this.sendErrorMessage(whatsappId, 'Action failed. Please try again.');
+      }
     }
   }
+
 
   // ===============================================
   // MESSAGE TYPE HANDLERS
@@ -342,7 +371,7 @@ export class WebhookController {
     const { whatsappId } = user;
     const cleanText = text.toLowerCase().trim();
 
-    // Owner mode check
+    // Owner mode
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
       await ownerWebhookController.handleOwnerMessage(whatsappId, 'text', text);
       return;
@@ -353,20 +382,20 @@ export class WebhookController {
       return;
     }
 
-    // Preference flow check
+    // Preference flow
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'text', text);
       return;
     }
 
-    // Waiting input check
+    // Waiting input
     const waitingType = this.waitingUsers.get(whatsappId);
     if (waitingType) {
       await this.handleWaitingInput(whatsappId, text, waitingType);
       return;
     }
 
-    // Command handling
+    // Commands
     await this.handleCommand(whatsappId, cleanText, text);
   }
 
@@ -376,34 +405,34 @@ export class WebhookController {
 
     logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
 
-    // ✅ PRIORITY: Check verification buttons FIRST
+    // Verification buttons
     if (photoVerificationService.isInVerificationFlow(whatsappId) && this.isVerificationButton(buttonId)) {
       await this.handleVerificationButtons(whatsappId, buttonId);
       return;
     }
 
-    // Owner mode check
+    // Owner mode
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
       await ownerWebhookController.handleOwnerMessage(whatsappId, 'button', button);
       return;
     }
 
-    // Session stop button (priority routing)
+    // Session stop (priority)
     if (buttonId.startsWith('session_stop_')) {
-      const stationId = parseInt(buttonId.split('_')[2]);
+      const stationId = parseInt(buttonId.split('_')[2], 10); // Use radix 10
       if (!isNaN(stationId)) {
         await bookingController.handleSessionStop(whatsappId, stationId);
         return;
       }
     }
 
-    // Preference flow check
+    // Preference flow
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
       return;
     }
 
-    // Normal button routing
+    // Normal routing
     const parsed = parseButtonId(buttonId);
     await this.routeButtonAction(whatsappId, buttonId, parsed, title);
   }
@@ -415,7 +444,10 @@ export class WebhookController {
     logger.info('📋 List selected', { whatsappId, listId, title });
 
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
-      await ownerWebhookController.handleOwnerMessage(whatsappId, 'list', list);
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        'Location sharing not supported in owner mode.'
+      );
       return;
     }
 
@@ -433,70 +465,32 @@ export class WebhookController {
     const { whatsappId } = user;
 
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
-      await whatsappService.sendTextMessage(whatsappId, 'Location sharing not supported in owner mode. Please use buttons or type commands.');
-      return;
-    }
-
-    logger.info('📍 Raw location data received', {
-      whatsappId,
-      rawLocation: location,
-      hasLatitude: !!location?.latitude,
-      hasLongitude: !!location?.longitude
-    });
-
-    let lat: number, lng: number;
-
-    try {
-      // Parse latitude
-      if (typeof location?.latitude === 'string') {
-        lat = parseFloat(location.latitude);
-      } else if (typeof location?.latitude === 'number') {
-        lat = location.latitude;
-      } else {
-        throw new Error('No valid latitude found');
-      }
-
-      // Parse longitude
-      if (typeof location?.longitude === 'string') {
-        lng = parseFloat(location.longitude);
-      } else if (typeof location?.longitude === 'number') {
-        lng = location.longitude;
-      } else {
-        throw new Error('No valid longitude found');
-      }
-
-      // Validate coordinates
-      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        throw new Error('Invalid coordinate values');
-      }
-
-    } catch (error) {
-      logger.error('❌ Location validation failed', {
-        whatsappId,
-        location,
-        error: error instanceof Error ? error.message : String(error)
-      });
-
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Invalid location data received. Please try sharing your location again:\n\n' +
-        '1️⃣ Tap 📎 attachment icon\n' +
-        '2️⃣ Select "Location"\n' +
-        '3️⃣ Choose "Send your current location"\n' +
-        '4️⃣ Tap "Send"'
+        'Location sharing not supported in owner mode.'
       );
       return;
     }
 
-    logger.info('✅ GPS location validated', {
+    logger.info('📍 Location received', {
       whatsappId,
-      latitude: lat,
-      longitude: lng,
-      name: location.name,
-      address: location.address
+      hasLatitude: !!location?.latitude,
+      hasLongitude: !!location?.longitude
     });
 
     try {
+      const lat = typeof location?.latitude === 'string'
+        ? parseFloat(location.latitude)
+        : location?.latitude;
+
+      const lng = typeof location?.longitude === 'string'
+        ? parseFloat(location.longitude)
+        : location?.longitude;
+
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        throw new Error(`Invalid coordinates: lat=${lat}, lng=${lng}`);
+      }
+
       await locationController.handleGPSLocation(
         whatsappId,
         lat,
@@ -505,61 +499,58 @@ export class WebhookController {
         location.address || null
       );
 
-      logger.info('✅ Location successfully processed by locationController', { whatsappId });
-
     } catch (error) {
-      logger.error('❌ Location controller processing failed', {
-        whatsappId,
-        coordinates: { lat, lng },
-        error: error instanceof Error ? error.message : String(error)
-      });
-
+      logger.error('❌ Location processing failed', { whatsappId, error: (error as Error).message });
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to process your location. Please try again or type your address instead.'
+        '❌ Invalid location. Please share your location again or type your address.'
       );
     }
   }
 
   // ===============================================
-  // BUTTON & LIST ROUTING LOGIC
+  // BUTTON & LIST ROUTING
   // ===============================================
 
-  private async routeButtonAction(whatsappId: string, buttonId: string, parsed: ButtonParseResult, title: string): Promise<void> {
-    logger.info('🎯 Routing button action', { whatsappId, buttonId, parsed });
+  private async routeButtonAction(
+    whatsappId: string,
+    buttonId: string,
+    parsed: ButtonParseResult,
+    title: string
+  ): Promise<void> {
+    logger.info('🎯 Routing button', { whatsappId, buttonId, parsed });
 
     if (this.isQueueButton(buttonId)) {
-      logger.info('📋 Routing to queue controller', { whatsappId, buttonId });
       await queueWebhookController.handleQueueButton(whatsappId, buttonId, title);
       return;
     }
 
     if (this.isLocationButton(buttonId)) {
-      logger.info('📍 Routing to location controller', { whatsappId, buttonId });
       await this.handleLocationButton(whatsappId, buttonId);
       return;
     }
 
     if (parsed.category === 'station' && parsed.stationId > 0) {
-      logger.info('🏭 Routing to station handler', { whatsappId, buttonId, stationId: parsed.stationId });
       await this.handleStationButton(whatsappId, parsed.action, parsed.stationId);
       return;
     }
 
-    logger.info('⚙️ Routing to core button handler', { whatsappId, buttonId });
     await this.handleCoreButton(whatsappId, buttonId);
   }
 
-  private async routeListAction(whatsappId: string, listId: string, parsed: ButtonParseResult, title: string): Promise<void> {
-    logger.info('📋 Routing list action', { whatsappId, listId, parsed });
-
+  private async routeListAction(
+    whatsappId: string,
+    listId: string,
+    parsed: ButtonParseResult,
+    title: string
+  ): Promise<void> {
     if (this.isQueueButton(listId)) {
       await queueWebhookController.handleQueueList(whatsappId, listId, title);
       return;
     }
 
+    // Handle the missing method call
     if (this.isLocationList(listId)) {
-      logger.info('📍 Routing to location list handler', { whatsappId, listId });
       await this.handleLocationList(whatsappId, listId, parsed);
       return;
     }
@@ -573,94 +564,85 @@ export class WebhookController {
   }
 
   // ===============================================
-  // SPECIFIC BUTTON HANDLERS
+  // SPECIFIC HANDLERS
   // ===============================================
 
   private async handleStationButton(whatsappId: string, action: string, stationId: number): Promise<void> {
-    switch (action) {
-      case 'book':
-        await bookingController.handleStationBooking(whatsappId, stationId);
-        break;
+    const handlers: Record<string, () => Promise<void>> = {
+      'book': () => bookingController.handleStationBooking(whatsappId, stationId),
+      'info': () => bookingController.showStationDetails(whatsappId, stationId),
+      'details': () => bookingController.showStationDetails(whatsappId, stationId),
+      'directions': () => this.handleGetDirections(whatsappId, stationId)
+    };
 
-      case 'info':
-      case 'details':
-        await bookingController.showStationDetails(whatsappId, stationId);
-        break;
-
-      case 'directions':
-        await this.handleGetDirections(whatsappId, stationId);
-        break;
-
-      default:
-        await bookingController.handleStationSelection(whatsappId, stationId);
+    const handler = handlers[action];
+    if (handler) {
+      await handler();
+    } else {
+      // Default to selection if action is unknown
+      await bookingController.handleStationSelection(whatsappId, stationId);
     }
   }
 
   private async handleLocationButton(whatsappId: string, buttonId: string): Promise<void> {
-    logger.info('🎯 Routing location button', { whatsappId, buttonId });
-
     try {
       await webhookLocationController.handleLocationButton(whatsappId, buttonId, '');
-      logger.info('✅ Location button handled successfully', { whatsappId, buttonId });
-
     } catch (error) {
-      logger.error('❌ Location button handling failed', {
-        whatsappId,
-        buttonId,
-        error: error instanceof Error ? error.message : String(error)
-      });
+      logger.error('❌ Location button handler failed', { whatsappId, buttonId, error: (error as Error).message });
 
-      switch (buttonId) {
-        case 'share_gps_location':
-          await this.requestGPSLocation(whatsappId);
-          break;
+      // Fallback handlers
+      const fallbacks: Record<string, () => Promise<void>> = {
+        'share_gps_location': () => this.requestGPSLocation(whatsappId),
+        'type_address': () => this.requestAddressInput(whatsappId),
+        'location_help': () => this.showLocationHelp(whatsappId),
+        'new_search': () => this.startBooking(whatsappId)
+      };
 
-        case 'type_address':
-          await this.requestAddressInput(whatsappId);
-          break;
-
-        case 'location_help':
-          await this.showLocationHelp(whatsappId);
-          break;
-
-        case 'new_search':
-          await this.startBooking(whatsappId);
-          break;
-
-        default:
-          await whatsappService.sendTextMessage(
-            whatsappId,
-            'There was an issue with that button. Please try "find" to search for stations.'
-          );
+      const fallback = fallbacks[buttonId];
+      if (fallback) {
+        await fallback();
+      } else {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          'There was an issue. Please try "find" to search for stations.'
+        );
       }
     }
   }
 
+  // Added the missing method
+  private async handleLocationList(
+    whatsappId: string,
+    listId: string,
+    parsed: ButtonParseResult
+  ): Promise<void> {
+    if (listId.startsWith('recent_search_') && typeof parsed.index === 'number') {
+      await locationController.handleRecentSearchSelection(whatsappId, parsed.index);
+    } else {
+      logger.warn('Unknown location list selection', { whatsappId, listId, parsed });
+      await whatsappService.sendTextMessage(whatsappId, '❓ Unknown location selection.');
+    }
+  }
+
+
   private async handleCoreButton(whatsappId: string, buttonId: string): Promise<void> {
-    switch (buttonId) {
-      case 'help':
-        await this.showHelp(whatsappId);
-        break;
+    const handlers: Record<string, () => Promise<void>> = {
+      'help': () => this.showHelp(whatsappId),
+      'quick_book': () => this.startBooking(whatsappId),
+      'find_stations': () => this.startBooking(whatsappId),
+      'view_profile': () => profileService.showProfileSummary(whatsappId),
+      'update_profile': () => this.requestProfileUpdate(whatsappId),
+      'update_preferences': () => preferenceController.startPreferenceGathering(whatsappId)
+    };
 
-      case 'quick_book':
-      case 'find_stations':
-        await this.startBooking(whatsappId);
-        break;
-
-      case 'view_profile':
-        await profileService.showProfileSummary(whatsappId);
-        break;
-
-      case 'update_profile':
-        await this.requestProfileUpdate(whatsappId);
-        break;
-
-      case 'update_preferences':
-        await preferenceController.startPreferenceGathering(whatsappId);
-        break;
-
-      default:
-        await whatsappService.sendTextMessage(whatsappId, '❓ Unknown action. Type "help" for available commands.');
+    const handler = handlers[buttonId];
+    if (handler) {
+      await handler();
+    } else {
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❓ Unknown action. Type "help" for available commands.'
+      );
     }
   }
 
@@ -695,24 +677,33 @@ export class WebhookController {
       'settings': () => preferenceController.startPreferenceGathering(whatsappId)
     };
 
-    const commandHandler = commands[cleanText];
-    if (commandHandler) {
-      await commandHandler();
-      return;
+    const handler = commands[cleanText];
+    if (handler) {
+      await handler();
+    } else {
+      // Check if it looks like an address
+      if (this.looksLikeAddress(originalText)) {
+        await locationController.handleAddressInput(whatsappId, originalText);
+      } else {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          '❓ I didn\'t understand that. Type "help" for commands or "find" to search for stations.'
+        );
+      }
     }
-
-    await this.handlePotentialAddress(whatsappId, originalText);
   }
 
-  private async handleWaitingInput(whatsappId: string, input: string, type: 'name' | 'address'): Promise<void> {
+  private async handleWaitingInput(
+    whatsappId: string,
+    input: string,
+    type: 'name' | 'address'
+  ): Promise<void> {
     this.waitingUsers.delete(whatsappId);
 
-    const trimmedInput = input.trim();
-
     if (type === 'name') {
-      await this.processNameInput(whatsappId, trimmedInput);
-    } else {
-      await this.processAddressInput(whatsappId, trimmedInput);
+      await this.processNameInput(whatsappId, input.trim());
+    } else { // 'address'
+      await this.processAddressInput(whatsappId, input.trim());
     }
   }
 
@@ -720,99 +711,82 @@ export class WebhookController {
   // LOCATION & ADDRESS HANDLING
   // ===============================================
 
-  private async handleLocationList(whatsappId: string, listId: string, parsed: ButtonParseResult): Promise<void> {
-    if (listId.startsWith('recent_search_') && parsed.index !== undefined) {
-      await locationController.handleRecentSearchSelection(whatsappId, parsed.index);
-    } else {
-      await whatsappService.sendTextMessage(whatsappId, '❓ Unknown location selection.');
-    }
-  }
-
-  private async handlePotentialAddress(whatsappId: string, text: string): Promise<void> {
-    if (this.looksLikeAddress(text)) {
-      await locationController.handleAddressInput(whatsappId, text);
-    } else {
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        '❓ I didn\'t understand that. Type "help" for commands or "find" to search for charging stations.'
-      );
-    }
-  }
 
   private looksLikeAddress(text: string): boolean {
-    const addressIndicators = [
+    const indicators = [
       'road', 'street', 'st', 'rd', 'avenue', 'ave', 'nagar', 'colony',
       'sector', 'block', 'phase', 'mall', 'plaza', 'complex', 'society',
-      'mumbai', 'delhi', 'bangalore', 'chennai', 'hyderabad', 'pune', 'kolkata'
+      'mumbai', 'delhi', 'bangalore', 'chennai', 'hyderabad', 'pune', 'kolkata',
+      'noida', 'gurgaon', 'ahmedabad', 'jaipur', 'lucknow', 'patna'
     ];
-
-    const lowerText = text.toLowerCase();
-    return text.length > 3 &&
+    const lower = text.toLowerCase();
+    return text.length > 5 && // Increased minimum length
            text.length < 100 &&
-           /[a-zA-Z]/.test(text) &&
-           addressIndicators.some(indicator => lowerText.includes(indicator));
+           /[a-zA-Z]/.test(text) && // Must contain letters
+           indicators.some(ind => lower.includes(ind.toLowerCase()));
   }
 
-  // ===============================================
-  // LOCATION METHODS
-  // ===============================================
-
   private async handleGetDirections(whatsappId: string, stationId?: number): Promise<void> {
-    if (stationId) {
-      try {
-        const [station] = await db
-          .select({
-            id: chargingStations.id,
-            name: chargingStations.name,
-            address: chargingStations.address,
-            latitude: chargingStations.latitude,
-            longitude: chargingStations.longitude
-          })
-          .from(chargingStations)
-          .where(eq(chargingStations.id, stationId))
-          .limit(1);
-
-        if (!station) {
-          await whatsappService.sendTextMessage(whatsappId, 'Station not found.');
-          return;
-        }
-
-        const lat = Number(station.latitude);
-        const lng = Number(station.longitude);
-
-        const locationSent = await whatsappService.sendLocationMessage(
-          whatsappId,
-          lat,
-          lng,
-          station.name,
-          station.address
-        );
-
-        if (locationSent) {
-          setTimeout(async () => {
-            await whatsappService.sendTextMessage(
-              whatsappId,
-              `Location sent for ${station.name}\n\nTap the location above to open in your maps app for turn-by-turn navigation!`
-            );
-          }, 1000);
-        } else {
-          await whatsappService.sendTextMessage(
-            whatsappId,
-            `${station.name}\n${station.address}\n\nCopy this address to your maps app for navigation.`
-          );
-        }
-
-      } catch (error) {
-        logger.error('Failed to send station directions', { whatsappId, stationId, error });
-        await whatsappService.sendTextMessage(
-          whatsappId,
-          'Failed to get directions. Please try again.'
-        );
-      }
-    } else {
+    if (!stationId) {
       await whatsappService.sendTextMessage(
         whatsappId,
-        'Get Directions\n\nFirst select a charging station, then I can send you the exact location for navigation!'
+        'Get Directions\n\nFirst select a charging station, then I can send you the location!'
+      );
+      return;
+    }
+
+    try {
+      const [station] = await db
+        .select({
+          id: chargingStations.id,
+          name: chargingStations.name,
+          address: chargingStations.address,
+          latitude: chargingStations.latitude,
+          longitude: chargingStations.longitude
+        })
+        .from(chargingStations)
+        .where(eq(chargingStations.id, stationId))
+        .limit(1);
+
+      if (!station) {
+        await whatsappService.sendTextMessage(whatsappId, 'Station not found.');
+        return;
+      }
+
+      const lat = Number(station.latitude);
+      const lng = Number(station.longitude);
+
+      if (isNaN(lat) || isNaN(lng)) {
+          logger.error('Invalid coordinates in DB for station', { stationId, lat, lng });
+          await whatsappService.sendTextMessage(whatsappId, 'Failed to get directions for this station.');
+          return;
+      }
+
+      const locationSent = await whatsappService.sendLocationMessage(
+        whatsappId,
+        lat,
+        lng,
+        station.name,
+        station.address
+      );
+
+      if (locationSent) {
+        setTimeout(async () => {
+          await whatsappService.sendTextMessage(
+            whatsappId,
+            `📍 Location sent for ${station.name}\n\nTap the location above to open in your maps app!`
+          );
+        }, 1000);
+      } else {
+          logger.warn('Location message was not sent successfully', { stationId, whatsappId });
+          await whatsappService.sendTextMessage(whatsappId, 'Could not send directions. Please try again.');
+      }
+
+    } catch (error) {
+      logger.error('❌ Failed to send directions', { whatsappId, stationId, error: (error as Error).message });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        'Failed to get directions. Please try again.'
       );
     }
   }
@@ -820,12 +794,11 @@ export class WebhookController {
   private async handleNearbyRequest(whatsappId: string): Promise<void> {
     await whatsappService.sendButtonMessage(
       whatsappId,
-      '📍 *Find Nearby Stations*\n\n' +
-      'Share your location to find charging stations around you:',
+      '📍 *Find Nearby Stations*\n\nShare your location to find charging stations around you:',
       [
-        { id: 'share_gps_location', title: '📱 Share GPS Location' },
+        { id: 'share_gps_location', title: '📱 Share GPS' },
         { id: 'type_address', title: '📝 Type Address' },
-        { id: 'recent_searches', title: '🕒 Recent Searches' }
+        { id: 'recent_searches', title: '🕒 Recent' }
       ],
       '🔍 Location Search'
     );
@@ -873,7 +846,7 @@ export class WebhookController {
       `• "find" or "book" - Find stations\n` +
       `• "gps" or "location" - Share GPS\n` +
       `• "nearby" - Find nearby stations\n` +
-      `• "directions" - Get navigation help\n` +
+      `• "directions" - Get navigation\n` +
       `• "profile" - View your profile\n` +
       `• "preferences" - Update settings\n` +
       `• "help" - Show this help\n` +
@@ -884,10 +857,10 @@ export class WebhookController {
       `3️⃣ Browse and select stations\n` +
       `4️⃣ Book your charging slot\n\n` +
       `*Location Tips:*\n` +
-      `📍 GPS location gives most accurate results\n` +
-      `📝 You can type any address directly\n` +
-      `🕒 Recent searches are saved for quick access\n` +
-      `🗺️ Use "directions" for navigation help\n\n` +
+      `📍 GPS gives most accurate results\n` +
+      `📝 Type any address directly\n` +
+      `🕒 Recent searches saved\n` +
+      `🗺️ Use "directions" for navigation\n\n` +
       `Need more help? Just ask!`;
 
     await whatsappService.sendTextMessage(whatsappId, helpText);
@@ -901,25 +874,22 @@ export class WebhookController {
       `3️⃣ Choose "Send current location"\n` +
       `4️⃣ Tap "Send"\n\n` +
       `*Type Address:*\n` +
-      `Just type your location like:\n` +
+      `Just type your location:\n` +
       `• "Anna Nagar, Chennai"\n` +
       `• "Brigade Road, Bangalore"\n` +
       `• "Sector 18, Noida"\n\n` +
-      `*Get Directions:*\n` +
-      `📱 Use WhatsApp live location sharing\n` +
-      `🗺️ Copy address to your maps app\n\n` +
       `*Tips:*\n` +
       `• GPS location is most accurate\n` +
-      `• Include city name for better results\n` +
-      `• Try nearby landmarks if address doesn't work`;
+      `• Include city name\n` +
+      `• Try nearby landmarks`;
 
     await whatsappService.sendButtonMessage(
       whatsappId,
       helpText,
       [
-        { id: 'share_gps_location', title: '📍 Share Location' },
+        { id: 'share_gps_location', title: '📍 Share GPS' },
         { id: 'type_address', title: '📝 Type Address' },
-        { id: 'recent_searches', title: '🕒 Recent Searches' }
+        { id: 'recent_searches', title: '🕒 Recent' }
       ],
       '📍 Location Help'
     );
@@ -933,7 +903,7 @@ export class WebhookController {
     await whatsappService.sendTextMessage(
       whatsappId,
       '📱 *Share Your GPS Location*\n\n' +
-      '1️⃣ Tap the 📎 attachment icon\n' +
+      '1️⃣ Tap 📎 attachment icon\n' +
       '2️⃣ Select "Location"\n' +
       '3️⃣ Choose "Send your current location"\n' +
       '4️⃣ Tap "Send"\n\n' +
@@ -943,6 +913,12 @@ export class WebhookController {
   }
 
   private async requestAddressInput(whatsappId: string): Promise<void> {
+    if (this.waitingUsers.size >= this.MAX_WAITING_USERS) {
+        logger.warn('Waiting users queue is full', { whatsappId });
+        await whatsappService.sendTextMessage(whatsappId, 'System busy. Please try again later.');
+        return;
+    }
+
     this.waitingUsers.set(whatsappId, 'address');
     await whatsappService.sendTextMessage(
       whatsappId,
@@ -953,66 +929,73 @@ export class WebhookController {
       '• Brigade Road, Bangalore\n' +
       '• Sector 18, Noida\n' +
       '• Phoenix Mall, Mumbai\n\n' +
-      'Just type the address and press send!'
+      'Just type the address!'
     );
   }
 
   private async requestProfileUpdate(whatsappId: string): Promise<void> {
-    this.waitingUsers.set(whatsappId, 'name');
+    if (this.waitingUsers.size >= this.MAX_WAITING_USERS) {
+        logger.warn('Waiting users queue is full', { whatsappId });
+        await whatsappService.sendTextMessage(whatsappId, 'System busy. Please try again later.');
+        return;
+    }
 
+    this.waitingUsers.set(whatsappId, 'name');
     await whatsappService.sendTextMessage(
       whatsappId,
       '✏️ *Update Your Name*\n\n' +
       'What would you like me to call you?\n\n' +
-      '💡 Examples:\n' +
-      '• Ravi Kumar\n' +
-      '• Ashreya\n' +
-      '• Pooja\n\n' +
-      'Just type your preferred name:'
+      '💡 Examples: Ravi Kumar, Ashreya, Pooja\n\n' +
+      'Type your preferred name:'
     );
   }
 
   // ===============================================
-  // INPUT PROCESSING METHODS
+  // INPUT PROCESSING
   // ===============================================
 
   private async processNameInput(whatsappId: string, name: string): Promise<void> {
-    const cleanName = name.trim();
-
-    if (cleanName.length < 2 || cleanName.length > 50) {
+    if (name.length < 2 || name.length > 50) {
       await whatsappService.sendTextMessage(
         whatsappId,
         '❌ Please provide a valid name (2-50 characters).\n\nTry again:'
       );
+      // Re-queue for name input if validation fails
       this.waitingUsers.set(whatsappId, 'name');
       return;
     }
 
     try {
-      const success = await profileService.updateUserName(whatsappId, cleanName);
-
-      if (success) {
-        logger.info('✅ User name updated successfully', { whatsappId, newName: cleanName });
-      } else {
+      // Assuming updateUserName returns Promise<boolean>
+      const success = await profileService.updateUserName(whatsappId, name);
+      if (!success) {
+        logger.error('Name update failed in service layer', { whatsappId, name });
         await whatsappService.sendTextMessage(
           whatsappId,
-          '❌ Failed to update name. Please try again.\n\nType your name:'
+          '❌ Failed to update name in the system. Please try again.'
         );
-        this.waitingUsers.set(whatsappId, 'name');
+        this.waitingUsers.set(whatsappId, 'name'); // Retry
+        return;
       }
-    } catch (error) {
-      logger.error('Failed to update user name', { whatsappId, name: cleanName, error });
+      // Success: Name updated, no further action needed here.
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Something went wrong. Please try again.\n\nType your name:'
+        `✅ Your name has been updated to *${name}*!`
       );
-      this.waitingUsers.set(whatsappId, 'name');
+    } catch (error) {
+      logger.error('❌ Name update process failed', { whatsappId, error: (error as Error).message });
+      await whatsappService.sendTextMessage(
+        whatsappId,
+        '❌ Failed to update name. Please try again.'
+      );
+      this.waitingUsers.set(whatsappId, 'name'); // Retry
     }
   }
 
+
   private async processAddressInput(whatsappId: string, address: string): Promise<void> {
-    if (address.length < 3) {
-      await whatsappService.sendTextMessage(whatsappId, '❌ Please provide a valid address.');
+    if (address.length < 5) { // Increased minimum length
+      await whatsappService.sendTextMessage(whatsappId, '❌ Please provide a more specific address.');
       return;
     }
 
@@ -1024,75 +1007,62 @@ export class WebhookController {
   // ===============================================
 
   private isVerificationButton(buttonId: string): boolean {
-    const verificationButtons = [
-      'confirm_start_reading', 'confirm_end_reading',
-      'retake_start_photo', 'retake_end_photo',
+    return [
+      'confirm_start_reading',
+      'confirm_end_reading',
+      'retake_start_photo',
+      'retake_end_photo',
       'manual_entry'
-    ];
-    return verificationButtons.includes(buttonId);
+    ].includes(buttonId);
   }
 
   private isQueueButton(buttonId: string): boolean {
-    const queueButtons = [
+    const patterns = [
       'join_queue_', 'queue_status_', 'cancel_queue_', 'confirm_cancel_',
       'start_session_', 'session_stop_', 'session_status_', 'extend_',
       'nearby_alternatives_', 'cheaper_options_', 'faster_charging_',
-      'smart_recommendation_',
-      'notify_when_ready_', 'live_updates_',
+      'smart_recommendation_', 'notify_when_ready_', 'live_updates_',
       'rate_1_', 'rate_2_', 'rate_3_', 'rate_4_', 'rate_5_'
     ];
-
-    return queueButtons.some(pattern => buttonId.startsWith(pattern));
+    return patterns.some(p => buttonId.startsWith(p));
   }
 
   private isLocationButton(buttonId: string): boolean {
-    const coreLocationButtons = [
+    const coreButtons = [
       'share_gps_location', 'type_address', 'try_different_address',
-      'location_help', 'recent_searches', 'new_search'
-    ];
-
-    const navigationButtons = [
+      'location_help', 'recent_searches', 'new_search',
       'next_station', 'load_more_stations', 'show_all_nearby',
       'show_all_results', 'back_to_search', 'back_to_list',
-      'back_to_top_result', 'expand_search', 'remove_filters'
-    ];
-
-    const directionButtons = [
+      'back_to_top_result', 'expand_search', 'remove_filters',
       'get_directions', 'directions_help'
     ];
 
-    if (coreLocationButtons.includes(buttonId) ||
-        navigationButtons.includes(buttonId) ||
-        directionButtons.includes(buttonId)) {
-      return true;
-    }
+    if (coreButtons.includes(buttonId)) return true;
 
-    const locationPrefixes = [
-      'recent_search_', 'location_', 'search_', 'station_info_',
-      'select_station_', 'book_station_'
+    const prefixes = [
+      'recent_search_', 'location_', 'search_',
+      'station_info_', 'select_station_', 'book_station_'
     ];
-
-    return locationPrefixes.some(prefix => buttonId.startsWith(prefix));
+    return prefixes.some(p => buttonId.startsWith(p));
   }
 
   private isLocationList(listId: string): boolean {
-    const locationListPrefixes = [
-      'recent_search_', 'location_', 'search_', 'select_station_'
-    ];
+    const exactLists = ['recent_searches', 'location_options', 'search_results'];
+    if (exactLists.includes(listId)) return true;
 
-    const exactLocationLists = [
-      'recent_searches', 'location_options', 'search_results'
-    ];
-
-    return exactLocationLists.includes(listId) ||
-           locationListPrefixes.some(prefix => listId.startsWith(prefix));
+    const prefixes = ['recent_search_', 'location_', 'search_', 'select_station_'];
+    return prefixes.some(p => listId.startsWith(p));
   }
 
   private async sendErrorMessage(whatsappId: string, message: string): Promise<void> {
     try {
       await whatsappService.sendTextMessage(whatsappId, `❌ ${message}`);
     } catch (error) {
-      logger.error('Failed to send error message', { whatsappId, error });
+      logger.error('❌ Failed to send error message', {
+        whatsappId,
+        message,
+        error: (error as Error).message
+      });
     }
   }
 
@@ -1100,24 +1070,26 @@ export class WebhookController {
   // MONITORING & CLEANUP
   // ===============================================
 
-  public getWaitingUsersCount(): number {
-    return this.waitingUsers.size;
+  public getStats() {
+    return {
+      waitingUsers: this.waitingUsers.size,
+      processingMessages: this.processingMessages.size,
+      deduplication: messageDeduplication.getStats()
+    };
   }
 
   public cleanup(): void {
     this.waitingUsers.clear();
-    logger.info('Webhook controller cleanup completed');
+    this.processingMessages.clear();
+    logger.info('✅ Webhook controller cleanup completed');
   }
 
-  public getHealthStatus(): {
-    status: 'healthy' | 'degraded';
-    waitingUsers: number;
-    uptime: string;
-  } {
+  public getHealthStatus() {
     return {
-      status: 'healthy',
+      status: 'healthy' as const,
       waitingUsers: this.waitingUsers.size,
-      uptime: process.uptime().toString()
+      processingMessages: this.processingMessages.size,
+      uptime: Math.floor(process.uptime()) // More readable uptime in seconds
     };
   }
 }

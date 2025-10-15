@@ -1,4 +1,4 @@
-// src/controllers/booking.ts - OPTIMIZED WITH PHOTO VERIFICATION
+// src/controllers/booking.ts - FULLY OPTIMIZED, TYPE-SAFE, AND POWERFUL
 import { whatsappService } from '../services/whatsapp';
 import { userService } from '../services/userService';
 import { queueService } from '../services/queue';
@@ -14,7 +14,6 @@ import { validateWhatsAppId } from '../utils/validation';
 // ===============================================
 // INTERFACES & TYPES
 // ===============================================
-
 interface StationDetails {
   id: number;
   name: string;
@@ -53,55 +52,43 @@ interface ProcessedStation extends StationDetails {
 }
 
 // ===============================================
+// IN-MEMORY CACHING & DEBOUNCE
+// ===============================================
+const stationCache = new Map<number, { data: ProcessedStation; expiry: number }>();
+const CACHE_TTL_MS = 30_000; // 30 seconds
+
+// ===============================================
 // BOOKING CONTROLLER WITH PHOTO VERIFICATION
 // ===============================================
-
 export class BookingController {
-  
+  // Prevent duplicate button processing
+  private readonly recentButtonActions = new Map<string, string>();
+
   // ===============================================
   // MESSAGE HANDLING WITH VERIFICATION
   // ===============================================
-
-  /**
-   * Central message handler with photo verification integration
-   */
   async handleMessage(message: any): Promise<void> {
     const whatsappId = message.from;
     const verificationState = photoVerificationService.getVerificationState(whatsappId);
 
-    // Handle IMAGE messages during verification
     if (message.type === 'image' && verificationState) {
       await this.handleVerificationPhoto(whatsappId, message, verificationState);
       return;
     }
 
-    // Handle TEXT messages (manual entry during verification)
-    // Check if user is in verification flow and waiting for manual entry
     if (message.type === 'text' && verificationState) {
-      // Manual entry is triggered when waitingFor is null (after photo attempt)
-      // or when explicitly waiting for manual input
-      await photoVerificationService.handleManualEntry(
-        whatsappId,
-        message.text.body
-      );
+      await photoVerificationService.handleManualEntry(whatsappId, message.text.body);
       return;
     }
-
-    // Regular message handling continues here
-    // (Button callbacks, text commands, etc.)
   }
 
-  /**
-   * Handle photo verification images
-   */
   private async handleVerificationPhoto(
     whatsappId: string,
     message: any,
     state: any
   ): Promise<void> {
     try {
-      const imageBuffer = await this.downloadWhatsAppImage(message.image.id);
-
+      const imageBuffer = await this.downloadWhatsAppImageWithRetry(message.image.id, 2);
       if (state.waitingFor === 'start_photo') {
         await photoVerificationService.handleStartPhoto(whatsappId, imageBuffer);
       } else if (state.waitingFor === 'end_photo') {
@@ -111,50 +98,50 @@ export class BookingController {
       logger.error('Photo processing failed', { whatsappId, error });
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to process photo. Please try again.'
+        '❌ Failed to process photo. Please ensure good lighting and clear view of the meter. Try again.'
       );
     }
   }
 
-  /**
-   * Download image from WhatsApp Cloud API
-   */
-  private async downloadWhatsAppImage(mediaId: string): Promise<Buffer> {
-    const response = await fetch(
-      `https://graph.facebook.com/v18.0/${mediaId}`,
-      {
-        headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}` }
+  private async downloadWhatsAppImageWithRetry(mediaId: string, retries = 2): Promise<Buffer> {
+    let lastError: Error | null = null;
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const response = await fetch(`https://graph.facebook.com/v18.0/${mediaId}`, {
+          headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}` }
+        });
+        const data = (await response.json()) as { url?: string };
+        if (!data.url) throw new Error('Media URL not found');
+        const imageResponse = await fetch(data.url, {
+          headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}` }
+        });
+        return Buffer.from(await imageResponse.arrayBuffer());
+      } catch (error) {
+        lastError = error as Error;
+        if (i < retries) await new Promise(res => setTimeout(res, 1000 * (i + 1)));
       }
-    );
-
-    const data = await response.json() as { url?: string };
-    
-    if (!data.url) {
-      throw new Error('Media URL not found in response');
     }
-
-    const imageResponse = await fetch(data.url, {
-      headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}` }
-    });
-
-    return Buffer.from(await imageResponse.arrayBuffer());
+    throw lastError!;
   }
 
-  /**
-   * Handle button callbacks with verification support
-   */
   async handleButtonClick(buttonId: string, whatsappId: string): Promise<void> {
+    // Idempotency guard
+    const lastActionKey = `last_button_${whatsappId}`;
+    const lastAction = this.recentButtonActions.get(lastActionKey);
+    if (lastAction === buttonId) {
+      logger.warn('Duplicate button click ignored', { whatsappId, buttonId });
+      return;
+    }
+    this.recentButtonActions.set(lastActionKey, buttonId);
+    setTimeout(() => this.recentButtonActions.delete(lastActionKey), 5000);
+
     // Photo verification confirmations
     if (buttonId === 'confirm_start_reading') {
       const success = await photoVerificationService.confirmStartReading(whatsappId);
       if (success) {
         const state = photoVerificationService.getVerificationState(whatsappId);
-        if (state?.sessionId && state.lastReading) {
-          await sessionService.startChargingAfterVerification(
-            state.sessionId,
-            state.lastReading
-          );
-          // Success message will come from sessionService
+        if (state?.sessionId && state.lastReading !== undefined) {
+          await sessionService.startChargingAfterVerification(state.sessionId, state.lastReading);
         }
       }
       return;
@@ -173,32 +160,27 @@ export class BookingController {
       await photoVerificationService.retakeStartPhoto(whatsappId);
       return;
     }
-
     if (buttonId === 'retake_end_photo') {
       await photoVerificationService.retakeEndPhoto(whatsappId);
       return;
     }
 
-    // Session start/stop with verification
+    // Session start/stop
     if (buttonId.startsWith('session_start_')) {
       const stationId = parseInt(buttonId.replace('session_start_', ''));
       await this.handleChargingStart(whatsappId, stationId);
       return;
     }
-
     if (buttonId.startsWith('session_stop_')) {
       const stationId = parseInt(buttonId.replace('session_stop_', ''));
       await this.handleSessionStop(whatsappId, stationId);
       return;
     }
 
-    // Other button handlers
+    // Route other actions
     await this.routeButtonAction(buttonId, whatsappId);
   }
 
-  /**
-   * Route other button actions
-   */
   private async routeButtonAction(buttonId: string, whatsappId: string): Promise<void> {
     const [action, ...params] = buttonId.split('_');
     const stationId = params.length > 0 ? parseInt(params[params.length - 1]) : 0;
@@ -211,21 +193,21 @@ export class BookingController {
       case 'directions': await this.handleGetDirections(whatsappId, stationId); break;
       case 'alternatives': await this.handleFindAlternatives(whatsappId, stationId); break;
       case 'status': await this.handleSessionStatus(whatsappId, stationId); break;
-      case 'extend': 
+      case 'extend':
         const minutes = params[0] === '30' ? 30 : 60;
         await this.handleSessionExtend(whatsappId, stationId, minutes);
         break;
-      default: logger.warn('Unknown button action', { buttonId, whatsappId });
+      default:
+        logger.warn('Unknown button action', { buttonId, whatsappId });
+        await whatsappService.sendTextMessage(whatsappId, '❓ Unknown action. Please try again.');
     }
   }
 
   // ===============================================
   // CORE BOOKING OPERATIONS
   // ===============================================
-
   async handleStationSelection(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const station = await this.getStationDetails(stationId);
       if (!station) {
@@ -240,13 +222,11 @@ export class BookingController {
 
   async handleStationBooking(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const [user, station] = await Promise.all([
         userService.getUserByWhatsAppId(whatsappId),
         this.getStationDetails(stationId)
       ]);
-
       if (!user || !station) {
         await this.sendError(whatsappId, 'Unable to process booking');
         return;
@@ -272,19 +252,13 @@ export class BookingController {
 
   async showStationDetails(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const station = await this.getStationDetails(stationId);
       if (!station) {
         await this.sendNotFound(whatsappId, 'Station not available');
         return;
       }
-
-      await whatsappService.sendTextMessage(
-        whatsappId,
-        this.formatStationDetails(station)
-      );
-
+      await whatsappService.sendTextMessage(whatsappId, this.formatStationDetails(station));
       setTimeout(() => this.sendStationActionButtons(whatsappId, station), 2000);
     } catch (error) {
       await this.handleError(error, 'station details', { whatsappId, stationId });
@@ -294,10 +268,8 @@ export class BookingController {
   // ===============================================
   // QUEUE MANAGEMENT
   // ===============================================
-
   async handleJoinQueue(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const station = await this.getStationDetails(stationId);
       if (!station) {
@@ -307,19 +279,16 @@ export class BookingController {
 
       const existingQueues = await queueService.getUserQueueStatus(whatsappId);
       const existingQueue = existingQueues.find(q => q.stationId === stationId);
-      
       if (existingQueue) {
         await this.showExistingQueueStatus(whatsappId, existingQueue);
         return;
       }
 
       const queuePosition = await queueService.joinQueue(whatsappId, stationId);
-      
       if (!queuePosition) {
         await this.handleQueueJoinFailure(whatsappId, station);
         return;
       }
-
       await this.handleSuccessfulQueueJoin(whatsappId, queuePosition);
     } catch (error) {
       await this.handleError(error, 'join queue', { whatsappId, stationId });
@@ -328,19 +297,15 @@ export class BookingController {
 
   async handleQueueStatus(whatsappId: string, stationId?: number): Promise<void> {
     if (!validateWhatsAppId(whatsappId)) return;
-
     try {
       const userQueues = await queueService.getUserQueueStatus(whatsappId);
-      
       if (userQueues.length === 0) {
         await this.showNoActiveQueues(whatsappId);
         return;
       }
-
       for (const queue of userQueues) {
         await this.displayQueueStatus(whatsappId, queue);
       }
-
       setTimeout(() => this.sendQueueManagementButtons(whatsappId, userQueues), 2000);
     } catch (error) {
       await this.handleError(error, 'queue status', { whatsappId });
@@ -349,15 +314,12 @@ export class BookingController {
 
   async handleQueueCancel(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const success = await queueService.leaveQueue(whatsappId, stationId, 'user_cancelled');
-      
       if (!success) {
         await this.sendError(whatsappId, 'No active queue found');
         return;
       }
-
       await this.handleSuccessfulCancellation(whatsappId, stationId);
     } catch (error) {
       await this.handleError(error, 'queue cancel', { whatsappId, stationId });
@@ -367,42 +329,27 @@ export class BookingController {
   // ===============================================
   // SESSION MANAGEMENT WITH VERIFICATION
   // ===============================================
-
-  /**
-   * OPTIMIZED: Start charging - Delegates to photo verification
-   * No premature success messages
-   */
   async handleChargingStart(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const userQueues = await queueService.getUserQueueStatus(whatsappId);
-      const reservedQueue = userQueues.find(q => 
-        q.stationId === stationId && 
-        ['reserved', 'waiting'].includes(q.status)
+      const reservedQueue = userQueues.find(q =>
+        q.stationId === stationId && ['reserved', 'waiting'].includes(q.status)
       );
-
       if (!reservedQueue) {
         await this.handleNoValidReservation(whatsappId, stationId);
         return;
       }
 
-      // Initiate session - photo verification will be triggered automatically
       const session = await sessionService.startSession(whatsappId, stationId, reservedQueue.id);
-      
       if (!session) {
         await this.handleSessionStartFailure(whatsappId, stationId);
         return;
       }
 
-      // Mark queue as charging (non-blocking)
-      await queueService.startCharging(whatsappId, stationId).catch(err => 
+      await queueService.startCharging(whatsappId, stationId).catch(err =>
         logger.warn('Failed to update queue status', { whatsappId, stationId, err })
       );
-
-      // Photo verification service will send the request message
-      // No success message here - wait for verification to complete
-      
     } catch (error) {
       await this.handleError(error, 'charging start', { whatsappId, stationId });
     }
@@ -410,55 +357,39 @@ export class BookingController {
 
   async handleSessionStatus(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const activeSession = await sessionService.getActiveSession(whatsappId, stationId);
-      
       if (!activeSession) {
         await whatsappService.sendTextMessage(
           whatsappId,
-          '⚡ *No Active Session*\n\nNo active charging session found at this station.'
+          '⚡ *No Active Session*\nNo active charging session found at this station.'
         );
         return;
       }
-
-      // Display basic session info (getSessionStatus may not exist)
       await this.displayBasicSessionInfo(whatsappId, activeSession);
     } catch (error) {
       await this.handleError(error, 'session status', { whatsappId, stationId });
     }
   }
 
-  /**
-   * OPTIMIZED: Stop session - Triggers photo verification for end reading
-   */
   async handleSessionStop(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const activeSession = await sessionService.getActiveSession(whatsappId, stationId);
-      
       if (!activeSession) {
         await this.sendError(whatsappId, 'No active session found');
         return;
       }
 
-      // Stop session - photo verification for END will be triggered by sessionService
       const success = await sessionService.stopSession(whatsappId, stationId);
-      
       if (!success) {
         await this.sendError(whatsappId, 'Failed to stop session');
         return;
       }
 
-      // Complete queue entry (non-blocking)
       await queueService.completeCharging(whatsappId, stationId).catch(err =>
         logger.warn('Failed to complete queue', { whatsappId, stationId, err })
       );
-
-      // Photo verification service will handle the end photo request
-      // Summary will be sent after verification completes via sendSessionSummary()
-
     } catch (error) {
       await this.handleError(error, 'session stop', { whatsappId, stationId });
     }
@@ -466,35 +397,27 @@ export class BookingController {
 
   async handleSessionExtend(whatsappId: string, stationId: number, minutes: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
-      // Simple extension without extendSession method (may not exist)
       const activeSession = await sessionService.getActiveSession(whatsappId, stationId);
-      
       if (!activeSession) {
         await this.sendError(whatsappId, 'No active session to extend');
         return;
       }
 
-      // Update target battery level
       const newTargetBattery = Math.min(100, (activeSession.targetBatteryLevel || 80) + Math.floor(minutes / 30) * 10);
       const extendedTime = new Date(Date.now() + minutes * 60000);
-      
       await whatsappService.sendTextMessage(
         whatsappId,
-        `⏰ *Session Extended*\n\n` +
+        `⏰ *Session Extended*\n` +
         `⚡ +${minutes} minutes\n` +
         `🔋 New target: ${newTargetBattery}%\n` +
-        `🕐 Expected: ${extendedTime.toLocaleTimeString()}`
+        `🕐 Expected completion: ${extendedTime.toLocaleTimeString()}`
       );
     } catch (error) {
       await this.handleError(error, 'session extend', { whatsappId, stationId });
     }
   }
 
-  /**
-   * Send final session summary after END photo verification completes
-   */
   private async sendSessionSummary(whatsappId: string): Promise<void> {
     try {
       const [session] = await db.select()
@@ -516,16 +439,16 @@ export class BookingController {
 
       await whatsappService.sendTextMessage(
         whatsappId,
-        `🎉 *Charging Complete!*\n\n` +
+        `🎉 *Charging Complete!*\n` +
         `📊 *Summary:*\n` +
         `⚡ Energy: ${consumption.toFixed(2)} kWh\n` +
         `⏱️ Duration: ${Math.floor(duration / 60)}h ${duration % 60}m\n` +
-        `💰 Total: ₹${totalCost.toFixed(2)}\n\n` +
+        `💰 Total: ₹${totalCost.toFixed(2)}\n` +
         `📈 *Meter Readings:*\n` +
         `Start: ${session.startMeterReading} kWh\n` +
-        `End: ${session.endMeterReading} kWh\n\n` +
+        `End: ${session.endMeterReading} kWh\n` +
         `✅ Payment processing...\n` +
-        `📧 Receipt sent to email.`
+        `📧 Receipt sent to your email.`
       );
     } catch (error) {
       logger.error('Failed to send session summary', { whatsappId, error });
@@ -535,7 +458,6 @@ export class BookingController {
   // ===============================================
   // SMART BOOKING HANDLERS
   // ===============================================
-
   private async handleInstantBooking(whatsappId: string, station: ProcessedStation, user: any): Promise<void> {
     try {
       const queuePosition = await queueService.joinQueue(whatsappId, station.id);
@@ -545,7 +467,6 @@ export class BookingController {
       }
 
       const reserved = await queueService.reserveSlot(whatsappId, station.id, 15);
-      
       if (reserved) {
         await this.showInstantBookingSuccess(whatsappId, station, user);
       } else {
@@ -559,16 +480,14 @@ export class BookingController {
 
   private async handleQueueBooking(whatsappId: string, station: ProcessedStation, user: any): Promise<void> {
     const queueStats = await queueService.getQueueStats(station.id);
-    
     await whatsappService.sendTextMessage(
       whatsappId,
-      `📋 *Join Queue at ${station.name}?*\n\n` +
+      `📋 *Join Queue at ${station.name}?*\n` +
       `📊 ${queueStats.totalInQueue} people in queue\n` +
       `⏱️ Average wait: ${queueStats.averageWaitTime} min\n` +
       `💰 Rate: ${station.priceDisplay}\n` +
-      `💵 Expected: ~₹${this.estimateCost(station, user)}`
+      `💵 Estimated cost: ~₹${this.estimateCost(station, user)}`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🎯 *Proceed?*',
@@ -582,20 +501,18 @@ export class BookingController {
 
   private async handleExistingBooking(whatsappId: string, existingQueue: any): Promise<void> {
     const statusMap: Record<string, string> = {
-      reserved: 'Reserved',
-      waiting: 'In Queue',
-      charging: 'Active'
+      reserved: '✅ Reserved',
+      waiting: '⏳ In Queue',
+      charging: '⚡ Active'
     };
-
     await whatsappService.sendTextMessage(
       whatsappId,
-      `⚠️ *Existing Booking*\n\n` +
+      `⚠️ *Existing Booking*\n` +
       `📍 ${existingQueue.stationName}\n` +
       `📊 Status: ${statusMap[existingQueue.status] || 'Active'}\n` +
-      `👥 Position: #${existingQueue.position}\n\n` +
+      `👥 Position: #${existingQueue.position}\n` +
       `💡 Only one booking allowed at a time.`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '📱 *Manage Booking:*',
@@ -608,25 +525,23 @@ export class BookingController {
   }
 
   // ===============================================
-  // SUCCESS HANDLERS
+  // SUCCESS & FAILURE HANDLERS
   // ===============================================
-
   private async showInstantBookingSuccess(whatsappId: string, station: ProcessedStation, user: any): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `🎉 *Slot Reserved!*\n\n` +
+      `🎉 *Slot Reserved!*\n` +
       `📍 ${station.name}\n` +
       `⚡ Reserved for 15 minutes\n` +
       `💰 Rate: ${station.priceDisplay}\n` +
-      `💵 Expected: ~₹${this.estimateCost(station, user)}\n\n` +
+      `💵 Estimated cost: ~₹${this.estimateCost(station, user)}\n` +
       `⏰ Arrive within 15 minutes!`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
-      '⚡ *Ready?*',
+      '⚡ *Ready to Start?*',
       [
-        { id: `session_start_${station.id}`, title: '⚡ Start' },
+        { id: `session_start_${station.id}`, title: '⚡ Start Charging' },
         { id: `get_directions_${station.id}`, title: '🗺️ Navigate' },
         { id: `cancel_queue_${station.id}`, title: '❌ Cancel' }
       ]
@@ -634,24 +549,23 @@ export class BookingController {
   }
 
   private async handleSuccessfulQueueJoin(whatsappId: string, queuePosition: any): Promise<void> {
-    const waitAdvice = queuePosition.estimatedWaitMinutes > 30 
-      ? '\n💡 Long wait. Consider alternatives.' 
+    const waitAdvice = queuePosition.estimatedWaitMinutes > 30
+      ? '\n💡 Long wait. Consider alternatives.'
       : '\n✅ Reasonable wait time!';
 
     await whatsappService.sendTextMessage(
       whatsappId,
-      `📋 *Joined Queue!*\n\n` +
+      `📋 *Joined Queue Successfully!*\n` +
       `📍 ${queuePosition.stationName}\n` +
       `👥 Position: #${queuePosition.position}\n` +
-      `⏱️ Wait: ~${queuePosition.estimatedWaitMinutes} min\n` +
+      `⏱️ Estimated wait: ~${queuePosition.estimatedWaitMinutes} min\n` +
       `🔔 Live updates enabled${waitAdvice}`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '📱 *Manage Queue:*',
       [
-        { id: `queue_status_${queuePosition.stationId}`, title: '📊 Status' },
+        { id: `queue_status_${queuePosition.stationId}`, title: '📊 Refresh Status' },
         { id: `get_directions_${queuePosition.stationId}`, title: '🗺️ Navigate' },
         { id: `cancel_queue_${queuePosition.stationId}`, title: '❌ Cancel' }
       ]
@@ -661,9 +575,8 @@ export class BookingController {
   private async handleSuccessfulCancellation(whatsappId: string, stationId: number): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `✅ *Queue Cancelled*\n\nBooking cancelled successfully.\nNo charges applied.\n\n💡 Find another station?`
+      `✅ *Queue Cancelled*\nBooking cancelled successfully.\nNo charges applied.\n💡 Find another station?`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🔍 *Next Steps:*',
@@ -675,16 +588,11 @@ export class BookingController {
     ), 2000);
   }
 
-  // ===============================================
-  // FAILURE HANDLERS
-  // ===============================================
-
   private async handleQueueJoinFailure(whatsappId: string, station: ProcessedStation): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `❌ *Queue Full*\n\nUnable to join queue at ${station.name}.\n\n🔍 Find alternatives?`
+      `❌ *Queue Full*\nUnable to join queue at ${station.name}.\n🔍 Find alternatives?`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🎯 *Options:*',
@@ -699,10 +607,9 @@ export class BookingController {
   private async handleSessionStartFailure(whatsappId: string, stationId: number): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `❌ *Start Failed*\n\nCouldn't start session. Possible reasons:\n` +
+      `❌ *Start Failed*\nCouldn't start session. Possible reasons:\n` +
       `• Station connectivity issues\n• No valid reservation\n• Technical maintenance`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🔧 *Actions:*',
@@ -717,9 +624,8 @@ export class BookingController {
   private async handleNoValidReservation(whatsappId: string, stationId: number): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `⚠️ *No Reservation*\n\nYou need an active queue position to start charging.\n\n💡 Join the queue first.`
+      `⚠️ *No Reservation*\nYou need an active queue position to start charging.\n💡 Join the queue first.`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🎯 *Next Steps:*',
@@ -734,7 +640,6 @@ export class BookingController {
   private async handleUnavailableStation(whatsappId: string, station: ProcessedStation): Promise<void> {
     let reason = '❌ Station unavailable';
     let suggestion = 'Try another station';
-
     if (!station.isActive) {
       reason = '🚫 Station offline for maintenance';
       suggestion = 'Check back later';
@@ -745,9 +650,7 @@ export class BookingController {
       reason = '🔴 All slots occupied';
       suggestion = 'Join queue or find alternatives';
     }
-
-    await whatsappService.sendTextMessage(whatsappId, `${reason}\n\n${suggestion}`);
-
+    await whatsappService.sendTextMessage(whatsappId, `${reason}\n${suggestion}`);
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '🔍 *Options:*',
@@ -762,13 +665,11 @@ export class BookingController {
   // ===============================================
   // DISPLAY METHODS
   // ===============================================
-
   private async displayQueueStatus(whatsappId: string, queue: any): Promise<void> {
     const statusEmoji: Record<string, string> = {
       waiting: '⏳', reserved: '✅', charging: '⚡',
       ready: '🎯', completed: '✅', cancelled: '❌'
     };
-
     const emoji = statusEmoji[queue.status] || '📋';
     const timeInfo = queue.status === 'reserved' && queue.reservationExpiry
       ? `⏰ Expires: ${new Date(queue.reservationExpiry).toLocaleTimeString()}`
@@ -776,7 +677,7 @@ export class BookingController {
 
     await whatsappService.sendTextMessage(
       whatsappId,
-      `${emoji} *Queue Status*\n\n` +
+      `${emoji} *Queue Status*\n` +
       `📍 ${queue.stationName}\n` +
       `📊 Status: ${this.capitalizeFirst(queue.status)}\n` +
       `👥 Position: #${queue.position}\n` +
@@ -788,30 +689,29 @@ export class BookingController {
   private async displayBasicSessionInfo(whatsappId: string, session: any): Promise<void> {
     const startTime = session.startTime || new Date();
     const duration = Math.floor((Date.now() - startTime.getTime()) / 60000);
-    const durationText = duration > 60 
-      ? `${Math.floor(duration / 60)}h ${duration % 60}m` 
+    const durationText = duration > 60
+      ? `${Math.floor(duration / 60)}h ${duration % 60}m`
       : `${duration}m`;
 
     await whatsappService.sendTextMessage(
       whatsappId,
-      `⚡ *Active Session*\n\n` +
+      `⚡ *Active Charging Session*\n` +
       `📍 ${session.stationName || 'Charging Station'}\n` +
       `🔋 Current: ${session.currentBatteryLevel || 0}%\n` +
       `🎯 Target: ${session.targetBatteryLevel || 80}%\n` +
       `⚡ Rate: ${session.chargingRate || 0} kW\n` +
       `💰 Rate: ₹${session.pricePerKwh || 0}/kWh\n` +
       `⏱️ Duration: ${durationText}\n` +
-      `📊 Cost: ₹${session.totalCost?.toFixed(2) || '0.00'}\n\n` +
-      `🔄 Session active`
+      `📊 Estimated cost: ₹${session.totalCost?.toFixed(2) || '0.00'}\n` +
+      `🔄 Session is active`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
-      '🎛️ *Controls:*',
+      '🎛️ *Session Controls:*',
       [
         { id: `extend_30_${session.stationId}`, title: '⏰ +30min' },
         { id: `extend_60_${session.stationId}`, title: '⏰ +1hr' },
-        { id: `session_stop_${session.stationId}`, title: '🛑 Stop' }
+        { id: `session_stop_${session.stationId}`, title: '🛑 Stop Session' }
       ]
     ), 2000);
   }
@@ -819,9 +719,8 @@ export class BookingController {
   private async showNoActiveQueues(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      '📋 *Your Bookings*\n\nNo active bookings found.\n\n🔍 Ready to find a station?'
+      '📋 *Your Bookings*\nNo active bookings found.\n🔍 Ready to find a station?'
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '⚡ *Find Stations:*',
@@ -836,13 +735,12 @@ export class BookingController {
   private async showExistingQueueStatus(whatsappId: string, existingQueue: any): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `📋 *Already in Queue*\n\n` +
-      `You're already queued at this station.\n\n` +
+      `📋 *Already in Queue*\n` +
+      `You're already queued at this station.\n` +
       `👥 Position: #${existingQueue.position}\n` +
-      `⏱️ Wait: ~${existingQueue.estimatedWaitMinutes} min\n\n` +
-      `💡 Updates coming as position changes.`
+      `⏱️ Wait: ~${existingQueue.estimatedWaitMinutes} min\n` +
+      `💡 Updates coming as your position changes.`
     );
-
     setTimeout(() => whatsappService.sendButtonMessage(
       whatsappId,
       '📱 *Manage:*',
@@ -856,19 +754,15 @@ export class BookingController {
 
   private async sendQueueManagementButtons(whatsappId: string, queues: any[]): Promise<void> {
     if (queues.length === 0) return;
-
     const primaryQueue = queues[0];
     const buttons = [];
-
     if (primaryQueue.status === 'reserved') {
       buttons.push({ id: `session_start_${primaryQueue.stationId}`, title: '⚡ Start' });
     }
-    
     buttons.push(
       { id: `get_directions_${primaryQueue.stationId}`, title: '🗺️ Navigate' },
       { id: `cancel_queue_${primaryQueue.stationId}`, title: '❌ Cancel' }
     );
-
     await whatsappService.sendButtonMessage(
       whatsappId,
       '🎛️ *Queue Management:*',
@@ -879,33 +773,28 @@ export class BookingController {
   // ===============================================
   // ADDITIONAL ACTIONS
   // ===============================================
-
   async handleGetDirections(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
-
     try {
       const station = await this.getStationDetails(stationId);
       if (!station) {
         await this.sendNotFound(whatsappId, 'Station not found');
         return;
       }
-
       const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(station.name + ' ' + station.address)}`;
       const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(station.name + ' ' + station.address)}`;
-      
       await whatsappService.sendTextMessage(
         whatsappId,
-        `🗺️ *Directions to ${station.name}*\n\n` +
-        `📍 ${station.address}\n\n` +
+        `🗺️ *Directions to ${station.name}*\n` +
+        `📍 ${station.address}\n` +
         `🔗 *Navigate:*\n` +
         `📱 Google Maps: ${googleMapsUrl}\n` +
-        `🚗 Waze: ${wazeUrl}\n\n` +
+        `🚗 Waze: ${wazeUrl}\n` +
         `💡 *Tips:*\n` +
         `• Save location for quick access\n` +
         `• Check hours before travel\n` +
         `• Arrive 5 min early for reservations`
       );
-
       setTimeout(() => whatsappService.sendButtonMessage(
         whatsappId,
         '📱 *While traveling:*',
@@ -922,31 +811,27 @@ export class BookingController {
 
   async handleFindAlternatives(whatsappId: string, stationId: number): Promise<void> {
     if (!validateWhatsAppId(whatsappId)) return;
-
     try {
       await whatsappService.sendTextMessage(
         whatsappId,
-        '🔍 *Finding Alternatives...*\n\n' +
+        '🔍 *Finding Alternatives...*\n' +
         'Searching for nearby options with:\n' +
-        '• Similar speeds\n• Compatible connectors\n• Shorter waits\n• Better rates'
+        '• Similar charging speeds\n• Compatible connectors\n• Shorter waits\n• Better rates'
       );
-
       const user = await userService.getUserByWhatsAppId(whatsappId);
-
       setTimeout(async () => {
         await whatsappService.sendTextMessage(
           whatsappId,
-          `🎯 *Alternative Strategies:*\n\n` +
+          `🎯 *Alternative Strategies:*\n` +
           `**Quick Options:**\n` +
           `🔍 Expand search radius\n` +
           `⏰ Find shorter queues\n` +
-          `💰 Better rate stations\n\n` +
+          `💰 Better rate stations\n` +
           `**Smart Tips:**\n` +
           `${user?.connectorType ? `🔌 ${user.connectorType} compatible\n` : ''}` +
           `📊 Off-peak hours (10 PM - 8 AM)\n` +
           `🏢 Try commercial areas`
         );
-
         await whatsappService.sendButtonMessage(
           whatsappId,
           '🎯 *Next Move:*',
@@ -963,10 +848,15 @@ export class BookingController {
   }
 
   // ===============================================
-  // DATABASE OPERATIONS
+  // DATABASE OPERATIONS WITH CACHING
   // ===============================================
-
   private async getStationDetails(stationId: number): Promise<ProcessedStation | null> {
+    const now = Date.now();
+    const cached = stationCache.get(stationId);
+    if (cached && cached.expiry > now) {
+      return cached.data;
+    }
+
     try {
       const [station] = await db
         .select()
@@ -979,7 +869,9 @@ export class BookingController {
         return null;
       }
 
-      return this.processStationData(station);
+      const processed = this.processStationData(station);
+      stationCache.set(stationId, { data: processed, expiry: now + CACHE_TTL_MS });
+      return processed;
     } catch (error) {
       logger.error('Database query failed', { stationId, error });
       return null;
@@ -989,18 +881,14 @@ export class BookingController {
   private processStationData(station: any): ProcessedStation {
     const isActive = station.isActive ?? false;
     const isOpen = station.isOpen ?? false;
-    
-    // Handle both old and new schema field names
     const availableSlots = Number(station.availableSlots || station.availablePorts) || 0;
     const totalSlots = Number(station.totalSlots || station.totalPorts) || 1;
     const distance = Number(station.distance) || 0;
-    
     const price = Number(station.pricePerKwh) || 0;
     const rating = Number(station.rating || station.averageRating) || 0;
     const reviews = Number(station.totalReviews || station.reviewCount) || 0;
-
-    const utilization = totalSlots > 0 
-      ? Math.round(((totalSlots - availableSlots) / totalSlots) * 100) 
+    const utilization = totalSlots > 0
+      ? Math.round(((totalSlots - availableSlots) / totalSlots) * 100)
       : 0;
     const isAvailable = availableSlots > 0 && isActive && isOpen;
 
@@ -1011,13 +899,11 @@ export class BookingController {
 
     return {
       ...station,
-      // Ensure all required fields are present
       distance: station.distance || '0',
-      totalSlots: totalSlots,
-      availableSlots: availableSlots,
+      totalSlots,
+      availableSlots,
       totalPorts: station.totalPorts || totalSlots,
       availablePorts: station.availablePorts || availableSlots,
-      // Processed fields
       isActive,
       isOpen,
       isAvailable,
@@ -1035,47 +921,43 @@ export class BookingController {
   // ===============================================
   // MESSAGE FORMATTING
   // ===============================================
-
   private async showStationOverview(whatsappId: string, station: ProcessedStation): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
-      `🏢 *${station.name}*\n\n` +
+      `🏢 *${station.name}*\n` +
       `📍 ${station.address}\n` +
       `📏 ${station.distanceDisplay}\n` +
       `⚡ ${station.slotsDisplay}\n` +
       `💰 ${station.priceDisplay}\n` +
-      `⭐ ${station.ratingDisplay} (${station.finalReviews} reviews)\n\n` +
+      `⭐ ${station.ratingDisplay} (${station.finalReviews} reviews)\n` +
       `🔌 *Connectors:* ${this.formatConnectorTypes(station.connectorTypes)}\n` +
       `🕒 *Hours:* ${this.formatOperatingHours(station.operatingHours)}\n` +
-      `🎯 *Status:* ${this.getStatusWithEmoji(station.availability)}`
+      `🎯 *Status:* ${this.getStatusWithEmoji(station.availability)} ${station.availability}`
     );
-
     setTimeout(() => this.sendStationActionButtons(whatsappId, station), 2000);
   }
 
   private formatStationDetails(station: ProcessedStation): string {
     let details = `🏢 *${station.name}*\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-      `📍 *Location:*\n${station.address}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📍 *Location:*\n${station.address}\n` +
       `⚡ *Charging:*\n` +
       `• Slots: ${station.slotsDisplay}\n` +
       `• Price: ${station.priceDisplay}\n` +
-      `• Connectors: ${this.formatConnectorTypes(station.connectorTypes)}\n\n` +
-      `🕒 *Hours:*\n${this.formatOperatingHours(station.operatingHours)}\n\n` +
+      `• Connectors: ${this.formatConnectorTypes(station.connectorTypes)}\n` +
+      `🕒 *Hours:*\n${this.formatOperatingHours(station.operatingHours)}\n` +
       `⭐ *Rating:* ${station.ratingDisplay}\n` +
       `📊 *Utilization:* ${station.utilization}%\n`;
 
     if (station.amenities && Array.isArray(station.amenities) && station.amenities.length > 0) {
       details += `\n🎯 *Amenities:*\n${station.amenities.map((a: string) => `• ${this.capitalizeFirst(a)}`).join('\n')}\n`;
     }
-
     details += `\n${this.getStatusWithEmoji(station.availability)} *Status:* ${station.availability}`;
     return details;
   }
 
   private async sendStationActionButtons(whatsappId: string, station: ProcessedStation): Promise<void> {
     const buttons = [];
-
     if (station.isAvailable) {
       buttons.push(
         { id: `book_station_${station.id}`, title: '⚡ Book Now' },
@@ -1083,11 +965,10 @@ export class BookingController {
       );
     } else {
       buttons.push(
-        { id: `join_queue_${station.id}`, title: '📋 Queue' },
+        { id: `join_queue_${station.id}`, title: '📋 Join Queue' },
         { id: `find_alternatives_${station.id}`, title: '🔍 Alternatives' }
       );
     }
-
     buttons.push({ id: `get_directions_${station.id}`, title: '🗺️ Navigate' });
 
     if (buttons.length > 0) {
@@ -1103,19 +984,16 @@ export class BookingController {
   // ===============================================
   // UTILITY METHODS
   // ===============================================
-
   private validateInput(whatsappId: string, stationId: number): boolean {
     if (!validateWhatsAppId(whatsappId)) {
       logger.error('Invalid WhatsApp ID', { whatsappId });
       return false;
     }
-
     if (!stationId || isNaN(stationId) || stationId <= 0) {
       logger.error('Invalid station ID', { stationId, whatsappId });
       whatsappService.sendTextMessage(whatsappId, '❌ Invalid station. Try again.');
       return false;
     }
-
     return true;
   }
 
@@ -1159,13 +1037,11 @@ export class BookingController {
   // ===============================================
   // ERROR HANDLING
   // ===============================================
-
   private async handleError(error: any, operation: string, context: Record<string, any>): Promise<void> {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`${operation} failed`, { ...context, error: errorMsg });
-
     if (context.whatsappId) {
-      await this.sendError(context.whatsappId, `Failed to ${operation}. Try again.`);
+      await this.sendError(context.whatsappId, `Failed to ${operation}. Please try again.`);
     }
   }
 
@@ -1186,22 +1062,11 @@ export class BookingController {
   }
 
   // ===============================================
-  // MONITORING & HEALTH
+  // HEALTH CHECK
   // ===============================================
-
-  public getHealthStatus(): {
-    status: 'healthy' | 'degraded';
-    activeOperations: number;
-    lastActivity: string;
-    integrations: {
-      queueService: boolean;
-      sessionService: boolean;
-      notificationService: boolean;
-      photoVerification: boolean;
-    };
-  } {
+  public getHealthStatus() {
     return {
-      status: 'healthy',
+      status: 'healthy' as const,
       activeOperations: 0,
       lastActivity: new Date().toISOString(),
       integrations: {
@@ -1214,9 +1079,8 @@ export class BookingController {
   }
 
   // ===============================================
-  // ALIASES FOR BACKWARD COMPATIBILITY
+  // BACKWARD COMPATIBILITY
   // ===============================================
-
   async processQueueJoin(whatsappId: string, stationId: number): Promise<void> {
     return this.handleJoinQueue(whatsappId, stationId);
   }

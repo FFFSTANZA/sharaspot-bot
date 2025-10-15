@@ -1,68 +1,75 @@
+// ocr-processor.ts
+
 import Tesseract from 'tesseract.js';
 import sharp from 'sharp';
 import { OCR_CONFIG } from '../config/ocr-config';
 
-/**
- * OCR Processor for extracting kWh readings from dashboard photos
- * Handles image preprocessing, text extraction, and validation
- */
+// ======================
+// Interfaces
+// ======================
 
-interface OCRResult {
+export interface OCRResult {
   success: boolean;
   reading?: number;
   confidence?: number;
   rawText?: string;
   error?: string;
+  suggestions?: string[];
 }
 
-interface PreprocessOptions {
+export interface PreprocessOptions {
   enhanceContrast?: boolean;
   denoise?: boolean;
   targetSize?: { width: number; height: number };
 }
 
+interface OCRRawResult {
+  success: boolean;
+  text?: string;
+  confidence?: number;
+  error?: string;
+}
+
+// ======================
+// Main Function
+// ======================
+
 /**
- * Main function to extract kWh reading from image buffer
+ * Extract kWh reading from image buffer with preprocessing, OCR, and validation
  */
 export async function extractKwhReading(
   imageBuffer: Buffer,
   options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
 ): Promise<OCRResult> {
   try {
-    // Step 1: Preprocess image for better OCR accuracy
-    console.log('🔧 Preprocessing image...');
     const processedImage = await preprocessImage(imageBuffer, options);
-
-    // Step 2: Perform OCR using Tesseract.js
-    console.log('🔍 Running OCR...');
     const ocrResult = await performOCR(processedImage);
 
     if (!ocrResult.success) {
       return {
         success: false,
-        error: ocrResult.error || 'OCR processing failed',
+        error: ocrResult.error || 'OCR failed',
+        suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
       };
     }
 
-    // Step 3: Extract kWh reading from text
-    console.log('📊 Extracting kWh reading...');
     const reading = extractReadingFromText(ocrResult.text || '');
-
-    if (!reading) {
+    if (reading === null) {
       return {
         success: false,
         rawText: ocrResult.text,
-        error: 'Could not find kWh reading in image',
+        error: 'No valid kWh reading found',
+        suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
       };
     }
 
-    // Step 4: Validate the reading
     const validation = validateReading(reading);
     if (!validation.valid) {
       return {
         success: false,
         reading,
         error: validation.error,
+        suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
       };
     }
 
@@ -76,14 +83,16 @@ export async function extractKwhReading(
     console.error('❌ OCR processing error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      suggestions: getRetrySuggestions(),
     };
   }
 }
 
-/**
- * Preprocess image to enhance OCR accuracy
- */
+// ======================
+// Image Preprocessing
+// ======================
+
 export async function preprocessImage(
   imageBuffer: Buffer,
   options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
@@ -97,56 +106,50 @@ export async function preprocessImage(
 
     let processor = sharp(imageBuffer);
 
-    // Resize if image is too large (improves processing speed)
+    // Metadata for conditional resize
     const metadata = await processor.metadata();
-    if (metadata.width && metadata.width > targetSize.width) {
+    const shouldResize = metadata.width && metadata.width > targetSize.width;
+
+    if (shouldResize) {
       processor = processor.resize(targetSize.width, targetSize.height, {
         fit: 'inside',
         withoutEnlargement: true,
       });
     }
 
-    // Convert to grayscale for better text recognition
-    processor = processor.grayscale();
+    processor = processor
+      .grayscale()
+      .sharpen();
 
-    // Enhance contrast to make text clearer
     if (enhanceContrast) {
       processor = processor.normalize();
     }
 
-    // Apply sharpening to improve edge detection
-    processor = processor.sharpen();
-
-    // Denoise if enabled
     if (denoise) {
-      processor = processor.median(3); // Median filter for noise reduction
+      processor = processor.median(3);
     }
 
-    // Increase contrast further using levels
-    processor = processor.linear(1.5, -(128 * 1.5) + 128);
+    // Boost contrast for Tesseract
+    processor = processor.linear(1.8, -100); // Aggressive contrast
 
-    // Convert to high-quality PNG for Tesseract
-    const processedBuffer = await processor.png().toBuffer();
-
-    console.log('✅ Image preprocessing complete');
-    return processedBuffer;
+    // Output as PNG (lossless)
+    const result = await processor.png({ quality: 100 }).toBuffer();
+    console.log('✅ Preprocessing complete');
+    return result;
   } catch (error) {
-    console.error('❌ Image preprocessing failed:', error);
-    throw new Error('Failed to preprocess image: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    console.error('❌ Preprocessing failed:', error);
+    throw new Error(`Preprocessing failed: ${error instanceof Error ? error.message : 'Unknown'}`);
   }
 }
 
-/**
- * Perform OCR using Tesseract.js
- */
-async function performOCR(imageBuffer: Buffer): Promise<{
-  success: boolean;
-  text?: string;
-  confidence?: number;
-  error?: string;
-}> {
+// ======================
+// OCR Execution
+// ======================
+
+async function performOCR(imageBuffer: Buffer): Promise<OCRRawResult> {
+  let worker: Tesseract.Worker | null = null;
   try {
-    const worker = await Tesseract.createWorker(OCR_CONFIG.TESSERACT.language, 1, {
+    worker = await Tesseract.createWorker(OCR_CONFIG.TESSERACT.language, 1, {
       logger: (m) => {
         if (m.status === 'recognizing text') {
           console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
@@ -154,322 +157,219 @@ async function performOCR(imageBuffer: Buffer): Promise<{
       },
     });
 
-    // Configure Tesseract for number recognition
     await worker.setParameters({
       tessedit_char_whitelist: OCR_CONFIG.TESSERACT.whitelist,
-      tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+      preserve_interword_spaces: '1',
     });
 
     const result = await worker.recognize(imageBuffer);
     await worker.terminate();
 
-    const confidence = result.data.confidence;
-    const text = result.data.text.trim();
-
-    console.log('📝 OCR Raw Text:', text);
-    console.log('📊 OCR Confidence:', confidence);
+    const { text, confidence } = result.data;
+    const cleanText = text.trim();
 
     if (confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
       return {
         success: false,
-        error: 'Low confidence OCR result. Please retake photo with better lighting and focus.',
+        error: 'Low-confidence OCR result',
+        confidence,
+        text: cleanText,
       };
     }
 
     return {
       success: true,
-      text,
+      text: cleanText,
       confidence,
     };
   } catch (error) {
-    console.error('❌ Tesseract OCR failed:', error);
+    console.error('❌ Tesseract error:', error);
     return {
       success: false,
-      error: 'OCR engine error: ' + (error instanceof Error ? error.message : 'Unknown error'),
+      error: `Tesseract error: ${error instanceof Error ? error.message : 'Unknown'}`,
     };
+  } finally {
+    if (worker) {
+      try {
+        await worker.terminate();
+      } catch (e) {
+        console.warn('Worker termination warning:', e);
+      }
+    }
   }
 }
 
-/**
- * Extract numeric kWh reading from OCR text
- * Handles various formats: "1245.8", "1245.8 kWh", "kWh: 1245.8", etc.
- */
+// ======================
+// Reading Extraction
+// ======================
+
 function extractReadingFromText(text: string): number | null {
-  // Clean up text
-  const cleanText = text
-    .toUpperCase()
+  const clean = text
+    .replace(/[\n\r\t]/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .toUpperCase();
 
-  console.log('🔍 Cleaned text:', cleanText);
+  console.log('🔍 Cleaned OCR text:', JSON.stringify(clean));
 
-  // Pattern 1: Look for numbers followed by kWh (e.g., "1245.8 kWh")
-  const pattern1 = /(\d+\.?\d*)\s*K?W?H?/i;
-  const match1 = cleanText.match(pattern1);
-  if (match1 && match1[1]) {
-    const reading = parseFloat(match1[1]);
-    if (!isNaN(reading)) {
-      console.log('✅ Found reading (Pattern 1):', reading);
-      return reading;
+  // Pattern: [optional prefix] NUMBER [optional kWh/kW/kWh]
+  const patterns = [
+    /(?:K?W?H?\s*[:\-]?\s*)?(\d{3,6}(?:\.\d{1,3})?)/i,
+    /(\d{3,6}(?:\.\d{1,3})?)\s*(?:K?W?H?)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = clean.match(pattern);
+    if (match && match[1]) {
+      const num = parseFloat(match[1]);
+      if (!isNaN(num) && num >= OCR_CONFIG.VALID_RANGE.min && num <= OCR_CONFIG.VALID_RANGE.max) {
+        console.log('✅ Reading matched pattern:', num);
+        return num;
+      }
     }
   }
 
-  // Pattern 2: Look for standalone decimal numbers (e.g., "1245.8")
-  const pattern2 = /(\d{3,5}\.\d{1,2})/;
-  const match2 = cleanText.match(pattern2);
-  if (match2 && match2[1]) {
-    const reading = parseFloat(match2[1]);
-    if (!isNaN(reading)) {
-      console.log('✅ Found reading (Pattern 2):', reading);
-      return reading;
-    }
-  }
-
-  // Pattern 3: Look for any number with 3-5 digits before decimal
-  const pattern3 = /(\d{3,5})\s*\.?\s*(\d{1,2})?/;
-  const match3 = cleanText.match(pattern3);
-  if (match3) {
-    const intPart = match3[1];
-    const decPart = match3[2] || '0';
-    const reading = parseFloat(`${intPart}.${decPart}`);
-    if (!isNaN(reading)) {
-      console.log('✅ Found reading (Pattern 3):', reading);
-      return reading;
-    }
-  }
-
-  // Pattern 4: Extract all numbers and find the most likely candidate
-  const allNumbers = cleanText.match(/\d+\.?\d*/g);
-  if (allNumbers && allNumbers.length > 0) {
-    // Filter numbers that could be kWh readings
-    const candidates = allNumbers
+  // Fallback: extract all numbers and find plausible candidate
+  const allNums = clean.match(/\d+(?:\.\d+)?/g);
+  if (allNums) {
+    const candidates = allNums
       .map(n => parseFloat(n))
       .filter(n => !isNaN(n) && n >= OCR_CONFIG.VALID_RANGE.min && n <= OCR_CONFIG.VALID_RANGE.max);
-    
-    if (candidates.length === 1) {
-      console.log('✅ Found reading (Pattern 4):', candidates[0]);
-      return candidates[0];
-    } else if (candidates.length > 1) {
-      // Return the largest number (most likely to be cumulative kWh)
-      const reading = Math.max(...candidates);
-      console.log('✅ Found reading (Pattern 4 - max):', reading);
-      return reading;
-    }
+
+    if (candidates.length === 1) return candidates[0];
+    if (candidates.length > 1) return Math.max(...candidates); // Assume cumulative meter
   }
 
-  console.log('❌ No valid kWh reading found in text');
+  console.log('❌ No valid kWh reading found');
   return null;
 }
 
-/**
- * Validate extracted reading
- */
-export function validateReading(reading: number): {
-  valid: boolean;
-  error?: string;
-} {
-  // Check if reading is a valid number
-  if (isNaN(reading) || !isFinite(reading)) {
-    return {
-      valid: false,
-      error: 'Invalid reading: Not a valid number',
-    };
-  }
+// ======================
+// Validation
+// ======================
 
-  // Check if reading is positive
+export function validateReading(reading: number): { valid: boolean; error?: string } {
+  if (typeof reading !== 'number' || isNaN(reading) || !isFinite(reading)) {
+    return { valid: false, error: 'Invalid number format' };
+  }
   if (reading <= 0) {
-    return {
-      valid: false,
-      error: 'Invalid reading: Must be greater than 0',
-    };
+    return { valid: false, error: 'Reading must be positive' };
   }
-
-  // Check reasonable range for meter readings
   if (reading < OCR_CONFIG.VALID_RANGE.min) {
-    return {
-      valid: false,
-      error: `Reading too low: Meter readings are typically above ${OCR_CONFIG.VALID_RANGE.min} kWh`,
-    };
+    return { valid: false, error: `Reading below minimum (${OCR_CONFIG.VALID_RANGE.min} kWh)` };
   }
-
   if (reading > OCR_CONFIG.VALID_RANGE.max) {
-    return {
-      valid: false,
-      error: 'Reading too high: Please verify the reading',
-    };
+    return { valid: false, error: `Reading exceeds maximum (${OCR_CONFIG.VALID_RANGE.max} kWh)` };
   }
-
-  // Check decimal places
-  const decimalPlaces = (reading.toString().split('.')[1] || '').length;
-  if (decimalPlaces > OCR_CONFIG.MAX_DECIMAL_PLACES) {
-    return {
-      valid: false,
-      error: 'Invalid reading: Too many decimal places',
-    };
+  const decimals = (reading.toString().split('.')[1] || '').length;
+  if (decimals > OCR_CONFIG.MAX_DECIMAL_PLACES) {
+    return { valid: false, error: 'Too many decimal places' };
   }
-
-  return {
-    valid: true,
-  };
+  return { valid: true };
 }
 
-/**
- * Calculate consumption between two readings with validation
- */
+// ======================
+// Consumption Logic
+// ======================
+
 export function calculateConsumption(
-  startReading: number,
-  endReading: number
-): {
-  valid: boolean;
-  consumption?: number;
-  error?: string;
-} {
-  // Validate both readings
-  const startValidation = validateReading(startReading);
-  if (!startValidation.valid) {
-    return {
-      valid: false,
-      error: `Invalid start reading: ${startValidation.error}`,
-    };
+  start: number,
+  end: number
+): { valid: boolean; consumption?: number; error?: string } {
+  const v1 = validateReading(start);
+  const v2 = validateReading(end);
+  if (!v1.valid) return { valid: false, error: `Start: ${v1.error}` };
+  if (!v2.valid) return { valid: false, error: `End: ${v2.error}` };
+  if (end <= start) {
+    return { valid: false, error: 'End reading must be greater than start' };
   }
 
-  const endValidation = validateReading(endReading);
-  if (!endValidation.valid) {
-    return {
-      valid: false,
-      error: `Invalid end reading: ${endValidation.error}`,
-    };
+  const cons = end - start;
+  if (cons < OCR_CONFIG.CONSUMPTION_RANGE.min) {
+    return { valid: false, error: `Consumption too low (< ${OCR_CONFIG.CONSUMPTION_RANGE.min} kWh)` };
   }
-
-  // Check 1: End reading must be greater than start
-  if (endReading <= startReading) {
-    return {
-      valid: false,
-      error: 'End reading must be greater than start reading',
-    };
-  }
-
-  const consumption = endReading - startReading;
-
-  // Check 2: Reasonable consumption range
-  if (consumption < OCR_CONFIG.CONSUMPTION_RANGE.min) {
-    return {
-      valid: false,
-      error: `Consumption too low: Minimum ${OCR_CONFIG.CONSUMPTION_RANGE.min} kWh`,
-    };
-  }
-
-  if (consumption > OCR_CONFIG.CONSUMPTION_RANGE.max) {
-    return {
-      valid: false,
-      error: `Consumption exceeds typical maximum (${OCR_CONFIG.CONSUMPTION_RANGE.max} kWh). Please verify readings.`,
-    };
+  if (cons > OCR_CONFIG.CONSUMPTION_RANGE.max) {
+    return { valid: false, error: `Consumption too high (> ${OCR_CONFIG.CONSUMPTION_RANGE.max} kWh)` };
   }
 
   return {
     valid: true,
-    consumption: Math.round(consumption * 100) / 100, // Round to 2 decimal places
+    consumption: Math.round(cons * 100) / 100,
   };
 }
 
-/**
- * Validate consumption against session duration and charger specs
- */
 export function validateConsumptionWithContext(
   consumption: number,
   durationMinutes: number,
   chargerPowerKw: number,
   batteryCapacityKwh?: number
-): {
-  valid: boolean;
-  warnings?: string[];
-  error?: string;
-} {
-  const warnings: string[] = [];
-
-  // Check 3: Duration match (physics check)
+): { valid: boolean; warnings?: string[]; error?: string } {
   const durationHours = durationMinutes / 60;
-  const maxPossibleKwh = durationHours * chargerPowerKw * 0.9; // 90% efficiency
-  
-  if (consumption > maxPossibleKwh * 1.1) { // 10% tolerance
+  const theoreticalMax = durationHours * chargerPowerKw * 0.95; // assume 95% efficiency
+
+  if (consumption > theoreticalMax * 1.15) {
     return {
       valid: false,
-      error: `Consumption (${consumption} kWh) exceeds maximum possible (${maxPossibleKwh.toFixed(1)} kWh) for ${durationMinutes} min at ${chargerPowerKw} kW`,
+      error: `Consumption (${consumption} kWh) exceeds theoretical max (${theoreticalMax.toFixed(1)} kWh)`,
     };
   }
 
-  // Check 4: Battery capacity validation
-  if (batteryCapacityKwh && consumption > batteryCapacityKwh) {
+  if (batteryCapacityKwh && consumption > batteryCapacityKwh * 1.05) {
     return {
       valid: false,
-      error: `Consumption (${consumption} kWh) exceeds vehicle battery capacity (${batteryCapacityKwh} kWh)`,
+      error: `Consumption exceeds battery capacity (${batteryCapacityKwh} kWh)`,
     };
   }
 
-  // Warning: Very low efficiency
+  const warnings: string[] = [];
+  const avgPower = consumption / durationHours;
+  if (avgPower > chargerPowerKw * 0.98) {
+    warnings.push('Average power very close to charger limit – verify readings.');
+  }
+
   const efficiency = (consumption / (durationHours * chargerPowerKw)) * 100;
-  if (efficiency < 50) {
-    warnings.push(`Low charging efficiency (${efficiency.toFixed(0)}%). This may be normal for small top-ups.`);
+  if (efficiency < 60) {
+    warnings.push(`Low efficiency (${efficiency.toFixed(0)}%) – may indicate partial charge.`);
   }
 
-  // Warning: Suspiciously high consumption rate
-  const averageKw = consumption / durationHours;
-  if (averageKw > chargerPowerKw * 0.95) {
-    warnings.push(`Very high charging rate (${averageKw.toFixed(1)} kW average). Please verify readings.`);
-  }
-
-  return {
-    valid: true,
-    warnings: warnings.length > 0 ? warnings : undefined,
-  };
+  return { valid: true, warnings: warnings.length ? warnings : undefined };
 }
 
-/**
- * Helper: Format reading for display
- */
+// ======================
+// Helpers
+// ======================
+
 export function formatReading(reading: number): string {
   return `${reading.toFixed(1)} kWh`;
 }
 
-/**
- * Helper: Get retry suggestions based on OCR failure
- */
 export function getRetrySuggestions(confidence?: number, rawText?: string): string[] {
-  const suggestions: string[] = [];
   const tips = OCR_CONFIG.MESSAGES.RETRY_TIPS;
+  const suggestions: string[] = [];
 
-  if (!confidence || confidence < OCR_CONFIG.MESSAGES.LOW_CONFIDENCE_THRESHOLD) {
-    suggestions.push(tips.lighting);
-    suggestions.push(tips.focus);
-    suggestions.push(tips.steady);
+  if (confidence === undefined || confidence < OCR_CONFIG.MESSAGES.LOW_CONFIDENCE_THRESHOLD) {
+    suggestions.push(tips.lighting, tips.focus, tips.steady);
   }
 
-  if (rawText && rawText.length < 5) {
-    suggestions.push(tips.visible);
-    suggestions.push(tips.numbers);
+  if (!rawText || rawText.replace(/\D/g, '').length < 3) {
+    suggestions.push(tips.visible, tips.numbers);
   }
 
-  if (suggestions.length === 0) {
-    suggestions.push(tips.lighting);
-    suggestions.push(tips.visible);
-  }
-
-  return suggestions;
+  return [...new Set(suggestions)]; // dedupe
 }
 
-/**
- * Helper: Check if confidence should trigger a warning
- */
 export function shouldWarnLowConfidence(confidence: number): boolean {
   return confidence < OCR_CONFIG.MIN_DISPLAY_CONFIDENCE;
 }
 
-/**
- * Helper: Check if confidence is good quality
- */
 export function isGoodConfidence(confidence: number): boolean {
   return confidence >= OCR_CONFIG.GOOD_CONFIDENCE;
 }
+
+// ======================
+// Export
+// ======================
 
 export default {
   extractKwhReading,
