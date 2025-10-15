@@ -329,31 +329,40 @@ export class BookingController {
   // ===============================================
   // SESSION MANAGEMENT WITH VERIFICATION
   // ===============================================
-  async handleChargingStart(whatsappId: string, stationId: number): Promise<void> {
-    if (!this.validateInput(whatsappId, stationId)) return;
-    try {
-      const userQueues = await queueService.getUserQueueStatus(whatsappId);
-      const reservedQueue = userQueues.find(q =>
-        q.stationId === stationId && ['reserved', 'waiting'].includes(q.status)
-      );
-      if (!reservedQueue) {
-        await this.handleNoValidReservation(whatsappId, stationId);
-        return;
-      }
-
-      const session = await sessionService.startSession(whatsappId, stationId, reservedQueue.id);
-      if (!session) {
-        await this.handleSessionStartFailure(whatsappId, stationId);
-        return;
-      }
-
-      await queueService.startCharging(whatsappId, stationId).catch(err =>
-        logger.warn('Failed to update queue status', { whatsappId, stationId, err })
-      );
-    } catch (error) {
-      await this.handleError(error, 'charging start', { whatsappId, stationId });
+  /**
+ * ❌ PROBLEM: Validation issues with queue status checks
+ */
+async handleChargingStart(whatsappId: string, stationId: number): Promise<void> {
+  if (!this.validateInput(whatsappId, stationId)) return;
+  try {
+    // ❌ PROBLEM: Queue status might not be synchronized
+    const userQueues = await queueService.getUserQueueStatus(whatsappId);
+    const reservedQueue = userQueues.find(q =>
+      q.stationId === stationId && ['reserved', 'waiting'].includes(q.status)
+    );
+    
+    // ❌ PROBLEM: Fails if queue status isn't exactly 'reserved' or 'waiting'
+    if (!reservedQueue) {
+      await this.handleNoValidReservation(whatsappId, stationId);
+      return;
     }
+
+    const session = await sessionService.startSession(whatsappId, stationId, reservedQueue.id);
+    if (!session) {
+      await this.handleSessionStartFailure(whatsappId, stationId);
+      return;
+    }
+
+    // ❌ PROBLEM: This might fail silently if queue service has issues
+    await queueService.startCharging(whatsappId, stationId).catch(err =>
+      logger.warn('Failed to update queue status', { whatsappId, stationId, err })
+    );
+  } catch (error) {
+    await this.handleError(error, 'charging start', { whatsappId, stationId });
   }
+}
+
+
 
   async handleSessionStatus(whatsappId: string, stationId: number): Promise<void> {
     if (!this.validateInput(whatsappId, stationId)) return;
@@ -604,38 +613,198 @@ export class BookingController {
     ), 2000);
   }
 
-  private async handleSessionStartFailure(whatsappId: string, stationId: number): Promise<void> {
-    await whatsappService.sendTextMessage(
-      whatsappId,
-      `❌ *Start Failed*\nCouldn't start session. Possible reasons:\n` +
-      `• Station connectivity issues\n• No valid reservation\n• Technical maintenance`
-    );
-    setTimeout(() => whatsappService.sendButtonMessage(
-      whatsappId,
-      '🔧 *Actions:*',
-      [
-        { id: `queue_status_${stationId}`, title: '📊 Check Queue' },
-        { id: `get_directions_${stationId}`, title: '🗺️ Directions' },
-        { id: 'help', title: '❓ Support' }
-      ]
-    ), 2000);
-  }
+  /**
+ * ✅ FIXED: Enhanced session start failure handling with diagnostic info
+ */
+private async handleSessionStartFailure(whatsappId: string, stationId: number): Promise<void> {
+  try {
+    // Try to diagnose the issue
+    const [userQueues, activeSession] = await Promise.all([
+      queueService.getUserQueueStatus(whatsappId).catch(() => []),
+      sessionService.getActiveSession(whatsappId, stationId).catch(() => null)
+    ]);
 
-  private async handleNoValidReservation(whatsappId: string, stationId: number): Promise<void> {
+    const queueAtStation = userQueues.find(q => q.stationId === stationId);
+    
+    let message: string;
+    let buttons: Array<{ id: string; title: string }>;
+
+    // Case 1: User already has an active session
+    if (activeSession) {
+      message = `⚠️ *Session Already Active*\n\n` +
+        `You already have an active charging session at this station.\n\n` +
+        `📊 Current Status: ${activeSession.status}\n` +
+        `🔌 Use the session controls below to manage it.`;
+      
+      buttons = [
+        { id: `session_status_${stationId}`, title: '📊 Check Status' },
+        { id: `session_stop_${stationId}`, title: '🛑 Stop Session' },
+        { id: 'help', title: '❓ Help' }
+      ];
+    }
+    // Case 2: Queue position exists but session creation failed
+    else if (queueAtStation) {
+      message = `❌ *Session Start Failed*\n\n` +
+        `Queue Position: #${queueAtStation.position}\n` +
+        `Status: ${queueAtStation.status}\n\n` +
+        `⚠️ *Possible Reasons:*\n` +
+        `• Station is currently offline\n` +
+        `• Technical maintenance in progress\n` +
+        `• Connectivity issues\n\n` +
+        `💡 Please wait a moment and try again.`;
+      
+      buttons = [
+        { id: `start_charging_${stationId}`, title: '🔄 Retry Start' },
+        { id: `queue_status_${stationId}`, title: '📊 Queue Status' },
+        { id: 'help', title: '📞 Contact Support' }
+      ];
+    }
+    // Case 3: No queue position - shouldn't happen but handle gracefully
+    else {
+      message = `❌ *Failed to Start Session*\n\n` +
+        `Unable to create charging session.\n\n` +
+        `⚠️ *Possible Issues:*\n` +
+        `• No active reservation found\n` +
+        `• Station connectivity problems\n` +
+        `• Technical maintenance\n\n` +
+        `💡 Try joining the queue first, then start charging.`;
+      
+      buttons = [
+        { id: `join_queue_${stationId}`, title: '📋 Join Queue' },
+        { id: `station_info_${stationId}`, title: 'ℹ️ Station Info' },
+        { id: 'help', title: '❓ Get Help' }
+      ];
+    }
+
+    await whatsappService.sendTextMessage(whatsappId, message);
+
+    // Send action buttons after a short delay
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🔧 *What would you like to do?*',
+        buttons
+      );
+    }, 2000);
+
+    // Log the failure for diagnostics
+    logger.error('Session start failure handled', {
+      whatsappId,
+      stationId,
+      hasQueue: !!queueAtStation,
+      queueStatus: queueAtStation?.status,
+      hasActiveSession: !!activeSession
+    });
+
+  } catch (error) {
+    logger.error('Failed to handle session start failure', { whatsappId, stationId, error });
+    
+    // Fallback generic message if diagnostic checks fail
     await whatsappService.sendTextMessage(
       whatsappId,
-      `⚠️ *No Reservation*\nYou need an active queue position to start charging.\n💡 Join the queue first.`
+      `❌ *Failed to Start Charging*\n\n` +
+      `Unable to create charging session.\n\n` +
+      `⚠️ *Common Reasons:*\n` +
+      `• Station connectivity issues\n` +
+      `• No valid reservation\n` +
+      `• Technical maintenance in progress\n\n` +
+      `💡 *Recommended Actions:*\n` +
+      `1. Check your queue status\n` +
+      `2. Verify station is available\n` +
+      `3. Try again in a few moments\n` +
+      `4. Contact support if issue persists`
     );
-    setTimeout(() => whatsappService.sendButtonMessage(
-      whatsappId,
-      '🎯 *Next Steps:*',
-      [
-        { id: `join_queue_${stationId}`, title: '📋 Join Queue' },
-        { id: `queue_status_${stationId}`, title: '📊 Status' },
-        { id: 'find_nearby_stations', title: '🔍 Alternatives' }
-      ]
-    ), 2000);
+    
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🔧 *Actions:*',
+        [
+          { id: `queue_status_${stationId}`, title: '📊 Check Queue' },
+          { id: `station_info_${stationId}`, title: 'ℹ️ Station Info' },
+          { id: 'help', title: '📞 Support' }
+        ]
+      );
+    }, 2000);
   }
+}
+  
+ /**
+ * ✅ FIXED: Enhanced error handling with actionable next steps
+ */
+private async handleNoValidReservation(whatsappId: string, stationId: number): Promise<void> {
+  try {
+    // Check if user has any queue position at all
+    const userQueues = await queueService.getUserQueueStatus(whatsappId);
+    const queueAtStation = userQueues.find(q => q.stationId === stationId);
+
+    let message: string;
+    let buttons: Array<{ id: string; title: string }>;
+
+    if (queueAtStation) {
+      // User has a queue position but it's not in the right state
+      message = `⚠️ *Reservation Not Ready*\n\n` +
+        `Your queue position: #${queueAtStation.position}\n` +
+        `Status: ${queueAtStation.status}\n\n` +
+        `⏳ Please wait until your slot is ready.\n` +
+        `You'll receive a notification when it's your turn!`;
+      
+      buttons = [
+        { id: `queue_status_${stationId}`, title: '🔄 Refresh Status' },
+        { id: `get_directions_${stationId}`, title: '🗺️ Get Directions' },
+        { id: `cancel_queue_${stationId}`, title: '❌ Cancel Queue' }
+      ];
+    } else {
+      // User has no queue position at this station
+      message = `❌ *No Active Reservation*\n\n` +
+        `You need an active queue position to start charging at this station.\n\n` +
+        `💡 *Next Steps:*\n` +
+        `• Join the queue first\n` +
+        `• Wait for your turn\n` +
+        `• You'll be notified when ready`;
+      
+      buttons = [
+        { id: `join_queue_${stationId}`, title: '📋 Join Queue' },
+        { id: `station_info_${stationId}`, title: 'ℹ️ Station Info' },
+        { id: 'find_nearby_stations', title: '🔍 Find Alternatives' }
+      ];
+    }
+
+    await whatsappService.sendTextMessage(whatsappId, message);
+
+    // Send action buttons after a short delay
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🎯 *What would you like to do?*',
+        buttons
+      );
+    }, 2000);
+
+  } catch (error) {
+    logger.error('Failed to handle no valid reservation', { whatsappId, stationId, error });
+    
+    // Fallback simple message if queue check fails
+    await whatsappService.sendTextMessage(
+      whatsappId,
+      '❌ *No Valid Reservation*\n\n' +
+      'You need an active reservation to start charging.\n' +
+      'Please join the queue or book a slot first.'
+    );
+    
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        whatsappId,
+        '🎯 *Next Steps:*',
+        [
+          { id: `join_queue_${stationId}`, title: '📋 Join Queue' },
+          { id: `station_info_${stationId}`, title: 'ℹ️ Station Info' },
+          { id: 'new_search', title: '🔍 New Search' }
+        ]
+      );
+    }, 2000);
+  }
+}
 
   private async handleUnavailableStation(whatsappId: string, station: ProcessedStation): Promise<void> {
     let reason = '❌ Station unavailable';

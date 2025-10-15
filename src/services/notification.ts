@@ -129,37 +129,38 @@ class NotificationService {
    * OPTIMIZED: Simplified charging started notification
    * Called AFTER start photo verification completes
    */
-  async sendChargingStartedNotification(userWhatsapp: string, session: any): Promise<void> {
-    try {
-      const station = await this.getStationDetails(session.stationId);
-      const pricePerKwh = station?.pricePerKwh || session.pricePerKwh || '12.5';
-      const startReading = session.startMeterReading || 0;
+  /** */
+async sendChargingStartedNotification(userWhatsapp: string, session: any): Promise<void> {
+  try {
+    const station = await this.getStationDetails(session.stationId);
+    const pricePerKwh = station?.pricePerKwh || session.pricePerKwh || '12.5';
+    const startReading = session.startMeterReading || 0;
 
-      const message = `⚡ *CHARGING ACTIVE*\n\n` +
-        `📍 *${station?.name || 'Charging Station'}*\n` +
-        `✅ Session started successfully\n\n` +
-        `📊 *Initial Reading:* ${startReading} kWh\n` +
-        `💰 *Rate:* ₹${pricePerKwh}/kWh\n` +
-        `🔌 *Connector:* ${session.connectorType || 'Standard'}\n\n` +
-        `🛑 *To stop:* Use /stop command or button below`;
+    const message = `⚡ *CHARGING ACTIVE*\n\n` +
+      `📍 *${station?.name || 'Charging Station'}*\n` +
+      `✅ Session started successfully\n\n` +
+      `📊 *Initial Reading:* ${startReading} kWh\n` +
+      `💰 *Rate:* ₹${pricePerKwh}/kWh\n` +
+      `🔌 *Connector:* ${session.connectorType || 'Standard'}\n\n` +
+      `🛑 *To stop:* Use /stop command or button below`;
 
-      await whatsappService.sendTextMessage(userWhatsapp, message);
+    await whatsappService.sendTextMessage(userWhatsapp, message);
 
-      // Simple stop button only
-      setTimeout(async () => {
-        await whatsappService.sendButtonMessage(
-          userWhatsapp,
-          '🎛️ *Session Control:*',
-          [
-            { id: `session_status_${session.stationId}`, title: '📊 Check Status' },
-            { id: `session_stop_${session.stationId}`, title: '🛑 Stop Charging' }
-          ]
-        );
-      }, 2000);
-    } catch (error) {
-      logger.error('Failed to send charging started notification', { userWhatsapp, session, error });
-    }
+    // Simple stop button only
+    setTimeout(async () => {
+      await whatsappService.sendButtonMessage(
+        userWhatsapp,
+        '🎛️ *Session Control:*',
+        [
+          { id: `session_status_${session.stationId}`, title: '📊 Check Status' },
+          { id: `session_stop_${session.stationId}`, title: '🛑 Stop Charging' }
+        ]
+      );
+    }, 2000);
+  } catch (error) {
+    logger.error('Failed to send charging started notification', { userWhatsapp, session, error });
   }
+}
 
   /**
    * OPTIMIZED: Complete charging notification with verified meter readings

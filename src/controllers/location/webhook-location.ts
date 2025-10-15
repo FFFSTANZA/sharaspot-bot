@@ -1,6 +1,6 @@
-// src/controllers/location/webhook-location.ts - FIXED & ENHANCED
+// src/controllers/location/webhook-location.ts - FULLY INTEGRATED & FIXED
 import { whatsappService } from '../../services/whatsapp';
-import { locationController } from './index'; // Import from the index file
+import { locationController } from './index';
 import { bookingController } from '../booking';
 import { queueService } from '../../services/queue';
 import { userService } from '../../services/userService';
@@ -8,7 +8,6 @@ import { stationSearchService } from '../../services/location/station-search';
 import { logger } from '../../utils/logger';
 import { db } from '../../config/database';
 import { eq } from 'drizzle-orm';
-
 
 // Standardized button ID patterns - Same as queue webhook for consistency
 const BUTTON_ID_PATTERNS = {
@@ -140,7 +139,7 @@ export class WebhookLocationController {
       if (listId.startsWith('select_station_')) {
         await this.handleStationSelection(whatsappId, stationId);
       } else if (listId.startsWith('recent_search_')) {
-        const searchIndex = additionalData || stationId; // Use parsed data
+        const searchIndex = additionalData || stationId;
         await locationController.handleRecentSearchSelection(whatsappId, searchIndex);
       } else {
         logger.warn('Unknown location list selection', { whatsappId, listId });
@@ -161,132 +160,161 @@ export class WebhookLocationController {
 
   /**
    * Enhanced button ID parsing - consistent with queue webhook
+   * ✅ FIXED: Added handling for start_charging_ pattern
    */
-   private parseButtonId(buttonId: string): { action: string; stationId: number; additionalData?: number } {
-  if (!buttonId) {
-    return { action: '', stationId: 0 };
+  private parseButtonId(buttonId: string): { action: string; stationId: number; additionalData?: number } {
+    if (!buttonId) {
+      return { action: '', stationId: 0 };
+    }
+
+    try {
+      // ✅ FIX: Handle start_charging_123 pattern
+      if (buttonId.match(BUTTON_ID_PATTERNS.START_CHARGING)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.START_CHARGING);
+        return {
+          action: 'start_charging',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle extend session: extend_30_123 -> minutes=30, stationId=123
+      if (buttonId.match(/^extend_(\d+)_(\d+)$/)) {
+        const match = buttonId.match(/^extend_(\d+)_(\d+)$/);
+        return {
+          action: 'extend',
+          stationId: parseInt(match![2], 10),
+          additionalData: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle rating: rate_5_123 -> rating=5, stationId=123
+      if (buttonId.match(/^rate_(\d)_(\d+)$/)) {
+        const match = buttonId.match(/^rate_(\d)_(\d+)$/);
+        return {
+          action: 'rate',
+          stationId: parseInt(match![2], 10),
+          additionalData: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle confirm cancel: confirm_cancel_123
+      if (buttonId.match(/^confirm_cancel_(\d+)$/)) {
+        const match = buttonId.match(/^confirm_cancel_(\d+)$/);
+        return {
+          action: 'confirm',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle book station: book_station_123
+      if (buttonId.match(BUTTON_ID_PATTERNS.BOOK_STATION)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.BOOK_STATION);
+        return {
+          action: 'book',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle join queue: join_queue_123
+      if (buttonId.match(BUTTON_ID_PATTERNS.JOIN_QUEUE)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.JOIN_QUEUE);
+        return {
+          action: 'join',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle station info: station_info_123
+      if (buttonId.match(BUTTON_ID_PATTERNS.STATION_INFO)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.STATION_INFO);
+        return {
+          action: 'info',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle queue status: queue_status_123
+      if (buttonId.match(/^queue_status_(\d+)$/)) {
+        const match = buttonId.match(/^queue_status_(\d+)$/);
+        return {
+          action: 'queue',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle session start: start_session_123
+      if (buttonId.match(/^start_session_(\d+)$/)) {
+        const match = buttonId.match(/^start_session_(\d+)$/);
+        return {
+          action: 'start',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle cancel queue: cancel_queue_123
+      if (buttonId.match(BUTTON_ID_PATTERNS.CANCEL_QUEUE)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.CANCEL_QUEUE);
+        return {
+          action: 'cancel',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Handle select station: select_station_123
+      if (buttonId.match(BUTTON_ID_PATTERNS.SELECT_STATION)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.SELECT_STATION);
+        return {
+          action: 'select',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Generic patterns
+      const parts = buttonId.split('_');
+      const action = parts[0];
+
+      // Try general station pattern
+      if (buttonId.match(BUTTON_ID_PATTERNS.GENERAL_STATION)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_STATION);
+        return {
+          action,
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Try general action pattern
+      if (buttonId.match(BUTTON_ID_PATTERNS.GENERAL_ACTION)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.GENERAL_ACTION);
+        return {
+          action,
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      // Try numeric only pattern
+      if (buttonId.match(BUTTON_ID_PATTERNS.NUMERIC_ONLY)) {
+        const match = buttonId.match(BUTTON_ID_PATTERNS.NUMERIC_ONLY);
+        return {
+          action: 'station',
+          stationId: parseInt(match![1], 10)
+        };
+      }
+
+      logger.warn('Could not parse button ID', { buttonId });
+      return { action, stationId: 0 };
+
+    } catch (error) {
+      logger.error('Button ID parsing failed', { 
+        buttonId, 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return { action: '', stationId: 0 };
+    }
   }
-
-  try {
-    // Handle extend session: extend_30_123 -> minutes=30, stationId=123
-    if (buttonId.match(/^extend_(\d+)_(\d+)$/)) {
-      const match = buttonId.match(/^extend_(\d+)_(\d+)$/);
-      return {
-        action: 'extend',
-        stationId: parseInt(match![2], 10),
-        additionalData: parseInt(match![1], 10) // minutes
-      };
-    }
-
-    // Handle rating: rate_5_123 -> rating=5, stationId=123
-    if (buttonId.match(/^rate_(\d)_(\d+)$/)) {
-      const match = buttonId.match(/^rate_(\d)_(\d+)$/);
-      return {
-        action: 'rate',
-        stationId: parseInt(match![2], 10),
-        additionalData: parseInt(match![1], 10) // rating score
-      };
-    }
-
-    // Handle confirm cancel: confirm_cancel_123
-    if (buttonId.match(/^confirm_cancel_(\d+)$/)) {
-      const match = buttonId.match(/^confirm_cancel_(\d+)$/);
-      return {
-        action: 'confirm',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Handle book station: book_station_123
-    if (buttonId.match(/^book_station_(\d+)$/)) {
-      const match = buttonId.match(/^book_station_(\d+)$/);
-      return {
-        action: 'book',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Handle join queue: join_queue_123
-    if (buttonId.match(/^join_queue_(\d+)$/)) {
-      const match = buttonId.match(/^join_queue_(\d+)$/);
-      return {
-        action: 'join',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Handle station info: station_info_123
-    if (buttonId.match(/^station_info_(\d+)$/)) {
-      const match = buttonId.match(/^station_info_(\d+)$/);
-      return {
-        action: 'station',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Handle queue status: queue_status_123
-    if (buttonId.match(/^queue_status_(\d+)$/)) {
-      const match = buttonId.match(/^queue_status_(\d+)$/);
-      return {
-        action: 'queue',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Handle session start: start_session_123
-    if (buttonId.match(/^start_session_(\d+)$/)) {
-      const match = buttonId.match(/^start_session_(\d+)$/);
-      return {
-        action: 'start',
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Generic patterns
-    const parts = buttonId.split('_');
-    const action = parts[0];
-
-    // Try general station pattern
-    if (buttonId.match(/^.*_station_(\d+)$/)) {
-      const match = buttonId.match(/^.*_station_(\d+)$/);
-      return {
-        action,
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Try general action pattern
-    if (buttonId.match(/^.*_(\d+)$/)) {
-      const match = buttonId.match(/^.*_(\d+)$/);
-      return {
-        action,
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    // Try numeric only pattern
-    if (buttonId.match(/^(\d+)$/)) {
-      const match = buttonId.match(/^(\d+)$/);
-      return {
-        action: 'station', // Default action for numeric IDs
-        stationId: parseInt(match![1], 10)
-      };
-    }
-
-    logger.warn('Could not parse button ID', { buttonId });
-    return { action, stationId: 0 };
-
-  } catch (error) {
-    logger.error('Button ID parsing failed', { 
-      buttonId, 
-      error: error instanceof Error ? error.message : String(error)
-    });
-    return { action: '', stationId: 0 };
-  }
-}
 
   /**
    * Handle station-specific actions with consistent delegation
+   * ✅ FIXED: Added start_charging case
    */
   private async handleStationActions(whatsappId: string, buttonId: string, action: string, stationId: number): Promise<void> {
     if (!stationId) {
@@ -313,6 +341,11 @@ export class WebhookLocationController {
       
       case 'cancel':
         await this.handleQueueCancel(whatsappId, stationId);
+        break;
+      
+      // ✅ FIX: Added explicit handler for start_charging action
+      case 'start_charging':
+        await this.handleChargingStart(whatsappId, stationId);
         break;
       
       case 'start':
@@ -342,32 +375,19 @@ export class WebhookLocationController {
   // LOCATION HELPERS
   // ===============================================
 
-  /**
-   * Back to top search result
-   */
   private async backToTopResult(whatsappId: string): Promise<void> {
     await locationController.showBackToTopResult(whatsappId);
   }
 
-  /**
-   * Expand search radius
-   */
   private async expandSearchRadius(whatsappId: string): Promise<void> {
     await locationController.expandSearchRadius(whatsappId);
   }
 
-  /**
-   * Remove search filters
-   */
   private async removeFilters(whatsappId: string): Promise<void> {
     await locationController.removeFilters(whatsappId);
   }
 
-  /**
-   * Start new search
-   */
   private async startNewSearch(whatsappId: string): Promise<void> {
-    // Clear location context
     locationController.clearLocationContext(whatsappId);
     
     await whatsappService.sendButtonMessage(
@@ -382,9 +402,6 @@ export class WebhookLocationController {
     );
   }
 
-  /**
-   * Request GPS location
-   */
   private async requestGPSLocation(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
@@ -397,9 +414,6 @@ export class WebhookLocationController {
     );
   }
 
-  /**
-   * Request address input
-   */
   private async requestAddressInput(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
@@ -414,16 +428,10 @@ export class WebhookLocationController {
     );
   }
 
-  /**
-   * Show location help
-   */
   private async showLocationHelp(whatsappId: string): Promise<void> {
     await locationController.showLocationHelp(whatsappId);
   }
 
-  /**
-   * Back to search results
-   */
   private async backToSearch(whatsappId: string): Promise<void> {
     const context = locationController.getLocationContext(whatsappId);
     if (context?.currentLocation) {
@@ -433,9 +441,6 @@ export class WebhookLocationController {
     }
   }
 
-  /**
-   * Handle get directions request
-   */
   private async handleGetDirections(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
@@ -452,9 +457,6 @@ export class WebhookLocationController {
   // STATION HANDLING - FULLY IMPLEMENTED & CONSISTENT
   // ===============================================
 
-  /**
-   * Handle station selection from list - Delegate to booking controller
-   */
   private async handleStationSelection(whatsappId: string, stationId: number): Promise<void> {
     try {
       if (!stationId || isNaN(stationId) || stationId <= 0) {
@@ -463,8 +465,6 @@ export class WebhookLocationController {
       }
 
       logger.info('Processing station selection', { whatsappId, stationId });
-
-      // Delegate to booking controller for consistent handling
       await bookingController.handleStationSelection(whatsappId, stationId);
 
     } catch (error) {
@@ -480,9 +480,6 @@ export class WebhookLocationController {
   // BOOKING & QUEUE - CONSISTENT DELEGATION
   // ===============================================
 
-  /**
-   * Handle station booking - Delegate to booking controller
-   */
   private async handleStationBooking(whatsappId: string, stationId: number): Promise<void> {
     try {
       logger.info('Processing booking request from location', { whatsappId, stationId });
@@ -496,9 +493,6 @@ export class WebhookLocationController {
     }
   }
 
-  /**
-   * Handle queue joining - Delegate to booking controller
-   */
   private async handleQueueJoin(whatsappId: string, stationId: number): Promise<void> {
     try {
       logger.info('Processing queue join from location', { whatsappId, stationId });
@@ -512,9 +506,6 @@ export class WebhookLocationController {
     }
   }
 
-  /**
-   * Handle queue status check - Delegate to booking controller
-   */
   private async handleQueueStatus(whatsappId: string): Promise<void> {
     try {
       await bookingController.handleQueueStatus(whatsappId);
@@ -527,9 +518,6 @@ export class WebhookLocationController {
     }
   }
 
-  /**
-   * Handle queue cancellation - Delegate to booking controller
-   */
   private async handleQueueCancel(whatsappId: string, stationId: number): Promise<void> {
     try {
       await bookingController.handleQueueCancel(whatsappId, stationId);
@@ -543,28 +531,43 @@ export class WebhookLocationController {
   }
 
   /**
-   * Handle charging session start - Delegate to booking controller
+   * ✅ FIXED: Handle charging session start - Now properly integrated
    */
   private async handleChargingStart(whatsappId: string, stationId: number): Promise<void> {
     try {
+      logger.info('🔌 Processing charging start request', { whatsappId, stationId });
+      
+      // Validate inputs
+      if (!whatsappId || !stationId) {
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          '❌ Invalid request. Please try again.'
+        );
+        return;
+      }
+
+      // Delegate to booking controller which handles session creation and photo verification
       await bookingController.handleChargingStart(whatsappId, stationId);
+      
+      logger.info('✅ Charging start request delegated successfully', { whatsappId, stationId });
+
     } catch (error) {
-      logger.error('Charging start failed from location', { whatsappId, stationId, error });
+      logger.error('❌ Charging start failed from location', { 
+        whatsappId, 
+        stationId, 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to start charging session.'
+        '❌ Failed to start charging session. Please ensure you have a valid reservation and try again.'
       );
     }
   }
 
-  /**
-   * Show detailed station information - Delegate to booking controller
-   */
   private async showStationDetails(whatsappId: string, stationId: number): Promise<void> {
     try {
       logger.info('Showing station details from location', { whatsappId, stationId });
-      
-      // Delegate to booking controller for consistent station detail handling
       await bookingController.showStationDetails(whatsappId, stationId);
 
     } catch (error) {
@@ -580,9 +583,6 @@ export class WebhookLocationController {
   // ADDITIONAL FEATURES
   // ===============================================
 
-  /**
-   * Setup notification alerts - Delegate to user service
-   */
   private async setupNotificationAlerts(whatsappId: string): Promise<void> {
     await whatsappService.sendTextMessage(
       whatsappId,
@@ -595,26 +595,20 @@ export class WebhookLocationController {
       '✅ Notifications are now enabled!'
     );
 
-    // Set user notification preferences using available method
     try {
       await userService.updateUserProfile(whatsappId, { 
-        phoneNumber: whatsappId // Using available field to track notification setup
+        phoneNumber: whatsappId
       });
     } catch (error) {
       logger.warn('Failed to update notification preferences', { whatsappId, error });
     }
   }
 
-  /**
-   * Find alternative stations - Use location controller's methods
-   */
   private async findAlternativeStations(whatsappId: string): Promise<void> {
     const context = locationController.getLocationContext(whatsappId);
     if (context?.currentLocation?.latitude && context?.currentLocation?.longitude) {
-      // Expand search radius to find more options
       await locationController.expandSearchRadius(whatsappId);
     } else {
-      // Start new search
       await this.startNewSearch(whatsappId);
     }
   }

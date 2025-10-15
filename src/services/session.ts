@@ -109,52 +109,57 @@ class SessionService {
    * ✅ Actually activate charging AFTER START photo confirmed
    * This is when we set startTime and status 'active'
    */
-  async startChargingAfterVerification(
-    sessionId: string,
-    startMeterReading: number
-  ): Promise<void> {
-    try {
-      logger.info('Activating charging after photo verification', {
-        sessionId,
-        startMeterReading,
-      });
+  /**
+ * ✅ Actually activate charging AFTER START photo confirmed
+ * This is when we set startTime and status 'active'
+ * ❌ PROBLEM: Wrong parameters passed here
+ */
+async startChargingAfterVerification(
+  sessionId: string,
+  startMeterReading: number
+): Promise<void> {
+  try {
+    logger.info('Activating charging after photo verification', {
+      sessionId,
+      startMeterReading,
+    });
 
-      const now = new Date();
-      await db
-        .update(chargingSessions)
-        .set({
-          status: 'active',
-          verificationStatus: 'start_verified',
-          startTime: now,          // ✅ Set startTime only NOW
-          startedAt: now,
-          startMeterReading: startMeterReading.toString(),
-          updatedAt: now,
-        })
-        .where(eq(chargingSessions.sessionId, sessionId));
+    const now = new Date();
+    await db
+      .update(chargingSessions)
+      .set({
+        status: 'active',
+        verificationStatus: 'start_verified',
+        startTime: now,
+        startedAt: now,
+        startMeterReading: startMeterReading.toString(),
+        updatedAt: now,
+      })
+      .where(eq(chargingSessions.sessionId, sessionId));
 
-      const session = await this.getSessionById(sessionId);
-      if (!session) {
-        throw new Error('Session not found after verification');
-      }
-
-      this.activeSessions.set(sessionId, session);
-
-      logger.info('✅ Charging activated', {
-        sessionId,
-        userWhatsapp: session.userWhatsapp,
-        startReading: startMeterReading,
-      });
-
-      
-      await notificationService.sendChargingStartedNotification(
-            session.userWhatsapp,
-            session.stationId
-    );
-    } catch (error) {
-      logger.error('Failed to activate charging', { error, sessionId });
-      throw error;
+    const session = await this.getSessionById(sessionId);
+    if (!session) {
+      throw new Error('Session not found after verification');
     }
+
+    this.activeSessions.set(sessionId, session);
+
+    logger.info('✅ Charging activated', {
+      sessionId,
+      userWhatsapp: session.userWhatsapp,
+      startReading: startMeterReading,
+    });
+
+    // ❌ WRONG: Passing session.stationId instead of session object
+    await notificationService.sendChargingStartedNotification(
+      session.userWhatsapp,
+      session.stationId  // ❌ Should be: session (the entire object)
+    );
+  } catch (error) {
+    logger.error('Failed to activate charging', { error, sessionId });
+    throw error;
   }
+}
 
   /**
    * Get active session for user and station
