@@ -1,4 +1,4 @@
-// src/utils/button-parser.ts - UNIFIED BUTTON ID PARSER
+// src/utils/button-parser.ts - UNIFIED BUTTON ID PARSER WITH START_CHARGING FIX
 import { logger } from './logger';
 
 // ===============================================
@@ -33,6 +33,7 @@ const BUTTON_PATTERNS = {
   
   // Session patterns
   START_SESSION: /^start_session_(\d+)$/,
+  START_CHARGING: /^start_charging_(\d+)$/,  // ✅ ADDED - Critical fix
   SESSION_STATUS: /^session_status_(\d+)$/,
   SESSION_STOP: /^session_stop_(\d+)$/,
   EXTEND_SESSION: /^extend_(\d+)_(\d+)$/, // extend_minutes_stationId
@@ -152,6 +153,16 @@ export function parseButtonId(buttonId: string): ButtonParseResult {
     if (match) {
       return {
         action: 'start',
+        category: 'session',
+        stationId: parseInt(match[1], 10)
+      };
+    }
+
+    // ✅ CRITICAL FIX: Handle start_charging pattern
+    match = buttonId.match(BUTTON_PATTERNS.START_CHARGING);
+    if (match) {
+      return {
+        action: 'start_charging',
         category: 'session',
         stationId: parseInt(match[1], 10)
       };
@@ -279,7 +290,8 @@ function determineCategory(action: string): ButtonParseResult['category'] {
     'cancel': 'queue',
     'rate': 'station',
     'share': 'location',
-    'recent': 'location'
+    'recent': 'location',
+    'charging': 'session'  // ✅ Added for start_charging fallback
   };
 
   return categoryMap[action] || 'unknown';
@@ -368,6 +380,8 @@ export function isLocationButton(buttonId: string): boolean {
     'load_more_stations', 'show_all_nearby', 'show_all_results',
     'expand_search', 'remove_filters', 'new_search'
   ];
+  
+  // ✅ REMOVED 'start_charging' from location buttons - it's a session button
   return locationButtons.includes(buttonId) || buttonId.startsWith('recent_search_');
 }
 
@@ -380,6 +394,17 @@ export function isStationButton(buttonId: string): boolean {
     'get_directions_', 'find_alternatives_', 'rate_'
   ];
   return stationPrefixes.some(prefix => buttonId.startsWith(prefix));
+}
+
+/**
+ * ✅ NEW: Check if button is session related
+ */
+export function isSessionButton(buttonId: string): boolean {
+  const sessionPrefixes = [
+    'start_session_', 'start_charging_', 'session_status_', 
+    'session_stop_', 'extend_'
+  ];
+  return sessionPrefixes.some(prefix => buttonId.startsWith(prefix));
 }
 
 // ===============================================

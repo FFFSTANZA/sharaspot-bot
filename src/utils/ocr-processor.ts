@@ -1,8 +1,9 @@
-// ocr-processor.ts
+// src/utils/ocr-processor.ts - PRODUCTION-READY OCR IMPLEMENTATION
 
 import Tesseract from 'tesseract.js';
 import sharp from 'sharp';
 import { OCR_CONFIG } from '../config/ocr-config';
+import { logger } from './logger';
 
 // ======================
 // Interfaces
@@ -15,12 +16,15 @@ export interface OCRResult {
   rawText?: string;
   error?: string;
   suggestions?: string[];
+  processingTime?: number;
 }
 
 export interface PreprocessOptions {
   enhanceContrast?: boolean;
   denoise?: boolean;
   targetSize?: { width: number; height: number };
+  autoRotate?: boolean;
+  threshold?: boolean;
 }
 
 interface OCRRawResult {
@@ -30,67 +34,112 @@ interface OCRRawResult {
   error?: string;
 }
 
+interface NumberCandidate {
+  value: number;
+  confidence: number;
+  position: number;
+  context: string;
+}
+
 // ======================
-// Main Function
+// Main Function - Enhanced
 // ======================
 
 /**
- * Extract kWh reading from image buffer with preprocessing, OCR, and validation
+ * ✅ PRODUCTION: Extract kWh reading from image buffer with preprocessing, OCR, and validation
+ * Handles multiple preprocessing strategies for maximum accuracy
  */
 export async function extractKwhReading(
   imageBuffer: Buffer,
   options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
 ): Promise<OCRResult> {
+  const startTime = Date.now();
+  
   try {
-    const processedImage = await preprocessImage(imageBuffer, options);
-    const ocrResult = await performOCR(processedImage);
+    logger.info('🔍 Starting OCR processing', { bufferSize: imageBuffer.length });
+
+    // Strategy 1: Standard preprocessing
+    let processedImage = await preprocessImage(imageBuffer, options);
+    let ocrResult = await performOCR(processedImage);
+
+    // Strategy 2: If low confidence, try aggressive preprocessing
+    if (ocrResult.confidence && ocrResult.confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
+      logger.info('⚠️ Low confidence, retrying with aggressive preprocessing');
+      processedImage = await preprocessImageAggressive(imageBuffer);
+      ocrResult = await performOCR(processedImage);
+    }
+
+    // Strategy 3: If still failing, try adaptive thresholding
+    if (ocrResult.confidence && ocrResult.confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
+      logger.info('⚠️ Still low confidence, trying adaptive threshold');
+      processedImage = await preprocessWithAdaptiveThreshold(imageBuffer);
+      ocrResult = await performOCR(processedImage);
+    }
 
     if (!ocrResult.success) {
       return {
         success: false,
         error: ocrResult.error || 'OCR failed',
         suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
+        processingTime: Date.now() - startTime,
       };
     }
 
+    // Extract reading with smart pattern matching
     const reading = extractReadingFromText(ocrResult.text || '');
     if (reading === null) {
+      logger.warn('❌ No valid reading found', { rawText: ocrResult.text });
       return {
         success: false,
         rawText: ocrResult.text,
-        error: 'No valid kWh reading found',
+        confidence: ocrResult.confidence,
+        error: 'No valid kWh reading found in image',
         suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
+        processingTime: Date.now() - startTime,
       };
     }
 
+    // Validate extracted reading
     const validation = validateReading(reading);
     if (!validation.valid) {
+      logger.warn('❌ Reading validation failed', { reading, error: validation.error });
       return {
         success: false,
         reading,
+        confidence: ocrResult.confidence,
         error: validation.error,
-        suggestions: getRetrySuggestions(ocrResult.confidence, ocrResult.text),
+        suggestions: ['The reading looks unusual. Please verify the meter display is visible.'],
+        processingTime: Date.now() - startTime,
       };
     }
+
+    const processingTime = Date.now() - startTime;
+    logger.info('✅ OCR successful', { 
+      reading, 
+      confidence: ocrResult.confidence, 
+      processingTime 
+    });
 
     return {
       success: true,
       reading,
       confidence: ocrResult.confidence,
       rawText: ocrResult.text,
+      processingTime,
     };
   } catch (error) {
-    console.error('❌ OCR processing error:', error);
+    logger.error('❌ OCR processing error', { error });
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : 'Unknown OCR error',
       suggestions: getRetrySuggestions(),
+      processingTime: Date.now() - startTime,
     };
   }
 }
 
 // ======================
-// Image Preprocessing
+// Image Preprocessing - Standard
 // ======================
 
 export async function preprocessImage(
@@ -98,81 +147,244 @@ export async function preprocessImage(
   options: PreprocessOptions = OCR_CONFIG.PREPROCESSING
 ): Promise<Buffer> {
   try {
+    logger.debug('📸 Starting standard preprocessing');
+
     const {
       enhanceContrast = OCR_CONFIG.PREPROCESSING.enhanceContrast,
       denoise = OCR_CONFIG.PREPROCESSING.denoise,
       targetSize = OCR_CONFIG.PREPROCESSING.targetSize,
+      autoRotate = true,
     } = options;
 
     let processor = sharp(imageBuffer);
 
-    // Metadata for conditional resize
+    // Get metadata for intelligent processing
     const metadata = await processor.metadata();
-    const shouldResize = metadata.width && metadata.width > targetSize.width;
+    logger.debug('📊 Image metadata', {
+      width: metadata.width,
+      height: metadata.height,
+      format: metadata.format,
+    });
 
-    if (shouldResize) {
+    // Auto-rotate based on EXIF
+    if (autoRotate) {
+      processor = processor.rotate();
+    }
+
+    // Resize if too large (improves OCR speed)
+    if (metadata.width && metadata.width > targetSize.width) {
       processor = processor.resize(targetSize.width, targetSize.height, {
         fit: 'inside',
         withoutEnlargement: true,
+        kernel: sharp.kernel.lanczos3, // High-quality resampling
       });
     }
 
-    processor = processor
-      .grayscale()
-      .sharpen();
+    // Convert to grayscale for better OCR
+    processor = processor.grayscale();
 
+    // Enhance contrast
     if (enhanceContrast) {
-      processor = processor.normalize();
+      processor = processor.normalize({ lower: 1, upper: 99 });
     }
 
+    // Denoise while preserving edges
     if (denoise) {
       processor = processor.median(3);
     }
 
-    // Boost contrast for Tesseract
-    processor = processor.linear(1.8, -100); // Aggressive contrast
+    // Sharpen for better character recognition
+    processor = processor.sharpen({
+      sigma: 1.5,
+      m1: 1.0,
+      m2: 0.7,
+      x1: 3,
+      y2: 15,
+      y3: 15,
+    });
 
-    // Output as PNG (lossless)
-    const result = await processor.png({ quality: 100 }).toBuffer();
-    console.log('✅ Preprocessing complete');
+    // Boost contrast for better digit separation
+    processor = processor.linear(1.5, -50);
+
+    // Output as high-quality PNG
+    const result = await processor
+      .png({ 
+        quality: 100, 
+        compressionLevel: 0,
+        adaptiveFiltering: false 
+      })
+      .toBuffer();
+
+    logger.debug('✅ Standard preprocessing complete', { 
+      outputSize: result.length 
+    });
+    
     return result;
   } catch (error) {
-    console.error('❌ Preprocessing failed:', error);
-    throw new Error(`Preprocessing failed: ${error instanceof Error ? error.message : 'Unknown'}`);
+    logger.error('❌ Standard preprocessing failed', { error });
+    throw new Error(
+      `Preprocessing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
 // ======================
-// OCR Execution
+// Image Preprocessing - Aggressive
+// ======================
+
+async function preprocessImageAggressive(imageBuffer: Buffer): Promise<Buffer> {
+  try {
+    logger.debug('🔥 Applying aggressive preprocessing');
+
+    let processor = sharp(imageBuffer);
+
+    const metadata = await processor.metadata();
+
+    // Resize to optimal OCR size
+    if (metadata.width && metadata.width > 1200) {
+      processor = processor.resize(1200, 800, {
+        fit: 'inside',
+        withoutEnlargement: true,
+        kernel: sharp.kernel.lanczos3,
+      });
+    }
+
+    // Auto-rotate
+    processor = processor.rotate();
+
+    // Convert to grayscale
+    processor = processor.grayscale();
+
+    // Aggressive contrast enhancement
+    processor = processor.normalize({ lower: 5, upper: 95 });
+
+    // Strong denoising
+    processor = processor.median(5);
+
+    // Aggressive sharpening
+    processor = processor.sharpen({
+      sigma: 2.0,
+      m1: 1.5,
+      m2: 0.5,
+      x1: 2,
+      y2: 10,
+      y3: 20,
+    });
+
+    // Very high contrast boost
+    processor = processor.linear(2.0, -80);
+
+    // Gamma correction for better visibility
+    processor = processor.gamma(1.2);
+
+    const result = await processor
+      .png({ quality: 100, compressionLevel: 0 })
+      .toBuffer();
+
+    logger.debug('✅ Aggressive preprocessing complete');
+    return result;
+  } catch (error) {
+    logger.error('❌ Aggressive preprocessing failed', { error });
+    throw error;
+  }
+}
+
+// ======================
+// Image Preprocessing - Adaptive Threshold
+// ======================
+
+async function preprocessWithAdaptiveThreshold(imageBuffer: Buffer): Promise<Buffer> {
+  try {
+    logger.debug('🎯 Applying adaptive thresholding');
+
+    let processor = sharp(imageBuffer);
+
+    // Resize
+    processor = processor.resize(1000, 1000, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
+
+    // Auto-rotate
+    processor = processor.rotate();
+
+    // Grayscale
+    processor = processor.grayscale();
+
+    // Normalize
+    processor = processor.normalize();
+
+    // Apply threshold for binary image
+    processor = processor.threshold(128, {
+      grayscale: true,
+    });
+
+    // Sharpen
+    processor = processor.sharpen();
+
+    const result = await processor
+      .png({ quality: 100 })
+      .toBuffer();
+
+    logger.debug('✅ Adaptive threshold preprocessing complete');
+    return result;
+  } catch (error) {
+    logger.error('❌ Adaptive threshold preprocessing failed', { error });
+    throw error;
+  }
+}
+
+// ======================
+// OCR Execution - Enhanced
 // ======================
 
 async function performOCR(imageBuffer: Buffer): Promise<OCRRawResult> {
   let worker: Tesseract.Worker | null = null;
+  
   try {
+    logger.debug('🤖 Initializing Tesseract worker');
+
+    // Create worker with English language
     worker = await Tesseract.createWorker(OCR_CONFIG.TESSERACT.language, 1, {
       logger: (m) => {
         if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          const progress = Math.round((m.progress || 0) * 100);
+          if (progress % 25 === 0) {
+            logger.debug(`OCR Progress: ${progress}%`);
+          }
         }
       },
     });
 
+    // Configure Tesseract for optimal number recognition
     await worker.setParameters({
       tessedit_char_whitelist: OCR_CONFIG.TESSERACT.whitelist,
-      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+      tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT, // Changed for better digit detection
       preserve_interword_spaces: '1',
+      tessedit_do_invert: '0',
+      classify_bln_numeric_mode: '1', // Prefer numeric interpretation
     });
 
+    logger.debug('🔍 Starting OCR recognition');
     const result = await worker.recognize(imageBuffer);
+    
     await worker.terminate();
+    worker = null;
 
     const { text, confidence } = result.data;
     const cleanText = text.trim();
 
-    if (confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE) {
+    logger.debug('📝 OCR result', {
+      confidence,
+      textLength: cleanText.length,
+      text: cleanText.substring(0, 100),
+    });
+
+    // Don't fail immediately on low confidence - let extraction logic decide
+    if (confidence < OCR_CONFIG.MIN_OCR_CONFIDENCE * 0.7) {
       return {
         success: false,
-        error: 'Low-confidence OCR result',
+        error: 'Very low confidence OCR result',
         confidence,
         text: cleanText,
       };
@@ -184,88 +396,183 @@ async function performOCR(imageBuffer: Buffer): Promise<OCRRawResult> {
       confidence,
     };
   } catch (error) {
-    console.error('❌ Tesseract error:', error);
+    logger.error('❌ Tesseract execution error', { error });
     return {
       success: false,
       error: `Tesseract error: ${error instanceof Error ? error.message : 'Unknown'}`,
     };
   } finally {
+    // Cleanup worker
     if (worker) {
       try {
         await worker.terminate();
       } catch (e) {
-        console.warn('Worker termination warning:', e);
+        logger.warn('⚠️ Worker termination warning', { error: e });
       }
     }
   }
 }
 
 // ======================
-// Reading Extraction
+// Reading Extraction - Smart Pattern Matching
 // ======================
 
 function extractReadingFromText(text: string): number | null {
+  // Clean and normalize text
   const clean = text
     .replace(/[\n\r\t]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-    .toUpperCase();
+    .toUpperCase()
+    // Fix common OCR mistakes
+    .replace(/O/g, '0')
+    .replace(/[IL]/g, '1')
+    .replace(/S/g, '5')
+    .replace(/Z/g, '2')
+    .replace(/B/g, '8');
 
-  console.log('🔍 Cleaned OCR text:', JSON.stringify(clean));
+  logger.debug('🧹 Cleaned OCR text', { original: text, cleaned: clean });
 
-  // Pattern: [optional prefix] NUMBER [optional kWh/kW/kWh]
-  const patterns = [
-    /(?:K?W?H?\s*[:\-]?\s*)?(\d{3,6}(?:\.\d{1,3})?)/i,
-    /(\d{3,6}(?:\.\d{1,3})?)\s*(?:K?W?H?)/i,
+  // Pattern 1: Explicit kWh label with number
+  const kwhPatterns = [
+    /(?:K?W?H?\s*[:\-=]?\s*)(\d{2,6}(?:\.\d{1,3})?)/i,
+    /(\d{2,6}(?:\.\d{1,3})?)\s*(?:K?W?H?)/i,
+    /ENERGY[:\s]+(\d{2,6}(?:\.\d{1,3})?)/i,
+    /METER[:\s]+(\d{2,6}(?:\.\d{1,3})?)/i,
+    /READING[:\s]+(\d{2,6}(?:\.\d{1,3})?)/i,
   ];
 
-  for (const pattern of patterns) {
+  for (const pattern of kwhPatterns) {
     const match = clean.match(pattern);
     if (match && match[1]) {
       const num = parseFloat(match[1]);
-      if (!isNaN(num) && num >= OCR_CONFIG.VALID_RANGE.min && num <= OCR_CONFIG.VALID_RANGE.max) {
-        console.log('✅ Reading matched pattern:', num);
+      if (isValidReading(num)) {
+        logger.info('✅ Found reading via kWh pattern', { pattern: pattern.source, reading: num });
         return num;
       }
     }
   }
 
-  // Fallback: extract all numbers and find plausible candidate
-  const allNums = clean.match(/\d+(?:\.\d+)?/g);
-  if (allNums) {
-    const candidates = allNums
-      .map(n => parseFloat(n))
-      .filter(n => !isNaN(n) && n >= OCR_CONFIG.VALID_RANGE.min && n <= OCR_CONFIG.VALID_RANGE.max);
-
-    if (candidates.length === 1) return candidates[0];
-    if (candidates.length > 1) return Math.max(...candidates); // Assume cumulative meter
+  // Pattern 2: Extract all number candidates and rank them
+  const candidates = extractNumberCandidates(clean);
+  
+  if (candidates.length === 1) {
+    logger.info('✅ Single candidate found', { reading: candidates[0].value });
+    return candidates[0].value;
   }
 
-  console.log('❌ No valid kWh reading found');
+  if (candidates.length > 1) {
+    // Rank candidates by likelihood
+    const ranked = rankCandidates(candidates);
+    logger.info('✅ Multiple candidates, selected best', {
+      selected: ranked[0].value,
+      allCandidates: ranked.map(c => c.value),
+    });
+    return ranked[0].value;
+  }
+
+  logger.warn('❌ No valid candidates found');
   return null;
 }
 
+function extractNumberCandidates(text: string): NumberCandidate[] {
+  const candidates: NumberCandidate[] = [];
+  
+  // Find all numbers with context
+  const numberPattern = /(\d{2,6}(?:\.\d{1,3})?)/g;
+  let match;
+  
+  while ((match = numberPattern.exec(text)) !== null) {
+    const value = parseFloat(match[1]);
+    
+    if (isValidReading(value)) {
+      // Get surrounding context
+      const start = Math.max(0, match.index - 20);
+      const end = Math.min(text.length, match.index + match[0].length + 20);
+      const context = text.substring(start, end);
+      
+      // Calculate confidence based on context
+      let confidence = 50;
+      
+      // Boost confidence for energy-related keywords
+      if (/K?W?H|ENERGY|METER|READING|CONSUMPTION/i.test(context)) {
+        confidence += 30;
+      }
+      
+      // Boost for proper formatting (with decimal)
+      if (match[1].includes('.')) {
+        confidence += 10;
+      }
+      
+      // Boost for typical meter reading range (100-10000)
+      if (value >= 100 && value <= 10000) {
+        confidence += 10;
+      }
+      
+      candidates.push({
+        value,
+        confidence,
+        position: match.index,
+        context,
+      });
+    }
+  }
+  
+  return candidates;
+}
+
+function rankCandidates(candidates: NumberCandidate[]): NumberCandidate[] {
+  return candidates.sort((a, b) => {
+    // Sort by confidence first
+    if (b.confidence !== a.confidence) {
+      return b.confidence - a.confidence;
+    }
+    // Then by value (prefer larger cumulative readings)
+    return b.value - a.value;
+  });
+}
+
+function isValidReading(num: number): boolean {
+  return (
+    !isNaN(num) &&
+    isFinite(num) &&
+    num >= OCR_CONFIG.VALID_RANGE.min &&
+    num <= OCR_CONFIG.VALID_RANGE.max
+  );
+}
+
 // ======================
-// Validation
+// Validation - Enhanced
 // ======================
 
 export function validateReading(reading: number): { valid: boolean; error?: string } {
   if (typeof reading !== 'number' || isNaN(reading) || !isFinite(reading)) {
     return { valid: false, error: 'Invalid number format' };
   }
+  
   if (reading <= 0) {
     return { valid: false, error: 'Reading must be positive' };
   }
+  
   if (reading < OCR_CONFIG.VALID_RANGE.min) {
-    return { valid: false, error: `Reading below minimum (${OCR_CONFIG.VALID_RANGE.min} kWh)` };
+    return { 
+      valid: false, 
+      error: `Reading too small (minimum: ${OCR_CONFIG.VALID_RANGE.min} kWh)` 
+    };
   }
+  
   if (reading > OCR_CONFIG.VALID_RANGE.max) {
-    return { valid: false, error: `Reading exceeds maximum (${OCR_CONFIG.VALID_RANGE.max} kWh)` };
+    return { 
+      valid: false, 
+      error: `Reading too large (maximum: ${OCR_CONFIG.VALID_RANGE.max} kWh)` 
+    };
   }
+  
   const decimals = (reading.toString().split('.')[1] || '').length;
   if (decimals > OCR_CONFIG.MAX_DECIMAL_PLACES) {
     return { valid: false, error: 'Too many decimal places' };
   }
+  
   return { valid: true };
 }
 
@@ -279,18 +586,31 @@ export function calculateConsumption(
 ): { valid: boolean; consumption?: number; error?: string } {
   const v1 = validateReading(start);
   const v2 = validateReading(end);
-  if (!v1.valid) return { valid: false, error: `Start: ${v1.error}` };
-  if (!v2.valid) return { valid: false, error: `End: ${v2.error}` };
+  
+  if (!v1.valid) return { valid: false, error: `Start reading: ${v1.error}` };
+  if (!v2.valid) return { valid: false, error: `End reading: ${v2.error}` };
+  
   if (end <= start) {
-    return { valid: false, error: 'End reading must be greater than start' };
+    return { 
+      valid: false, 
+      error: 'End reading must be greater than start reading' 
+    };
   }
 
   const cons = end - start;
+  
   if (cons < OCR_CONFIG.CONSUMPTION_RANGE.min) {
-    return { valid: false, error: `Consumption too low (< ${OCR_CONFIG.CONSUMPTION_RANGE.min} kWh)` };
+    return { 
+      valid: false, 
+      error: `Consumption too low (< ${OCR_CONFIG.CONSUMPTION_RANGE.min} kWh)` 
+    };
   }
+  
   if (cons > OCR_CONFIG.CONSUMPTION_RANGE.max) {
-    return { valid: false, error: `Consumption too high (> ${OCR_CONFIG.CONSUMPTION_RANGE.max} kWh)` };
+    return { 
+      valid: false, 
+      error: `Consumption too high (> ${OCR_CONFIG.CONSUMPTION_RANGE.max} kWh)` 
+    };
   }
 
   return {
@@ -306,12 +626,12 @@ export function validateConsumptionWithContext(
   batteryCapacityKwh?: number
 ): { valid: boolean; warnings?: string[]; error?: string } {
   const durationHours = durationMinutes / 60;
-  const theoreticalMax = durationHours * chargerPowerKw * 0.95; // assume 95% efficiency
+  const theoreticalMax = durationHours * chargerPowerKw * 0.95;
 
   if (consumption > theoreticalMax * 1.15) {
     return {
       valid: false,
-      error: `Consumption (${consumption} kWh) exceeds theoretical max (${theoreticalMax.toFixed(1)} kWh)`,
+      error: `Consumption (${consumption} kWh) exceeds theoretical maximum (${theoreticalMax.toFixed(1)} kWh)`,
     };
   }
 
@@ -324,20 +644,21 @@ export function validateConsumptionWithContext(
 
   const warnings: string[] = [];
   const avgPower = consumption / durationHours;
+  
   if (avgPower > chargerPowerKw * 0.98) {
-    warnings.push('Average power very close to charger limit – verify readings.');
+    warnings.push('Average power very close to charger limit – verify readings');
   }
 
   const efficiency = (consumption / (durationHours * chargerPowerKw)) * 100;
   if (efficiency < 60) {
-    warnings.push(`Low efficiency (${efficiency.toFixed(0)}%) – may indicate partial charge.`);
+    warnings.push(`Low efficiency (${efficiency.toFixed(0)}%) – may indicate partial charge`);
   }
 
   return { valid: true, warnings: warnings.length ? warnings : undefined };
 }
 
 // ======================
-// Helpers
+// Helper Functions
 // ======================
 
 export function formatReading(reading: number): string {
@@ -356,7 +677,7 @@ export function getRetrySuggestions(confidence?: number, rawText?: string): stri
     suggestions.push(tips.visible, tips.numbers);
   }
 
-  return [...new Set(suggestions)]; // dedupe
+  return [...new Set(suggestions)];
 }
 
 export function shouldWarnLowConfidence(confidence: number): boolean {
@@ -368,7 +689,7 @@ export function isGoodConfidence(confidence: number): boolean {
 }
 
 // ======================
-// Export
+// Export Default
 // ======================
 
 export default {

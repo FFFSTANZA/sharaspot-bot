@@ -153,7 +153,7 @@ async startChargingAfterVerification(
     // ❌ WRONG: Passing session.stationId instead of session object
     await notificationService.sendChargingStartedNotification(
       session.userWhatsapp,
-      session.stationId  // ❌ Should be: session (the entire object)
+      session
     );
   } catch (error) {
     logger.error('Failed to activate charging', { error, sessionId });
