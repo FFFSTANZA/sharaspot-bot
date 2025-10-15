@@ -1,4 +1,4 @@
-// src/controllers/webhook.ts - PRODUCTION READY WITH PROPER OCR INTEGRATION
+// src/controllers/webhook.ts - PRODUCTION READY WITH PHOTO VERIFICATION
 import { Request, Response } from 'express';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
@@ -12,14 +12,13 @@ import { bookingController } from './booking';
 import { queueWebhookController } from './queue-webhook';
 import { webhookLocationController } from './location/webhook-location';
 import { photoVerificationService } from '../services/photo-verification';
-import ocrProcessor from '../utils/ocr-processor';
 import { WhatsAppWebhook, WhatsAppMessage } from '../types/whatsapp';
 import { parseButtonId, ButtonParseResult } from '../utils/button-parser';
 import { validateWhatsAppId } from '../utils/validation';
 import { ownerWebhookController } from '../controllers/owner-webhook';
 import { db } from '../config/database';
-import { chargingStations, chargingSessions } from '../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { chargingStations } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import axios from 'axios';
 
 // ===============================================
@@ -151,23 +150,25 @@ export class WebhookController {
   }
 
   /**
-   * Route message to appropriate handler - ENHANCED with Photo Verification
+   * OPTIMIZED: Route message to appropriate handler with photo verification priority
    */
   private async routeMessage(message: ExtendedWhatsAppMessage, user: any, isInPreferenceFlow: boolean): Promise<void> {
     const { whatsappId } = user;
 
     // ✅ PRIORITY 0: Check photo verification flow FIRST
     const verificationState = photoVerificationService.getVerificationState(whatsappId);
+    
     if (verificationState) {
+      logger.info('🔍 User in verification flow', { whatsappId, hasImage: !!message.image });
+      
       // Handle image messages during verification
-      if (message.image && verificationState.waitingFor) {
+      if (message.image) {
         await this.handleVerificationPhoto(whatsappId, message, verificationState);
         return;
       } 
-      // Handle manual text entry (after OCR failures)
-      else if (message.type === 'text' && !verificationState.waitingFor) {
-        const type = verificationState.waitingFor === 'start_photo' ? 'start' : 'end';
-        await this.handleManualVerificationEntry(whatsappId, message.text?.body || '', type);
+      // Handle manual text entry during verification
+      else if (message.type === 'text') {
+        await this.handleManualVerificationEntry(whatsappId, message.text?.body || '');
         return;
       }
     }
@@ -199,11 +200,11 @@ export class WebhookController {
   }
 
   // ===============================================
-  // PHOTO VERIFICATION HANDLERS - REFACTORED
+  // PHOTO VERIFICATION HANDLERS - OPTIMIZED
   // ===============================================
 
   /**
-   * Handle verification photo upload - NOW USES OCR PROCESSOR
+   * OPTIMIZED: Handle verification photo upload
    */
   private async handleVerificationPhoto(
     whatsappId: string,
@@ -213,7 +214,6 @@ export class WebhookController {
     try {
       logger.info('📸 Processing verification photo', {
         whatsappId,
-        waitingFor: state.waitingFor,
         attempt: state.attemptCount + 1
       });
 
@@ -228,12 +228,9 @@ export class WebhookController {
         return;
       }
 
-      // ✅ USE CENTRALIZED OCR PROCESSOR
-      if (state.waitingFor === 'start_photo') {
-        await photoVerificationService.handleStartPhoto(whatsappId, imageBuffer);
-      } else if (state.waitingFor === 'end_photo') {
-        await photoVerificationService.handleEndPhoto(whatsappId, imageBuffer);
-      }
+      // Delegate to photo verification service (determines start/end automatically)
+      // Service will handle OCR processing and response messages
+      await photoVerificationService.handleStartPhoto(whatsappId, imageBuffer);
 
     } catch (error) {
       logger.error('Photo verification failed', { whatsappId, error });
@@ -245,24 +242,23 @@ export class WebhookController {
   }
 
   /**
-   * Handle manual entry during verification flow
+   * OPTIMIZED: Handle manual entry during verification flow
    */
   private async handleManualVerificationEntry(
     whatsappId: string,
-    text: string,
-    type: 'start' | 'end'
+    text: string
   ): Promise<void> {
     try {
       const trimmedInput = text.trim();
       
-      // ✅ USE CENTRALIZED MANUAL ENTRY HANDLER
-      await photoVerificationService.handleManualEntry(whatsappId, trimmedInput, type);
+      // Service determines start/end type automatically from state
+      await photoVerificationService.handleManualEntry(whatsappId, trimmedInput);
 
     } catch (error) {
       logger.error('Manual verification entry failed', { whatsappId, error });
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to process entry. Please try again.'
+        '❌ Failed to process entry. Please enter a valid kWh reading.'
       );
     }
   }
@@ -329,27 +325,24 @@ export class WebhookController {
         break;
 
       case 'manual_entry':
-        const state = photoVerificationService.getVerificationState(whatsappId);
-        if (state) {
-          const type = state.waitingFor === 'start_photo' ? 'start' : 'end';
-          await whatsappService.sendTextMessage(
-            whatsappId,
-            `📝 *Manual Entry*\n\nPlease type the ${type} kWh reading from the meter.\n\n` +
-            'Example: 1245.8'
-          );
-        }
+        await whatsappService.sendTextMessage(
+          whatsappId,
+          `📝 *Manual Entry*\n\nPlease type the kWh reading from the meter.\n\n` +
+          'Example: 1245.8'
+        );
         break;
     }
   }
 
   // ===============================================
-  // MESSAGE TYPE HANDLERS (EXISTING)
+  // MESSAGE TYPE HANDLERS
   // ===============================================
 
   private async handleTextMessage(user: any, text: string, isInPreferenceFlow: boolean): Promise<void> {
     const { whatsappId } = user;
     const cleanText = text.toLowerCase().trim();
 
+    // Owner mode check
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
       await ownerWebhookController.handleOwnerMessage(whatsappId, 'text', text);
       return;
@@ -360,17 +353,20 @@ export class WebhookController {
       return;
     }
 
+    // Preference flow check
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'text', text);
       return;
     }
 
+    // Waiting input check
     const waitingType = this.waitingUsers.get(whatsappId);
     if (waitingType) {
       await this.handleWaitingInput(whatsappId, text, waitingType);
       return;
     }
 
+    // Command handling
     await this.handleCommand(whatsappId, cleanText, text);
   }
 
@@ -380,17 +376,19 @@ export class WebhookController {
 
     logger.info('🔘 Button pressed', { whatsappId, buttonId, title });
 
-    // ✅ Check verification buttons FIRST
+    // ✅ PRIORITY: Check verification buttons FIRST
     if (photoVerificationService.isInVerificationFlow(whatsappId) && this.isVerificationButton(buttonId)) {
       await this.handleVerificationButtons(whatsappId, buttonId);
       return;
     }
 
+    // Owner mode check
     if (ownerWebhookController.isInOwnerMode(whatsappId)) {
       await ownerWebhookController.handleOwnerMessage(whatsappId, 'button', button);
       return;
     }
 
+    // Session stop button (priority routing)
     if (buttonId.startsWith('session_stop_')) {
       const stationId = parseInt(buttonId.split('_')[2]);
       if (!isNaN(stationId)) {
@@ -399,13 +397,14 @@ export class WebhookController {
       }
     }
 
-    const parsed = parseButtonId(buttonId);
-
+    // Preference flow check
     if (isInPreferenceFlow) {
       await preferenceController.handlePreferenceResponse(whatsappId, 'button', buttonId);
       return;
     }
 
+    // Normal button routing
+    const parsed = parseButtonId(buttonId);
     await this.routeButtonAction(whatsappId, buttonId, parsed, title);
   }
 
@@ -442,14 +441,13 @@ export class WebhookController {
       whatsappId,
       rawLocation: location,
       hasLatitude: !!location?.latitude,
-      hasLongitude: !!location?.longitude,
-      latType: typeof location?.latitude,
-      lngType: typeof location?.longitude
+      hasLongitude: !!location?.longitude
     });
 
     let lat: number, lng: number;
 
     try {
+      // Parse latitude
       if (typeof location?.latitude === 'string') {
         lat = parseFloat(location.latitude);
       } else if (typeof location?.latitude === 'number') {
@@ -458,6 +456,7 @@ export class WebhookController {
         throw new Error('No valid latitude found');
       }
 
+      // Parse longitude
       if (typeof location?.longitude === 'string') {
         lng = parseFloat(location.longitude);
       } else if (typeof location?.longitude === 'number') {
@@ -466,6 +465,7 @@ export class WebhookController {
         throw new Error('No valid longitude found');
       }
 
+      // Validate coordinates
       if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         throw new Error('Invalid coordinate values');
       }
@@ -511,16 +511,12 @@ export class WebhookController {
       logger.error('❌ Location controller processing failed', {
         whatsappId,
         coordinates: { lat, lng },
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        error: error instanceof Error ? error.message : String(error)
       });
 
       await whatsappService.sendTextMessage(
         whatsappId,
-        '❌ Failed to process your location. Please try again or type your address instead.\n\n' +
-        'If the problem persists, try typing your address like:\n' +
-        '• "Anna Nagar, Chennai"\n' +
-        '• "Brigade Road, Bangalore"'
+        '❌ Failed to process your location. Please try again or type your address instead.'
       );
     }
   }
@@ -1116,23 +1112,11 @@ export class WebhookController {
   public getHealthStatus(): {
     status: 'healthy' | 'degraded';
     waitingUsers: number;
-    verificationStatesCount: number;
     uptime: string;
   } {
-    // Get verification states count from service
-    let verificationCount = 0;
-    try {
-      // Count active verification states
-      // Note: This is a workaround since the service doesn't expose a count method
-      verificationCount = 0; // photoVerificationService should add a getStatesCount() method
-    } catch {
-      verificationCount = 0;
-    }
-
     return {
       status: 'healthy',
       waitingUsers: this.waitingUsers.size,
-      verificationStatesCount: verificationCount,
       uptime: process.uptime().toString()
     };
   }
