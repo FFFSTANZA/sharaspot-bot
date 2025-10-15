@@ -530,6 +530,12 @@ export class WebhookController {
       return;
     }
 
+    // ✅ ADD THIS - Check for SESSION buttons
+    if (this.isSessionButton(buttonId)) {
+      await queueWebhookController.handleQueueButton(whatsappId, buttonId, title);
+      return;
+    }
+
     if (parsed.category === 'station' && parsed.stationId > 0) {
       await this.handleStationButton(whatsappId, parsed.action, parsed.stationId);
       return;
@@ -537,6 +543,14 @@ export class WebhookController {
 
     await this.handleCoreButton(whatsappId, buttonId);
   }
+
+  private isSessionButton(buttonId: string): boolean {
+  return buttonId.startsWith('start_charging_') || 
+         buttonId.startsWith('start_session_') ||
+         buttonId.startsWith('session_status_') ||
+         buttonId.startsWith('session_stop_') ||
+         buttonId.startsWith('extend_');
+}
 
   private async routeListAction(
     whatsappId: string,

@@ -550,7 +550,7 @@ async handleChargingStart(whatsappId: string, stationId: number): Promise<void> 
       whatsappId,
       '⚡ *Ready to Start?*',
       [
-        { id: `session_start_${station.id}`, title: '⚡ Start Charging' },
+        { id: `start_charging_${station.id}`, title: '⚡ Start Charging' },
         { id: `get_directions_${station.id}`, title: '🗺️ Navigate' },
         { id: `cancel_queue_${station.id}`, title: '❌ Cancel' }
       ]
